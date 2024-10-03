@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import Content from './components/Content.vue'
 import { walkthrough } from './content/ff7.ts'
 
-const asdf = walkthrough.join('\n\n')
-console.log(asdf)
+const content = walkthrough.join('\n')
 </script>
 
 <template>
@@ -16,7 +15,7 @@ console.log(asdf)
     </a>
   </div>
   <div class="reader">
-    <HelloWorld :msg="asdf"  />
+    <Content :msg="content"  />
   </div>
 </template>
 
@@ -37,9 +36,11 @@ console.log(asdf)
 }
 
 .reader {
+  width: 50%;
+  display: inline-block;
   justify-content: start;
-  font-size: xx-small;
+  text-align: left;
+  white-space: pre;
   font-family: monospace;
-  /* font-size: clamp(.1rem, 1vw, 3rem); */
 }
 </style>
