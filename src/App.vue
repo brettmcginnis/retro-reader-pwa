@@ -36,11 +36,12 @@ const content = walkthrough.join('\n')
 }
 
 .reader {
-  width: 50%;
+  width: 50vw;
   display: inline-block;
   justify-content: start;
   text-align: left;
   white-space: pre;
   font-family: monospace;
+  background-color: red;
 }
 </style>
