@@ -39,9 +39,7 @@ const content = walkthrough.join('\n')
   width: 50vw;
   display: inline-block;
   justify-content: start;
-  text-align: left;
-  white-space: pre;
-  font-family: monospace;
+
   background-color: red;
 }
 </style>
