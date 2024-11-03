@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import Content from './components/Content.vue'
+import FriendAdder from './components/FriendAdder.vue';
+import FriendList from './components/FriendList.vue';
 import { walkthrough } from './content/ff7.ts'
 </script>
 
 <template>
-  <div class="reader">
-    <Content :content="walkthrough" />
-  </div>
+  <div>hi</div>
+      <FriendAdder />
+      <FriendList />
+      <div>hiasdf</div>
 </template>
 
 <style scoped>
