@@ -3,14 +3,14 @@ import { useTemplateRef, onMounted } from 'vue'
 
 const ref = useTemplateRef('content-ref')
 
-defineProps<{ msg: string }>()
+const { content } = defineProps<{ content: string[] }>()
 
 function getTextWidth(text: string, font:string): number {
-  const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+  const canvas = document.createElement("canvas")
   const context = canvas.getContext("2d");
-  context.font = font;
-  const metrics = context.measureText(text);
-  return metrics.width;
+  context!.font = font;
+
+  return context!.measureText(text).width;
 }
 
 function getCssStyle(element: HTMLElement, prop: string) {
@@ -25,22 +25,25 @@ function getCanvasFont(el = document.body) {
   return `${fontWeight} ${fontSize} ${fontFamily}`;
 }
 
+function maxWidth(): number {
+  return Math.max(...content.map(str => str.length))
+}
+
 onMounted(() => {
   if (ref.value) {
-    const fontSize = getTextWidth("12345678901234567890123456789012345678901234567890123456789012345678901234567890", getCanvasFont(ref.value))
-    console.log({
-      fontSize,
-      client: ref.value.clientWidth,
-      scale: ref.value.clientWidth / fontSize
-    })
-    
+    const fontSize = getTextWidth("".padStart(maxWidth(), "0"), getCanvasFont(ref.value))
+
     ref.value.style.transform = `scale(${ref.value.clientWidth / fontSize})`
   }
 });
 </script>
 
 <template>
-  <p ref="content-ref" class="read-the-docs">{{ msg }}</p>
+  <div ref="content-ref" class="read-the-docs">
+    <p v-for="line in content">
+      {{ line }}
+    </p>
+  </div>
 </template>
 
 <style scoped>
@@ -48,8 +51,12 @@ onMounted(() => {
   text-align: left;
   white-space: pre;
   font-family: monospace;
-  font-size: 50px;
+  font-size: 5rem;
   color: #888;
   transform-origin: top left;
+}
+
+.read-the-docs p {
+  margin: 0;
 }
 </style>

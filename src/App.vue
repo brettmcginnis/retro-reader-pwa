@@ -1,21 +1,11 @@
 <script setup lang="ts">
 import Content from './components/Content.vue'
 import { walkthrough } from './content/ff7.ts'
-
-const content = walkthrough.join('\n')
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
   <div class="reader">
-    <Content :msg="content"  />
+    <Content :content="walkthrough" />
   </div>
 </template>
 
@@ -39,7 +29,5 @@ const content = walkthrough.join('\n')
   width: 50vw;
   display: inline-block;
   justify-content: start;
-
-  background-color: red;
 }
 </style>
