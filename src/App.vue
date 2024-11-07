@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import Content from './components/Content.vue'
-import { walkthrough } from './content/ff7.ts'
+import Add from './document/Add.vue'
+import List from './document/List.vue'
 </script>
 
 <template>
   <div class="reader">
-    <Content :content="walkthrough" />
+    <Add />
+    <List />
+    <!-- <Content :content="walkthrough" /> -->
   </div>
 </template>
 
