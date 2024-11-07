@@ -11,5 +11,5 @@ import { useObservable } from "@vueuse/rxjs";
 import { all } from "./api";
 import { from } from "rxjs";
 
-const documents = useObservable(from(all)
+const documents = useObservable(from(all))
 </script>
