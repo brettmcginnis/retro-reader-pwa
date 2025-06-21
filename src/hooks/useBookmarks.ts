@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Bookmark } from '../types';
 import { db } from '../services/database';
 
@@ -7,7 +7,7 @@ export const useBookmarks = (guideId?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadBookmarks = async () => {
+  const loadBookmarks = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -20,11 +20,11 @@ export const useBookmarks = (guideId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [guideId]);
 
   useEffect(() => {
     loadBookmarks();
-  }, [guideId]);
+  }, [guideId, loadBookmarks]);
 
   const addBookmark = async (bookmark: Omit<Bookmark, 'id' | 'dateCreated'>) => {
     try {

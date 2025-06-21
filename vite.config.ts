@@ -3,6 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: '/retro-reader-pwa/',
   plugins: [
     react(),
     VitePWA({
@@ -19,6 +20,8 @@ export default defineConfig({
         theme_color: '#1a1a1a',
         background_color: '#ffffff',
         display: 'standalone',
+        start_url: '/retro-reader-pwa/',
+        scope: '/retro-reader-pwa/',
         icons: [
           {
             src: 'pwa-192x192.png',

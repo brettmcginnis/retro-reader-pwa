@@ -149,7 +149,7 @@ class DatabaseService {
 
   async saveSettings(settings: AppSettings): Promise<void> {
     const db = this.ensureDB();
-    await db.put('settings', { ...settings, id: 'app-settings' } as any);
+    await db.put('settings', { ...settings, id: 'app-settings' } as AppSettings & { id: string });
   }
 
   async exportData(): Promise<{ guides: Guide[], bookmarks: Bookmark[], progress: ReadingProgress[] }> {

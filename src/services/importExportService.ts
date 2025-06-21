@@ -77,7 +77,7 @@ export class ImportExportService {
     });
   }
 
-  private async importData(data: any): Promise<{ imported: number; skipped: number; errors: string[] }> {
+  private async importData(data: unknown): Promise<{ imported: number; skipped: number; errors: string[] }> {
     await this.ensureDbInitialized();
     
     const result = { imported: 0, skipped: 0, errors: [] as string[] };
@@ -140,15 +140,18 @@ export class ImportExportService {
     return result;
   }
 
-  private validateImportData(data: any): boolean {
+  private validateImportData(data: unknown): data is GuideCollection {
+    if (!data || typeof data !== 'object' || data === null) {
+      return false;
+    }
+    
+    const collection = data as GuideCollection;
     return (
-      data &&
-      typeof data === 'object' &&
-      Array.isArray(data.guides) &&
-      Array.isArray(data.bookmarks) &&
-      Array.isArray(data.progress) &&
-      data.version &&
-      data.exportDate
+      Array.isArray(collection.guides) &&
+      Array.isArray(collection.bookmarks) &&
+      Array.isArray(collection.progress) &&
+      typeof collection.version === 'string' &&
+      collection.exportDate instanceof Date
     );
   }
 
@@ -260,7 +263,7 @@ export class ImportExportService {
     }
   }
 
-  private downloadJSON(data: any, filename: string): void {
+  private downloadJSON(data: unknown, filename: string): void {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

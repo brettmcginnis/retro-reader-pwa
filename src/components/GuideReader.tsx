@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../contexts/useApp';
 
 interface GuideReaderProps {
   guide: Guide;
@@ -168,7 +168,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       
       return () => clearTimeout(timer);
     }
-  }, [isLoading, progress?.line, updateVisibleRange]);
+  }, [isLoading, progress, updateVisibleRange]);
   
   // Track visible lines on scroll with virtual scrolling
   useEffect(() => {
@@ -191,33 +191,34 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       }, 100); // Increased debounce time for stability
     };
     
-    containerRef.current.addEventListener('scroll', debouncedScroll);
+    const container = containerRef.current;
+    container.addEventListener('scroll', debouncedScroll);
     
     return () => {
-      containerRef.current?.removeEventListener('scroll', debouncedScroll);
+      container?.removeEventListener('scroll', debouncedScroll);
       if (scrollTimer) clearTimeout(scrollTimer);
     };
   }, [isLoading, updateVisibleRange]);
   
   // Line navigation
-  const goToLine = (lineNumber: number) => {
+  const goToLine = useCallback((lineNumber: number) => {
     scrollToLine(lineNumber);
-  };
+  }, [scrollToLine]);
   
-  const previousLine = () => {
+  const previousLine = useCallback(() => {
     if (currentLine > 1) {
       scrollToLine(currentLine - 1);
     }
-  };
+  }, [currentLine, scrollToLine]);
   
-  const nextLine = () => {
+  const nextLine = useCallback(() => {
     if (currentLine < totalLines) {
       scrollToLine(currentLine + 1);
     }
-  };
+  }, [currentLine, totalLines, scrollToLine]);
   
   // Add bookmark
-  const handleAddBookmark = async () => {
+  const handleAddBookmark = useCallback(async () => {
     const title = prompt('Bookmark title:', `Line ${currentLine}`);
     if (title) {
       try {
@@ -232,7 +233,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         alert(`Failed to add bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
-  };
+  }, [currentLine, currentPosition, guide.id, addBookmark]);
   
   // Keyboard navigation
   useEffect(() => {
@@ -272,7 +273,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showSearch, currentLine, totalLines, scrollToLine]);
+  }, [showSearch, currentLine, totalLines, scrollToLine, handleAddBookmark, previousLine, nextLine]);
   
   // Search handling
   const performSearch = (query: string) => {
