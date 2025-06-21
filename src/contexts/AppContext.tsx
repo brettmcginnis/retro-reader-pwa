@@ -1,25 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { AppSettings } from '../types';
 import { db } from '../services/database';
-
-interface AppContextType {
-  settings: AppSettings;
-  updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
-  currentView: 'library' | 'reader' | 'bookmarks';
-  setCurrentView: (view: 'library' | 'reader' | 'bookmarks') => void;
-  currentGuideId: string | null;
-  setCurrentGuideId: (id: string | null) => void;
-}
-
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
-};
+import { AppContext } from './AppContextType';
 
 interface AppProviderProps {
   children: ReactNode;

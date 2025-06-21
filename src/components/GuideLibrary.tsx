@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Guide } from '../types';
 import { useGuides } from '../hooks/useGuides';
-import { useApp } from '../contexts/AppContext';
+import { useApp } from '../contexts/useApp';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface GuideLibraryProps {}

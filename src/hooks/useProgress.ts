@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ReadingProgress } from '../types';
 import { db } from '../services/database';
 
@@ -7,7 +7,7 @@ export const useProgress = (guideId?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadProgress = async () => {
+  const loadProgress = useCallback(async () => {
     if (!guideId) {
       setProgress(null);
       setLoading(false);
@@ -24,11 +24,11 @@ export const useProgress = (guideId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [guideId]);
 
   useEffect(() => {
     loadProgress();
-  }, [guideId]);
+  }, [loadProgress]);
 
   const saveProgress = async (newProgress: Omit<ReadingProgress, 'lastRead'>) => {
     try {

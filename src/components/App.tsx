@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
-import { AppProvider, useApp } from '../contexts/AppContext';
+import { AppProvider } from '../contexts/AppContext';
+import { useApp } from '../contexts/useApp';
 import { GuideLibrary } from './GuideLibrary';
 import { GuideReader } from './GuideReader';
 import { BookmarkManager } from './BookmarkManager';
@@ -13,7 +14,7 @@ const AppContent: React.FC = () => {
   const [isLoadingGuide, setIsLoadingGuide] = React.useState<boolean>(false);
   
   // Memoize the current guide to prevent unnecessary re-renders
-  const memoizedCurrentGuide = useMemo(() => currentGuide, [currentGuide?.id, currentGuide?.content]);
+  const memoizedCurrentGuide = useMemo(() => currentGuide, [currentGuide]);
 
   // Load current guide when ID changes
   useEffect(() => {
