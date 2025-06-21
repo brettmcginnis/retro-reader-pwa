@@ -30,6 +30,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const userScrollingRef = useRef(false);
+  const userScrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lineHeightRef = useRef(20);
   const lastContentRef = useRef<string>('');
   
@@ -64,11 +65,13 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     };
   }, [guide]);
   
-  // Set initial position from saved progress - separate effect
+  // Set initial position from saved progress - only once
+  const hasSetInitialPosition = useRef(false);
   useEffect(() => {
-    if (progress && !isLoading) {
+    if (progress && !isLoading && !hasSetInitialPosition.current) {
       setCurrentLine(progress.line);
       setCurrentPosition(progress.position);
+      hasSetInitialPosition.current = true;
     }
   }, [progress, isLoading]);
   
@@ -88,6 +91,9 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     
     // Only save progress when the user is not actively scrolling
     if (userScrollingRef.current) return;
+    
+    // Don't save progress during initial setup
+    if (!hasInitiallyScrolled.current) return;
     
     const timer = setTimeout(() => {
       saveProgress({
@@ -157,13 +163,15 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   }, [isLoading, totalLines, updateVisibleRange]);
   
   // Initial scroll to current line - only once on mount
+  const hasInitiallyScrolled = useRef(false);
   useEffect(() => {
-    if (!isLoading && progress && containerRef.current && !userScrollingRef.current) {
+    if (!isLoading && progress && containerRef.current && !hasInitiallyScrolled.current) {
       // Use a small delay to ensure rendering is complete
       const timer = setTimeout(() => {
         const targetScrollTop = (progress.line - 1) * lineHeightRef.current;
         containerRef.current?.scrollTo({ top: targetScrollTop, behavior: 'auto' });
         updateVisibleRange();
+        hasInitiallyScrolled.current = true;
       }, 200);
       
       return () => clearTimeout(timer);
@@ -177,6 +185,19 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     const handleScroll = () => {
       // Only update visible range, don't update current line automatically
       updateVisibleRange();
+      
+      // Mark that user is actively scrolling
+      userScrollingRef.current = true;
+      
+      // Clear existing timeout and set new one
+      if (userScrollingTimeoutRef.current) {
+        clearTimeout(userScrollingTimeoutRef.current);
+      }
+      
+      userScrollingTimeoutRef.current = setTimeout(() => {
+        userScrollingRef.current = false;
+        userScrollingTimeoutRef.current = null;
+      }, 500);
     };
     
     // Use a debounced version for better performance
@@ -188,7 +209,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       scrollTimer = setTimeout(() => {
         handleScroll();
         scrollTimer = null;
-      }, 100); // Increased debounce time for stability
+      }, 50); // Reduced debounce time for better responsiveness
     };
     
     const container = containerRef.current;
@@ -197,6 +218,10 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     return () => {
       container?.removeEventListener('scroll', debouncedScroll);
       if (scrollTimer) clearTimeout(scrollTimer);
+      if (userScrollingTimeoutRef.current) {
+        clearTimeout(userScrollingTimeoutRef.current);
+        userScrollingTimeoutRef.current = null;
+      }
     };
   }, [isLoading, updateVisibleRange]);
   

@@ -9,7 +9,7 @@ interface GuideLibraryProps {}
 export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
   const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, createBackup, importFromFile } = useGuides();
   const { settings, updateSettings, setCurrentView, setCurrentGuideId } = useApp();
-  const [activeTab, setActiveTab] = useState<'url' | 'paste'>('url');
+  const [activeTab, setActiveTab] = useState<'url' | 'paste' | 'upload'>('url');
   const [fetchLoading, setFetchLoading] = useState(false);
   const [showPasteModal, setShowPasteModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -51,7 +51,13 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
   const handleImportFile = async (file: File) => {
     try {
       const result = await importFromFile(file);
-      alert(`Import completed! Imported: ${result.imported}, Skipped: ${result.skipped}, Errors: ${result.errors.length}`);
+      const isTextFile = file.name.toLowerCase().endsWith('.txt');
+      
+      if (isTextFile && result.imported === 1) {
+        alert(`Guide created successfully from "${file.name}"!`);
+      } else {
+        alert(`Import completed! Imported: ${result.imported}, Skipped: ${result.skipped}, Errors: ${result.errors.length}`);
+      }
     } catch (error) {
       alert(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -128,13 +134,21 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
             >
               Paste Content
             </button>
+            <button 
+              className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
+              onClick={() => setActiveTab('upload')}
+            >
+              Upload File
+            </button>
           </div>
           
-          {activeTab === 'url' ? (
+          {activeTab === 'url' && (
             <div className="import-method">
               <UrlImport onFetch={handleFetchGuide} loading={fetchLoading} />
             </div>
-          ) : (
+          )}
+          
+          {activeTab === 'paste' && (
             <div className="import-method">
               <button onClick={() => setShowPasteModal(true)} className="primary-btn">
                 Paste Guide Content
@@ -143,8 +157,24 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
             </div>
           )}
           
+          {activeTab === 'upload' && (
+            <div className="import-method">
+              <label htmlFor="txt-upload" className="primary-btn file-upload-btn">
+                Choose Text File
+              </label>
+              <input 
+                type="file" 
+                id="txt-upload" 
+                style={{ display: 'none' }} 
+                accept=".txt" 
+                onChange={handleFileSelect}
+              />
+              <p className="help-text">Upload a .txt file to create a new guide. The filename will be used as the guide title.</p>
+            </div>
+          )}
+          
           <div className="import-export-actions">
-            <label htmlFor="import-file" className="secondary-btn">Import File</label>
+            <label htmlFor="import-file" className="secondary-btn">Import Backup</label>
             <input 
               type="file" 
               id="import-file" 

@@ -55,6 +55,12 @@ export class ImportExportService {
   async importFromFile(file: File): Promise<{ imported: number; skipped: number; errors: string[] }> {
     await this.ensureDbInitialized();
     
+    // Check if it's a txt file
+    if (file.name.toLowerCase().endsWith('.txt')) {
+      return this.importTxtFile(file);
+    }
+    
+    // Handle JSON files (backup format)
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -66,6 +72,51 @@ export class ImportExportService {
           resolve(result);
         } catch (error) {
           reject(new Error(`Failed to parse import file: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
+  private async importTxtFile(file: File): Promise<{ imported: number; skipped: number; errors: string[] }> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          
+          if (!content.trim()) {
+            reject(new Error('Text file is empty'));
+            return;
+          }
+
+          // Create guide from txt file
+          const guide: Guide = {
+            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            title: this.extractTitleFromFilename(file.name),
+            content: content,
+            url: '', // No URL for uploaded files
+            dateAdded: new Date(),
+            dateModified: new Date(),
+            size: content.length
+          };
+
+          // Save to database
+          await db.saveGuide(guide);
+          
+          resolve({ 
+            imported: 1, 
+            skipped: 0, 
+            errors: [] 
+          });
+        } catch (error) {
+          reject(new Error(`Failed to import text file: ${error instanceof Error ? error.message : 'Unknown error'}`));
         }
       };
 
@@ -261,6 +312,17 @@ export class ImportExportService {
     } catch {
       return 'Imported Guide';
     }
+  }
+
+  private extractTitleFromFilename(filename: string): string {
+    // Remove file extension and replace underscores/hyphens with spaces
+    return filename
+      .replace(/\.[^/.]+$/, '') // Remove extension
+      .replace(/[_-]/g, ' ') // Replace underscores and hyphens with spaces
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .trim()
+      .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize first letter of each word
+      || 'Imported Guide'; // Fallback title
   }
 
   private downloadJSON(data: unknown, filename: string): void {
