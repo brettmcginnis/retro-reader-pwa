@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { AppProvider, useApp } from '../contexts/AppContext';
 import { GuideLibrary } from './GuideLibrary';
 import { GuideReader } from './GuideReader';
@@ -10,21 +10,34 @@ const AppContent: React.FC = () => {
   const { currentView, setCurrentView, currentGuideId, setCurrentGuideId } = useApp();
   const { getGuide } = useGuides();
   const [currentGuide, setCurrentGuide] = React.useState<Guide | null>(null);
+  const [isLoadingGuide, setIsLoadingGuide] = React.useState<boolean>(false);
+  
+  // Memoize the current guide to prevent unnecessary re-renders
+  const memoizedCurrentGuide = useMemo(() => currentGuide, [currentGuide?.id, currentGuide?.content]);
 
   // Load current guide when ID changes
   useEffect(() => {
     const loadGuide = async () => {
       if (currentGuideId) {
+        setIsLoadingGuide(true);
         try {
           const guide = await getGuide(currentGuideId);
           setCurrentGuide(guide);
+          if (!guide) {
+            console.error('Guide not found:', currentGuideId);
+            setCurrentGuideId(null);
+            setCurrentView('library');
+          }
         } catch (error) {
           console.error('Failed to load guide:', error);
           setCurrentGuideId(null);
           setCurrentView('library');
+        } finally {
+          setIsLoadingGuide(false);
         }
       } else {
         setCurrentGuide(null);
+        setIsLoadingGuide(false);
       }
     };
 
@@ -106,29 +119,47 @@ const AppContent: React.FC = () => {
         return <GuideLibrary />;
         
       case 'reader':
-        if (!currentGuide) {
-          setCurrentView('library');
+        if (isLoadingGuide) {
+          return (
+            <div className="loading-container">
+              <div className="loading-message">Loading guide...</div>
+            </div>
+          );
+        }
+        
+        if (!currentGuide && !isLoadingGuide) {
           return <GuideLibrary />;
         }
+        
         return (
           <div className="reader-container">
             {renderNavigation()}
-            <GuideReader guide={currentGuide} />
+            {memoizedCurrentGuide && <GuideReader guide={memoizedCurrentGuide} />}
           </div>
         );
         
       case 'bookmarks':
-        if (!currentGuide) {
-          setCurrentView('library');
+        if (isLoadingGuide) {
+          return (
+            <div className="loading-container">
+              <div className="loading-message">Loading guide...</div>
+            </div>
+          );
+        }
+        
+        if (!currentGuide && !isLoadingGuide) {
           return <GuideLibrary />;
         }
+        
         return (
           <div className="bookmarks-container">
             {renderNavigation()}
-            <BookmarkManager 
-              guide={currentGuide} 
-              onGotoLine={handleGotoLine}
-            />
+            {memoizedCurrentGuide && (
+              <BookmarkManager 
+                guide={memoizedCurrentGuide} 
+                onGotoLine={handleGotoLine}
+              />
+            )}
           </div>
         );
         

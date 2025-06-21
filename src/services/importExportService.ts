@@ -3,8 +3,20 @@ import { db } from './database';
 
 export class ImportExportService {
   private static readonly VERSION = '1.0.0';
+  
+  // Ensure database is initialized before operations
+  private async ensureDbInitialized(): Promise<void> {
+    try {
+      // This is a no-op if the DB is already initialized
+      await db.init();
+    } catch (error) {
+      console.error("Error initializing database:", error);
+      throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 
   async exportAll(): Promise<void> {
+    await this.ensureDbInitialized();
     const data = await db.exportData();
     const collection: GuideCollection = {
       guides: data.guides,
@@ -18,6 +30,8 @@ export class ImportExportService {
   }
 
   async exportGuide(guideId: string): Promise<void> {
+    await this.ensureDbInitialized();
+    
     const guide = await db.getGuide(guideId);
     if (!guide) {
       throw new Error('Guide not found');
@@ -39,6 +53,8 @@ export class ImportExportService {
   }
 
   async importFromFile(file: File): Promise<{ imported: number; skipped: number; errors: string[] }> {
+    await this.ensureDbInitialized();
+    
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -62,6 +78,8 @@ export class ImportExportService {
   }
 
   private async importData(data: any): Promise<{ imported: number; skipped: number; errors: string[] }> {
+    await this.ensureDbInitialized();
+    
     const result = { imported: 0, skipped: 0, errors: [] as string[] };
 
     if (!this.validateImportData(data)) {
@@ -135,6 +153,8 @@ export class ImportExportService {
   }
 
   async exportAsText(guideId: string): Promise<void> {
+    await this.ensureDbInitialized();
+    
     const guide = await db.getGuide(guideId);
     if (!guide) {
       throw new Error('Guide not found');
@@ -184,6 +204,8 @@ export class ImportExportService {
   }
 
   async importFromUrl(url: string): Promise<Guide> {
+    await this.ensureDbInitialized();
+    
     try {
       const response = await fetch(url);
       
@@ -251,6 +273,8 @@ export class ImportExportService {
   }
 
   async createBackup(): Promise<void> {
+    await this.ensureDbInitialized();
+    
     const data = await db.exportData();
     const backup = {
       ...data,
@@ -264,6 +288,8 @@ export class ImportExportService {
   }
 
   async restoreFromBackup(file: File): Promise<void> {
+    await this.ensureDbInitialized();
+    
     const result = await this.importFromFile(file);
     
     if (result.errors.length > 0) {

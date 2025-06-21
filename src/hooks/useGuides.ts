@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Guide } from '../types';
 import { GuideService } from '../services/guideService';
 import { ImportExportService } from '../services/importExportService';
+import { db } from '../services/database';
 
 const guideService = new GuideService();
 const importExportService = new ImportExportService();
@@ -10,6 +11,23 @@ export const useGuides = () => {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dbInitialized, setDbInitialized] = useState(false);
+
+  // First ensure database is initialized
+  useEffect(() => {
+    const initDatabase = async () => {
+      try {
+        await db.init();
+        setDbInitialized(true);
+      } catch (err) {
+        console.error('Failed to initialize database:', err);
+        setError(err instanceof Error ? err.message : 'Failed to initialize database');
+        setLoading(false);
+      }
+    };
+
+    initDatabase();
+  }, []);
 
   const loadGuides = async () => {
     try {
@@ -24,18 +42,21 @@ export const useGuides = () => {
     }
   };
 
+  // Only load guides after database is initialized
   useEffect(() => {
-    loadGuides();
-  }, []);
+    if (dbInitialized) {
+      loadGuides();
+    }
+  }, [dbInitialized]);
 
-  const fetchGuide = async (url: string) => {
+  const fetchGuide = useCallback(async (url: string) => {
     try {
       await guideService.fetchGuide(url);
       await loadGuides();
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to fetch guide');
     }
-  };
+  }, []);
 
   const createGuide = async (guide: Omit<Guide, 'id' | 'dateAdded' | 'dateModified'>) => {
     try {
@@ -63,14 +84,14 @@ export const useGuides = () => {
     }
   };
 
-  const getGuide = async (id: string): Promise<Guide | null> => {
+  const getGuide = useCallback(async (id: string): Promise<Guide | null> => {
     try {
       const guide = await guideService.getGuide(id);
       return guide || null;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to get guide');
     }
-  };
+  }, []);
 
   const exportGuide = async (id: string) => {
     try {

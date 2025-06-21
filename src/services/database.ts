@@ -27,22 +27,41 @@ class DatabaseService {
   private db: IDBPDatabase<RetroReaderDB> | null = null;
 
   async init(): Promise<void> {
-    this.db = await openDB<RetroReaderDB>('retro-reader', 1, {
-      upgrade(db) {
-        const guidesStore = db.createObjectStore('guides', { keyPath: 'id' });
-        guidesStore.createIndex('by-date-added', 'dateAdded');
-        guidesStore.createIndex('by-title', 'title');
-
-        const bookmarksStore = db.createObjectStore('bookmarks', { keyPath: 'id' });
-        bookmarksStore.createIndex('by-guide', 'guideId');
-        bookmarksStore.createIndex('by-date', 'dateCreated');
-
-        const progressStore = db.createObjectStore('progress', { keyPath: 'guideId' });
-        progressStore.createIndex('by-last-read', 'lastRead');
-
-        db.createObjectStore('settings', { keyPath: 'id' });
-      },
-    });
+    // If the database is already initialized, just return
+    if (this.db) {
+      return;
+    }
+    
+    try {
+      this.db = await openDB<RetroReaderDB>('retro-reader', 1, {
+        upgrade(db) {
+          // Check if stores already exist before creating them
+          if (!db.objectStoreNames.contains('guides')) {
+            const guidesStore = db.createObjectStore('guides', { keyPath: 'id' });
+            guidesStore.createIndex('by-date-added', 'dateAdded');
+            guidesStore.createIndex('by-title', 'title');
+          }
+  
+          if (!db.objectStoreNames.contains('bookmarks')) {
+            const bookmarksStore = db.createObjectStore('bookmarks', { keyPath: 'id' });
+            bookmarksStore.createIndex('by-guide', 'guideId');
+            bookmarksStore.createIndex('by-date', 'dateCreated');
+          }
+  
+          if (!db.objectStoreNames.contains('progress')) {
+            const progressStore = db.createObjectStore('progress', { keyPath: 'guideId' });
+            progressStore.createIndex('by-last-read', 'lastRead');
+          }
+  
+          if (!db.objectStoreNames.contains('settings')) {
+            db.createObjectStore('settings', { keyPath: 'id' });
+          }
+        },
+      });
+    } catch (error) {
+      console.error("Error initializing database:", error);
+      throw error;
+    }
   }
 
   private ensureDB(): IDBPDatabase<RetroReaderDB> {

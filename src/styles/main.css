@@ -223,10 +223,30 @@ body {
 }
 
 .reader-container,
-.bookmarks-container {
+.bookmarks-container,
+.loading-container {
   height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.loading-container {
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-message {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  padding: 2rem;
+  text-align: center;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 
 .reader-nav,
@@ -765,5 +785,46 @@ mark {
   
   .line-content {
     font-size: 0.8125rem;
+  }
+  
+  .loading-lines,
+  .loading-state,
+  .loading-message {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  
+  .lines-container,
+  .guide-content {
+    will-change: transform;
+    contain: content;
+  }
+  
+  .top-spacer,
+  .bottom-spacer {
+    will-change: height;
+    contain: strict;
+  }
+  
+  .jump-link {
+    padding: 1rem;
+    text-align: center;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin: 1rem 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  .jump-link:hover {
+    background-color: var(--bg-tertiary);
+  }
+  
+  .reader-content-container {
+    scroll-behavior: smooth;
   }
 }

@@ -6,8 +6,22 @@ export class GuideService {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
+  // Ensure database is initialized before operations
+  private async ensureDbInitialized(): Promise<void> {
+    try {
+      // This is a no-op if the DB is already initialized
+      await db.init();
+    } catch (error) {
+      console.error("Error initializing database:", error);
+      throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
   async fetchGuide(url: string): Promise<Guide> {
     try {
+      // Ensure DB is initialized
+      await this.ensureDbInitialized();
+      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -124,22 +138,27 @@ export class GuideService {
   }
 
   async getAllGuides(): Promise<Guide[]> {
+    await this.ensureDbInitialized();
     return await db.getAllGuides();
   }
 
   async getGuide(id: string): Promise<Guide | undefined> {
+    await this.ensureDbInitialized();
     return await db.getGuide(id);
   }
 
   async deleteGuide(id: string): Promise<void> {
+    await this.ensureDbInitialized();
     await db.deleteGuide(id);
   }
 
   async saveGuide(guide: Guide): Promise<void> {
+    await this.ensureDbInitialized();
     await db.saveGuide(guide);
   }
 
   async updateGuide(guide: Guide): Promise<void> {
+    await this.ensureDbInitialized();
     guide.dateModified = new Date();
     await db.saveGuide(guide);
   }
