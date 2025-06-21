@@ -62,7 +62,7 @@ const AppContent: React.FC = () => {
     const setupServiceWorker = async () => {
       if ('serviceWorker' in navigator) {
         try {
-          const registration = await navigator.serviceWorker.register('/sw.js');
+          const registration = await navigator.serviceWorker.register('/retro-reader-pwa/sw.js');
           console.log('SW registered: ', registration);
         } catch (registrationError) {
           console.log('SW registration failed: ', registrationError);
