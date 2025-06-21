@@ -87,9 +87,18 @@ class DatabaseService {
     await db.put('bookmarks', bookmark);
   }
 
-  async getBookmarksForGuide(guideId: string): Promise<Bookmark[]> {
+  async getBookmarks(guideId: string): Promise<Bookmark[]> {
     const db = this.ensureDB();
     return await db.getAllFromIndex('bookmarks', 'by-guide', guideId);
+  }
+
+  async getBookmarksForGuide(guideId: string): Promise<Bookmark[]> {
+    return this.getBookmarks(guideId);
+  }
+
+  async getAllBookmarks(): Promise<Bookmark[]> {
+    const db = this.ensureDB();
+    return await db.getAll('bookmarks');
   }
 
   async deleteBookmark(id: string): Promise<void> {

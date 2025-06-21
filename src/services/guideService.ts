@@ -40,9 +40,9 @@ export class GuideService {
     const lines = content.split('\n');
     const firstLines = lines.slice(0, 20).join('\n');
     
-    let title = this.extractTitle(firstLines) || this.extractTitleFromUrl(url);
-    let author = this.extractAuthor(firstLines);
-    let gameTitle = this.extractGameTitle(firstLines);
+    const title = this.extractTitle(firstLines) || this.extractTitleFromUrl(url);
+    const author = this.extractAuthor(firstLines);
+    const gameTitle = this.extractGameTitle(firstLines);
     
     return {
       title,
@@ -133,6 +133,10 @@ export class GuideService {
 
   async deleteGuide(id: string): Promise<void> {
     await db.deleteGuide(id);
+  }
+
+  async saveGuide(guide: Guide): Promise<void> {
+    await db.saveGuide(guide);
   }
 
   async updateGuide(guide: Guide): Promise<void> {
