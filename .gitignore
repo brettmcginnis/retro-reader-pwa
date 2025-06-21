@@ -23,6 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Test coverage
+coverage/
+
+# Claude assistant files
+.claude/
+
 *tsbuildinfo
 
 .vite
