@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bookmark, Guide } from '../types';
 import { useBookmarks } from '../hooks/useBookmarks';
+import { useToast } from '../contexts/useToast';
 
 interface BookmarkManagerProps {
   guide: Guide;
@@ -9,6 +10,7 @@ interface BookmarkManagerProps {
 
 export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoLine }) => {
   const { bookmarks, addBookmark, deleteBookmark, updateBookmark } = useBookmarks(guide.id);
+  const { showToast, showConfirmation } = useToast();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
 
@@ -32,27 +34,48 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    showToast('success', 'Bookmarks Exported', `${bookmarks.length} bookmarks exported successfully`);
   };
 
-  const handleClearAll = async () => {
-    if (confirm('Are you sure you want to delete all bookmarks for this guide?')) {
-      try {
-        for (const bookmark of bookmarks) {
-          await deleteBookmark(bookmark.id);
-        }
-      } catch (error) {
-        alert(`Failed to clear bookmarks: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  const handleClearAll = () => {
+    showConfirmation({
+      title: 'Clear All Bookmarks',
+      message: 'Are you sure you want to delete all bookmarks? This action cannot be undone.',
+      confirmText: 'Clear All',
+      cancelText: 'Cancel',
+      onConfirm: confirmClearAll
+    });
+  };
+
+  const confirmClearAll = async () => {
+    try {
+      for (const bookmark of bookmarks) {
+        await deleteBookmark(bookmark.id);
       }
+      showToast('success', 'All bookmarks deleted', 'All bookmarks have been successfully deleted');
+    } catch (error) {
+      showToast('error', 'Failed to clear bookmarks', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
-  const handleDeleteBookmark = async (bookmarkId: string) => {
-    if (confirm('Are you sure you want to delete this bookmark?')) {
-      try {
-        await deleteBookmark(bookmarkId);
-      } catch (error) {
-        alert(`Failed to delete bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+  const handleDeleteBookmark = (bookmarkId: string) => {
+    const bookmark = bookmarks.find(b => b.id === bookmarkId);
+    showConfirmation({
+      title: 'Delete Bookmark',
+      message: `Are you sure you want to delete the bookmark "${bookmark?.title}"?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: () => confirmDeleteBookmark(bookmarkId)
+    });
+  };
+
+  const confirmDeleteBookmark = async (bookmarkId: string) => {
+    try {
+      await deleteBookmark(bookmarkId);
+      showToast('success', 'Bookmark deleted', 'Bookmark has been successfully deleted');
+    } catch (error) {
+      showToast('error', 'Failed to delete bookmark', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -73,6 +96,7 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
 
   const sortedBookmarks = [...bookmarks].sort((a, b) => a.line - b.line);
 
+
   return (
     <div className="bookmark-manager">
       <div className="bookmark-header">
@@ -81,6 +105,7 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
           Add Bookmark
         </button>
       </div>
+      
       
       <div className="bookmark-list">
         {sortedBookmarks.length === 0 ? (
@@ -128,6 +153,8 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
           maxLine={getLineCount()}
           onSave={addBookmark}
           onClose={() => setShowAddModal(false)}
+          onSuccess={(msg) => showToast('success', 'Bookmark Added', msg)}
+          onError={(msg) => showToast('error', 'Error', msg)}
         />
       )}
 
@@ -137,8 +164,11 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
           maxLine={getLineCount()}
           onSave={updateBookmark}
           onClose={() => setEditingBookmark(null)}
+          onSuccess={(msg) => showToast('success', 'Bookmark Updated', msg)}
+          onError={(msg) => showToast('error', 'Error', msg)}
         />
       )}
+
     </div>
   );
 };
@@ -148,22 +178,27 @@ interface AddBookmarkModalProps {
   maxLine: number;
   onSave: (bookmark: Omit<Bookmark, 'id' | 'dateCreated'>) => Promise<Bookmark>;
   onClose: () => void;
+  onSuccess?: (message: string) => void;
+  onError?: (message: string) => void;
 }
 
-const AddBookmarkModal: React.FC<AddBookmarkModalProps> = ({ guideId, maxLine, onSave, onClose }) => {
+const AddBookmarkModal: React.FC<AddBookmarkModalProps> = ({ guideId, maxLine, onSave, onClose, onSuccess, onError }) => {
   const [line, setLine] = useState(1);
   const [title, setTitle] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('Please enter a title for the bookmark');
+      setError('Please enter a title for the bookmark');
       return;
     }
 
     try {
       setSaving(true);
+      setError(null);
       await onSave({
         guideId,
         line,
@@ -171,9 +206,12 @@ const AddBookmarkModal: React.FC<AddBookmarkModalProps> = ({ guideId, maxLine, o
         title: title.trim(),
         note: note.trim() || undefined
       });
+      onSuccess?.('Bookmark added successfully');
       onClose();
     } catch (error) {
-      alert(`Failed to save bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = `Failed to save bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      setError(errorMsg);
+      onError?.(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -193,6 +231,12 @@ const AddBookmarkModal: React.FC<AddBookmarkModalProps> = ({ guideId, maxLine, o
           <button onClick={onClose} className="close-btn">&times;</button>
         </div>
         <div className="modal-body">
+          {error && (
+            <div className="error-message">
+              {error}
+              <button onClick={() => setError(null)} className="error-close">&times;</button>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="bookmark-line">Line Number:</label>
             <input 
@@ -243,30 +287,38 @@ interface EditBookmarkModalProps {
   maxLine: number;
   onSave: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   onClose: () => void;
+  onSuccess?: (message: string) => void;
+  onError?: (message: string) => void;
 }
 
-const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({ bookmark, maxLine, onSave, onClose }) => {
+const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({ bookmark, maxLine, onSave, onClose, onSuccess, onError }) => {
   const [line, setLine] = useState(bookmark.line);
   const [title, setTitle] = useState(bookmark.title);
   const [note, setNote] = useState(bookmark.note || '');
   const [saving, setSaving] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('Please enter a title for the bookmark');
+      setError('Please enter a title for the bookmark');
       return;
     }
 
     try {
       setSaving(true);
+      setError(null);
       await onSave(bookmark.id, {
         line,
         title: title.trim(),
         note: note.trim() || undefined
       });
+      onSuccess?.('Bookmark updated successfully');
       onClose();
     } catch (error) {
-      alert(`Failed to update bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = `Failed to update bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      setError(errorMsg);
+      onError?.(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -286,6 +338,12 @@ const EditBookmarkModal: React.FC<EditBookmarkModalProps> = ({ bookmark, maxLine
           <button onClick={onClose} className="close-btn">&times;</button>
         </div>
         <div className="modal-body">
+          {error && (
+            <div className="error-message">
+              {error}
+              <button onClick={() => setError(null)} className="error-close">&times;</button>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="edit-bookmark-line">Line Number:</label>
             <input 

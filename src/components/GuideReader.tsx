@@ -3,6 +3,7 @@ import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useApp } from '../contexts/useApp';
+import { useToast } from '../contexts/useToast';
 
 interface GuideReaderProps {
   guide: Guide;
@@ -12,6 +13,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   const { settings } = useApp();
   const { progress, saveProgress } = useProgress(guide.id);
   const { addBookmark } = useBookmarks(guide.id);
+  const { showToast } = useToast();
   
   // Basic state
   const [currentLine, setCurrentLine] = useState(1);
@@ -253,12 +255,12 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
           position: currentPosition,
           title
         });
-        alert('Bookmark added!');
+        showToast('success', 'Bookmark added!', `Bookmark "${title}" created at line ${currentLine}`);
       } catch (error) {
-        alert(`Failed to add bookmark: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        showToast('error', 'Failed to add bookmark', error instanceof Error ? error.message : 'Unknown error');
       }
     }
-  }, [currentLine, currentPosition, guide.id, addBookmark]);
+  }, [currentLine, currentPosition, guide.id, addBookmark, showToast]);
   
   // Keyboard navigation
   useEffect(() => {
@@ -402,7 +404,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
           <button onClick={handleAddBookmark} className="control-btn">
             Bookmark
           </button>
-          <button onClick={() => alert('Settings panel coming soon!')} className="control-btn">
+          <button onClick={() => showToast('info', 'Coming Soon', 'Settings panel will be available in a future update')} className="control-btn">
             Settings
           </button>
         </div>

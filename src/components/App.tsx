@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { AppProvider } from '../contexts/AppContext';
+import { ToastProvider } from '../contexts/ToastContext';
 import { useApp } from '../contexts/useApp';
 import { GuideLibrary } from './GuideLibrary';
 import { GuideReader } from './GuideReader';
@@ -175,7 +176,9 @@ const AppContent: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <AppProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AppProvider>
   );
 };

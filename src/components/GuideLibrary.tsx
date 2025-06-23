@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Guide } from '../types';
 import { useGuides } from '../hooks/useGuides';
 import { useApp } from '../contexts/useApp';
+import { useToast } from '../contexts/useToast';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface GuideLibraryProps {}
@@ -9,6 +10,7 @@ interface GuideLibraryProps {}
 export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
   const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, createBackup, importFromFile } = useGuides();
   const { settings, updateSettings, setCurrentView, setCurrentGuideId } = useApp();
+  const { showToast, showConfirmation } = useToast();
   const [activeTab, setActiveTab] = useState<'url' | 'paste' | 'upload'>('url');
   const [fetchLoading, setFetchLoading] = useState(false);
   const [showPasteModal, setShowPasteModal] = useState(false);
@@ -16,50 +18,72 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
 
   const handleFetchGuide = async (url: string) => {
     if (!url.trim()) {
-      alert('Please enter a URL');
+      showToast('warning', 'URL Required', 'Please enter a URL to fetch the guide');
       return;
     }
 
     try {
       setFetchLoading(true);
       await fetchGuide(url);
+      showToast('success', 'Guide Added', 'Guide has been successfully imported');
     } catch (error) {
-      alert(`Failed to fetch guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast('error', 'Failed to fetch guide', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setFetchLoading(false);
     }
   };
 
   const handleDeleteGuide = async (guide: Guide) => {
-    if (confirm(`Are you sure you want to delete "${guide.title}"?`)) {
-      try {
-        await deleteGuide(guide.id);
-      } catch (error) {
-        alert(`Failed to delete guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    showConfirmation({
+      title: 'Delete Guide',
+      message: `Are you sure you want to delete "${guide.title}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: async () => {
+        try {
+          await deleteGuide(guide.id);
+          showToast('success', 'Guide Deleted', `"${guide.title}" has been deleted`);
+        } catch (error) {
+          showToast('error', 'Failed to delete guide', error instanceof Error ? error.message : 'Unknown error');
+        }
       }
-    }
+    });
   };
 
   const handleExportGuide = async (id: string) => {
     try {
       await exportGuide(id);
+      showToast('success', 'Guide Exported', 'Guide has been exported successfully');
     } catch (error) {
-      alert(`Failed to export guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast('error', 'Failed to export guide', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
   const handleImportFile = async (file: File) => {
     try {
-      const result = await importFromFile(file);
+      const confirmCallback = (title: string): Promise<boolean> => {
+        return new Promise((resolve) => {
+          showConfirmation({
+            title: 'Guide Already Exists',
+            message: `A guide titled "${title}" already exists. Do you want to replace it?`,
+            confirmText: 'Replace',
+            cancelText: 'Skip',
+            onConfirm: () => resolve(true),
+            onCancel: () => resolve(false)
+          });
+        });
+      };
+
+      const result = await importFromFile(file, confirmCallback);
       const isTextFile = file.name.toLowerCase().endsWith('.txt');
       
       if (isTextFile && result.imported === 1) {
-        alert(`Guide created successfully from "${file.name}"!`);
+        showToast('success', 'Guide Created', `Guide created successfully from "${file.name}"`);
       } else {
-        alert(`Import completed! Imported: ${result.imported}, Skipped: ${result.skipped}, Errors: ${result.errors.length}`);
+        showToast('success', 'Import Completed', `Imported: ${result.imported}, Skipped: ${result.skipped}, Errors: ${result.errors.length}`);
       }
     } catch (error) {
-      alert(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast('error', 'Import Failed', error instanceof Error ? error.message : 'Unknown error');
     }
   };
 
@@ -75,7 +99,7 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
   };
 
   const showSettings = () => {
-    alert('Settings panel coming soon!');
+    showToast('info', 'Coming Soon', 'Settings panel will be available in a future update');
   };
 
   const openGuide = (guide: Guide) => {
@@ -330,15 +354,16 @@ const PasteModal: React.FC<PasteModalProps> = ({ onSave, onClose }) => {
   const [url, setUrl] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const { showToast } = useToast();
 
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('Please enter a title for the guide');
+      showToast('warning', 'Title Required', 'Please enter a title for the guide');
       return;
     }
 
     if (!content.trim()) {
-      alert('Please paste the guide content');
+      showToast('warning', 'Content Required', 'Please paste the guide content');
       return;
     }
 
@@ -353,9 +378,9 @@ const PasteModal: React.FC<PasteModalProps> = ({ onSave, onClose }) => {
         gameTitle: gameTitle.trim() || undefined
       });
       onClose();
-      alert('Guide saved successfully!');
+      showToast('success', 'Guide Saved', `"${title.trim()}" has been saved successfully`);
     } catch (error) {
-      alert(`Failed to save guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast('error', 'Failed to save guide', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setSaving(false);
     }
