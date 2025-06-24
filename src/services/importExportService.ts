@@ -52,7 +52,7 @@ export class ImportExportService {
     this.downloadJSON(collection, filename);
   }
 
-  async importFromFile(file: File): Promise<{ imported: number; skipped: number; errors: string[] }> {
+  async importFromFile(file: File, onConfirm?: (title: string) => Promise<boolean>): Promise<{ imported: number; skipped: number; errors: string[] }> {
     await this.ensureDbInitialized();
     
     // Check if it's a txt file
@@ -68,7 +68,7 @@ export class ImportExportService {
         try {
           const content = e.target?.result as string;
           const data = JSON.parse(content);
-          const result = await this.importData(data);
+          const result = await this.importData(data, onConfirm);
           resolve(result);
         } catch (error) {
           reject(new Error(`Failed to parse import file: ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -128,7 +128,7 @@ export class ImportExportService {
     });
   }
 
-  private async importData(data: unknown): Promise<{ imported: number; skipped: number; errors: string[] }> {
+  private async importData(data: unknown, onConfirm?: (title: string) => Promise<boolean>): Promise<{ imported: number; skipped: number; errors: string[] }> {
     await this.ensureDbInitialized();
     
     const result = { imported: 0, skipped: 0, errors: [] as string[] };
@@ -143,7 +143,8 @@ export class ImportExportService {
       try {
         const existingGuide = await db.getGuide(guide.id);
         if (existingGuide) {
-          if (confirm(`Guide "${guide.title}" already exists. Replace it?`)) {
+          const shouldReplace = onConfirm ? await onConfirm(guide.title) : false;
+          if (shouldReplace) {
             await db.saveGuide({
               ...guide,
               dateAdded: new Date(guide.dateAdded),
@@ -352,15 +353,15 @@ export class ImportExportService {
     this.downloadJSON(backup, `retro-reader-backup-${timestamp}.json`);
   }
 
-  async restoreFromBackup(file: File): Promise<void> {
+  async restoreFromBackup(file: File, onConfirm?: (title: string) => Promise<boolean>): Promise<{ imported: number; skipped: number; errors: string[] }> {
     await this.ensureDbInitialized();
     
-    const result = await this.importFromFile(file);
+    const result = await this.importFromFile(file, onConfirm);
     
     if (result.errors.length > 0) {
       console.warn('Import completed with errors:', result.errors);
     }
 
-    alert(`Backup restored! Imported: ${result.imported}, Skipped: ${result.skipped}, Errors: ${result.errors.length}`);
+    return result;
   }
 }

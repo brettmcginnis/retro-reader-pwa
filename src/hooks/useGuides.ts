@@ -117,9 +117,9 @@ export const useGuides = () => {
     }
   };
 
-  const importFromFile = async (file: File) => {
+  const importFromFile = async (file: File, onConfirm?: (title: string) => Promise<boolean>) => {
     try {
-      const result = await importExportService.importFromFile(file);
+      const result = await importExportService.importFromFile(file, onConfirm);
       await loadGuides();
       return result;
     } catch (err) {
