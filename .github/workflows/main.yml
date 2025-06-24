@@ -8,6 +8,9 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
 
+  lint:
+    uses: ./.github/workflows/lint.yml
+
   deploy:
     permissions:
       contents: read

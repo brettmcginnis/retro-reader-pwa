@@ -1,14 +1,13 @@
-name: Test
+name: Lint
 
 on:
   workflow_call:
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     container: node:22
     steps:
       - uses: actions/checkout@v4
       - run: npm install
-      - run: npm run typecheck
-      - run: npm run test
+      - run: npm run lint 
