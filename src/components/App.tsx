@@ -75,6 +75,28 @@ const AppContent: React.FC = () => {
     setupServiceWorker();
   }, []);
 
+  // On mount, check URL for guideId and open if present
+  useEffect(() => {
+    const match = window.location.pathname.match(/^\/retro-reader-pwa\/guide\/(.+)$/);
+    if (match && match[1]) {
+      setCurrentGuideId(match[1]);
+      setCurrentView('reader');
+    }
+    // Listen for popstate to handle browser navigation
+    const onPopState = () => {
+      const match = window.location.pathname.match(/^\/retro-reader-pwa\/guide\/(.+)$/);
+      if (match && match[1]) {
+        setCurrentGuideId(match[1]);
+        setCurrentView('reader');
+      } else {
+        setCurrentGuideId(null);
+        setCurrentView('library');
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [setCurrentGuideId, setCurrentView]);
+
   const handleGotoLine = () => {
     // This will be handled by switching to reader view
     // The GuideReader component will handle the line navigation
@@ -90,6 +112,7 @@ const AppContent: React.FC = () => {
           onClick={() => {
             setCurrentView('library');
             setCurrentGuideId(null);
+            window.history.pushState({}, '', '/retro-reader-pwa/');
           }} 
           className="nav-btn"
         >

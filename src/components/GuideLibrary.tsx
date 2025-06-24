@@ -105,6 +105,7 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
   const openGuide = (guide: Guide) => {
     setCurrentGuideId(guide.id);
     setCurrentView('reader');
+    window.history.pushState({ guideId: guide.id }, '', `/retro-reader-pwa/guide/${guide.id}`);
   };
 
   const openBookmarks = (guide: Guide) => {
