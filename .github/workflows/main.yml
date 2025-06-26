@@ -11,12 +11,13 @@ jobs:
   lint:
     uses: ./.github/workflows/lint.yml
 
+  test:
+    uses: ./.github/workflows/test.yml
+
   deploy:
     permissions:
       contents: read
       pages: write
       id-token: write
     uses: ./.github/workflows/deploy.yml
-
-  test:
-    uses: ./.github/workflows/test.yml
+    needs: [build, lint, test]

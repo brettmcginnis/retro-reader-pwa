@@ -198,12 +198,23 @@ export class ImportExportService {
     }
     
     const collection = data as GuideCollection;
+    
+    // Check for valid date (can be Date object or valid date string)
+    const isValidDate = (dateValue: unknown): boolean => {
+      if (dateValue instanceof Date) return true;
+      if (typeof dateValue === 'string') {
+        const parsed = new Date(dateValue);
+        return !isNaN(parsed.getTime());
+      }
+      return false;
+    };
+    
     return (
       Array.isArray(collection.guides) &&
       Array.isArray(collection.bookmarks) &&
       Array.isArray(collection.progress) &&
       typeof collection.version === 'string' &&
-      collection.exportDate instanceof Date
+      isValidDate(collection.exportDate)
     );
   }
 

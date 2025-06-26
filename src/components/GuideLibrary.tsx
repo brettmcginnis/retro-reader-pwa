@@ -59,6 +59,24 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
     }
   };
 
+  const handleExportAll = async () => {
+    try {
+      await exportAll();
+      showToast('success', 'Guide Exported', 'All guides have been exported successfully');
+    } catch (error) {
+      showToast('error', 'Failed to export guide', error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
+  const handleCreateBackup = async () => {
+    try {
+      await createBackup();
+      showToast('success', 'Backup Created', 'Backup has been created successfully');
+    } catch (error) {
+      showToast('error', 'Failed to create backup', error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
   const handleImportFile = async (file: File) => {
     try {
       const confirmCallback = (title: string): Promise<boolean> => {
@@ -208,8 +226,8 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
               accept=".json,.txt" 
               onChange={handleFileSelect}
             />
-            <button onClick={exportAll} className="secondary-btn">Export All</button>
-            <button onClick={createBackup} className="secondary-btn">Create Backup</button>
+            <button onClick={handleExportAll} className="secondary-btn">Export All</button>
+            <button onClick={handleCreateBackup} className="secondary-btn">Create Backup</button>
           </div>
         </div>
 
