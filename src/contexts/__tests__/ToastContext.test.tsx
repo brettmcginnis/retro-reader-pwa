@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ToastProvider } from '../ToastContext';
 import { useToast } from '../useToast';
@@ -48,9 +48,8 @@ describe('ToastContext', () => {
   });
 
   afterEach(() => {
-    act(() => {
-      jest.runOnlyPendingTimers();
-    });
+    // Clean up any pending timers
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 
@@ -64,7 +63,7 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const successButton = screen.getByText('Show Success');
+      const successButton = screen.getByRole('button', { name: /show success/i });
       await user.click(successButton);
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
@@ -85,7 +84,7 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const errorButton = screen.getByText('Show Error');
+      const errorButton = screen.getByRole('button', { name: /show error/i });
       await user.click(errorButton);
 
       expect(screen.getByText('error Title')).toBeInTheDocument();
@@ -105,7 +104,7 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const warningButton = screen.getByText('Show Warning');
+      const warningButton = screen.getByRole('button', { name: /show warning/i });
       await user.click(warningButton);
 
       expect(screen.getByText('warning Title')).toBeInTheDocument();
@@ -123,7 +122,7 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const infoButton = screen.getByText('Show Info');
+      const infoButton = screen.getByRole('button', { name: /show info/i });
       await user.click(infoButton);
 
       expect(screen.getByText('info Title')).toBeInTheDocument();
@@ -143,14 +142,13 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const successButton = screen.getByText('Show Success');
+      const successButton = screen.getByRole('button', { name: /show success/i });
       await user.click(successButton);
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
 
-      act(() => {
-        jest.advanceTimersByTime(3000);
-      });
+      // Advance timers without manual act()
+      jest.advanceTimersByTime(3000);
 
       await waitFor(() => {
         expect(screen.queryByText('success Title')).not.toBeInTheDocument();
@@ -166,12 +164,12 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const successButton = screen.getByText('Show Success');
+      const successButton = screen.getByRole('button', { name: /show success/i });
       await user.click(successButton);
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
 
-      const closeButton = screen.getByLabelText('Close notification');
+      const closeButton = screen.getByRole('button', { name: /close notification/i });
       await user.click(closeButton);
 
       expect(screen.queryByText('success Title')).not.toBeInTheDocument();
@@ -188,9 +186,9 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      await user.click(screen.getByText('Show Success'));
-      await user.click(screen.getByText('Show Error'));
-      await user.click(screen.getByText('Show Warning'));
+      await user.click(screen.getByRole('button', { name: /show success/i }));
+      await user.click(screen.getByRole('button', { name: /show error/i }));
+      await user.click(screen.getByRole('button', { name: /show warning/i }));
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
       expect(screen.getByText('error Title')).toBeInTheDocument();
@@ -206,13 +204,13 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      await user.click(screen.getByText('Show Success'));
-      await user.click(screen.getByText('Show Error'));
+      await user.click(screen.getByRole('button', { name: /show success/i }));
+      await user.click(screen.getByRole('button', { name: /show error/i }));
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
       expect(screen.getByText('error Title')).toBeInTheDocument();
 
-      await user.click(screen.getByText('Clear All'));
+      await user.click(screen.getByRole('button', { name: /clear all/i }));
 
       expect(screen.queryByText('success Title')).not.toBeInTheDocument();
       expect(screen.queryByText('error Title')).not.toBeInTheDocument();
@@ -229,13 +227,13 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      const confirmButton = screen.getByText('Show Confirmation');
+      const confirmButton = screen.getByRole('button', { name: /show confirmation/i });
       await user.click(confirmButton);
 
       expect(screen.getByText('Test Confirmation')).toBeInTheDocument();
       expect(screen.getByText('Are you sure you want to proceed?')).toBeInTheDocument();
-      expect(screen.getByText('Yes, proceed')).toBeInTheDocument();
-      expect(screen.getByText('Cancel')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /yes, proceed/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
     });
 
     it('should handle confirmation action', async () => {
@@ -247,14 +245,14 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      await user.click(screen.getByText('Show Confirmation'));
+      await user.click(screen.getByRole('button', { name: /show confirmation/i }));
 
-      const confirmButton = screen.getByText('Yes, proceed');
+      const confirmButton = screen.getByRole('button', { name: /yes, proceed/i });
       await user.click(confirmButton);
 
       expect(screen.queryByText('Test Confirmation')).not.toBeInTheDocument();
 
-      expect(screen.getByText('Confirmed')).toBeInTheDocument();
+      expect(await screen.findByText('Confirmed')).toBeInTheDocument();
       expect(screen.getByText('Action was confirmed')).toBeInTheDocument();
     });
 
@@ -267,14 +265,14 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      await user.click(screen.getByText('Show Confirmation'));
+      await user.click(screen.getByRole('button', { name: /show confirmation/i }));
 
-      const cancelButton = screen.getByText('Cancel');
+      const cancelButton = screen.getByRole('button', { name: /cancel/i });
       await user.click(cancelButton);
 
       expect(screen.queryByText('Test Confirmation')).not.toBeInTheDocument();
 
-      expect(screen.getByText('Cancelled')).toBeInTheDocument();
+      expect(await screen.findByText('Cancelled')).toBeInTheDocument();
       expect(screen.getByText('Action was cancelled')).toBeInTheDocument();
     });
 
@@ -287,14 +285,14 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      await user.click(screen.getByText('Show Confirmation'));
+      await user.click(screen.getByRole('button', { name: /show confirmation/i }));
 
       const overlay = screen.getByText('Test Confirmation').closest('.confirmation-overlay');
       await user.click(overlay!);
 
       expect(screen.queryByText('Test Confirmation')).not.toBeInTheDocument();
 
-      expect(screen.getByText('Cancelled')).toBeInTheDocument();
+      expect(await screen.findByText('Cancelled')).toBeInTheDocument();
     });
   });
 
