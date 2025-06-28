@@ -64,6 +64,71 @@ Retro Reader PWA - A Progressive Web App for reading and bookmarking retro game 
 3. **UI Tests**: Component behavior and user interactions
 4. **E2E Scenarios**: Complete user workflows
 
+### React Testing Library Best Practices
+
+#### 1. Test Behavior, Not Implementation
+- Focus on what users can see and do, not internal component details
+- Avoid testing state, props, or component internals
+- Test the component's output and behavior from a user's perspective
+
+#### 2. Query Priority Order
+Always prefer queries in this order:
+1. **getByRole** - Matches ARIA roles (buttons, headings, form fields)
+2. **getByLabelText** - For form controls with labels
+3. **getByPlaceholderText** - For input fields with placeholders
+4. **getByText** - For finding elements by visible text
+5. **getByDisplayValue** - For form elements with current values
+6. **getByTestId** - Only as a last resort
+
+#### 3. Use the `screen` API
+```typescript
+// ❌ Avoid
+const { getByText } = render(<Component />);
+
+// ✅ Prefer
+render(<Component />);
+screen.getByText(/text/i);
+```
+
+#### 4. Use `userEvent` Over `fireEvent`
+```typescript
+// ❌ Avoid
+fireEvent.click(button);
+
+// ✅ Prefer
+await userEvent.click(button);
+```
+
+#### 5. Async Testing Patterns
+- Use `findBy` queries for elements that appear asynchronously
+- Use `waitFor` for complex async logic or multiple conditions
+- Avoid manual `act()` calls - RTL handles this automatically
+
+#### 6. Test Organization
+- Group related tests with `describe` blocks
+- Test both happy paths and error states
+- Cover edge cases and boundary conditions
+
+#### 7. Example Test Pattern
+```typescript
+describe('Component', () => {
+  it('should handle user interaction', async () => {
+    render(<Component />);
+    
+    // Find elements using appropriate queries
+    const button = screen.getByRole('button', { name: /submit/i });
+    const input = screen.getByLabelText(/username/i);
+    
+    // Interact using userEvent
+    await userEvent.type(input, 'test user');
+    await userEvent.click(button);
+    
+    // Assert on behavior
+    expect(await screen.findByText(/success/i)).toBeInTheDocument();
+  });
+});
+```
+
 ### Test Commands
 - `npm run test` - Run all tests
 - `npm run test:ui` - Run UI tests only (tests in __tests__ folders)
