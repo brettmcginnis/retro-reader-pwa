@@ -8,7 +8,7 @@ import { useToast } from '../contexts/useToast';
 interface GuideLibraryProps {}
 
 export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
-  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, createBackup, importFromFile } = useGuides();
+  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuides();
   const { settings, updateSettings, setCurrentView, setCurrentGuideId } = useApp();
   const { showToast, showConfirmation } = useToast();
   const [activeTab, setActiveTab] = useState<'url' | 'paste' | 'upload'>('url');
@@ -68,14 +68,6 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
     }
   };
 
-  const handleCreateBackup = async () => {
-    try {
-      await createBackup();
-      showToast('success', 'Backup Created', 'Backup has been created successfully');
-    } catch (error) {
-      showToast('error', 'Failed to create backup', error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
 
   const handleImportFile = async (file: File) => {
     try {
@@ -227,7 +219,6 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
               onChange={handleFileSelect}
             />
             <button onClick={handleExportAll} className="secondary-btn">Export All</button>
-            <button onClick={handleCreateBackup} className="secondary-btn">Create Backup</button>
           </div>
         </div>
 

@@ -348,31 +348,4 @@ export class ImportExportService {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
-
-  async createBackup(): Promise<void> {
-    await this.ensureDbInitialized();
-    
-    const data = await db.exportData();
-    const backup = {
-      ...data,
-      backupDate: new Date(),
-      version: ImportExportService.VERSION,
-      type: 'backup'
-    };
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    this.downloadJSON(backup, `retro-reader-backup-${timestamp}.json`);
-  }
-
-  async restoreFromBackup(file: File, onConfirm?: (title: string) => Promise<boolean>): Promise<{ imported: number; skipped: number; errors: string[] }> {
-    await this.ensureDbInitialized();
-    
-    const result = await this.importFromFile(file, onConfirm);
-    
-    if (result.errors.length > 0) {
-      console.warn('Import completed with errors:', result.errors);
-    }
-
-    return result;
-  }
 }

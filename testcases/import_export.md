@@ -8,7 +8,7 @@ Expected:
 A json file is downloaded with the entirely collection of guides, and bookmarks
 
 Title:
-Able to import my collecction
+Able to import my collection
 
 1. On the home page, click settings
 2. Click Import

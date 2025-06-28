@@ -12,7 +12,6 @@ const mockUseGuides = {
   deleteGuide: jest.fn(),
   exportGuide: jest.fn(),
   exportAll: jest.fn(),
-  createBackup: jest.fn(),
   importFromFile: jest.fn(),
   loading: false,
   error: null,
@@ -210,41 +209,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       await waitFor(() => {
         expect(screen.getByText('Guide Created')).toBeInTheDocument();
         expect(screen.getByText('Guide created successfully from "guide.txt"')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Create Backup Functionality', () => {
-    it('should create backup when Create Backup is clicked', async () => {
-      const user = userEvent.setup();
-      
-      render(
-        <TestWrapper>
-          <GuideLibrary />
-        </TestWrapper>
-      );
-
-      const createBackupButton = screen.getByText('Create Backup');
-      await user.click(createBackupButton);
-
-      expect(mockUseGuides.createBackup).toHaveBeenCalledTimes(1);
-    });
-
-    it('should show error toast when backup creation fails', async () => {
-      const user = userEvent.setup();
-      mockUseGuides.createBackup.mockRejectedValueOnce(new Error('Backup failed'));
-      
-      render(
-        <TestWrapper>
-          <GuideLibrary />
-        </TestWrapper>
-      );
-
-      const createBackupButton = screen.getByText('Create Backup');
-      await user.click(createBackupButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Failed to/)).toBeInTheDocument();
       });
     });
   });
