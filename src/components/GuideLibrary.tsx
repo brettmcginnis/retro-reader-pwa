@@ -9,7 +9,7 @@ interface GuideLibraryProps {}
 
 export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
   const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuides();
-  const { settings, updateSettings, setCurrentView, setCurrentGuideId } = useApp();
+  const { theme, toggleTheme, setCurrentView, setCurrentGuideId } = useApp();
   const { showToast, showConfirmation } = useToast();
   const [activeTab, setActiveTab] = useState<'url' | 'paste' | 'upload'>('url');
   const [fetchLoading, setFetchLoading] = useState(false);
@@ -104,13 +104,6 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
     }
   };
 
-  const toggleTheme = () => {
-    updateSettings({ theme: settings.theme === 'light' ? 'dark' : 'light' });
-  };
-
-  const showSettings = () => {
-    showToast('info', 'Coming Soon', 'Settings panel will be available in a future update');
-  };
 
   const openGuide = (guide: Guide) => {
     setCurrentGuideId(guide.id);
@@ -146,9 +139,8 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
       <header className="app-header">
         <h1>Retro Reader</h1>
         <div className="header-actions">
-          <button onClick={showSettings} className="icon-btn" title="Settings">⚙️</button>
           <button onClick={toggleTheme} className="icon-btn" title="Toggle Theme">
-            {settings.theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? '☀️' : '🌙'}
           </button>
         </div>
       </header>

@@ -1,9 +1,8 @@
 import { createContext } from 'react';
-import { AppSettings } from '../types';
 
 export interface AppContextType {
-  settings: AppSettings;
-  updateSettings: (newSettings: Partial<AppSettings>) => Promise<void>;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
   currentView: 'library' | 'reader' | 'bookmarks';
   setCurrentView: (view: 'library' | 'reader' | 'bookmarks') => void;
   currentGuideId: string | null;
