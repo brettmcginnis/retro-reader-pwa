@@ -5,7 +5,6 @@ import { ToastProvider } from '../ToastContext';
 import { useToast } from '../useToast';
 import { ToastType } from '../../types';
 
-// Test component that uses the toast context
 const TestToastComponent: React.FC = () => {
   const { showToast, showConfirmation, clearAllToasts } = useToast();
 
@@ -68,15 +67,12 @@ describe('ToastContext', () => {
       const successButton = screen.getByText('Show Success');
       await user.click(successButton);
 
-      // Check toast appears with correct content
       expect(screen.getByText('success Title')).toBeInTheDocument();
       expect(screen.getByText('This is a success message')).toBeInTheDocument();
       
-      // Check success styling (green left border)
       const toast = screen.getByText('success Title').closest('.toast');
       expect(toast).toHaveClass('toast-success');
       
-      // Check for success icon
       expect(screen.getByText('✅')).toBeInTheDocument();
     });
 
@@ -150,15 +146,12 @@ describe('ToastContext', () => {
       const successButton = screen.getByText('Show Success');
       await user.click(successButton);
 
-      // Toast should be visible
       expect(screen.getByText('success Title')).toBeInTheDocument();
 
-      // Fast-forward time to trigger auto-dismiss
       act(() => {
         jest.advanceTimersByTime(3000);
       });
 
-      // Toast should be removed
       await waitFor(() => {
         expect(screen.queryByText('success Title')).not.toBeInTheDocument();
       });
@@ -178,11 +171,9 @@ describe('ToastContext', () => {
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
 
-      // Click the close button
       const closeButton = screen.getByLabelText('Close notification');
       await user.click(closeButton);
 
-      // Toast should be removed immediately
       expect(screen.queryByText('success Title')).not.toBeInTheDocument();
     });
   });
@@ -197,12 +188,10 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      // Show multiple toasts
       await user.click(screen.getByText('Show Success'));
       await user.click(screen.getByText('Show Error'));
       await user.click(screen.getByText('Show Warning'));
 
-      // All toasts should be visible
       expect(screen.getByText('success Title')).toBeInTheDocument();
       expect(screen.getByText('error Title')).toBeInTheDocument();
       expect(screen.getByText('warning Title')).toBeInTheDocument();
@@ -217,14 +206,12 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      // Show multiple toasts
       await user.click(screen.getByText('Show Success'));
       await user.click(screen.getByText('Show Error'));
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
       expect(screen.getByText('error Title')).toBeInTheDocument();
 
-      // Clear all toasts
       await user.click(screen.getByText('Clear All'));
 
       expect(screen.queryByText('success Title')).not.toBeInTheDocument();
@@ -245,7 +232,6 @@ describe('ToastContext', () => {
       const confirmButton = screen.getByText('Show Confirmation');
       await user.click(confirmButton);
 
-      // Check modal content
       expect(screen.getByText('Test Confirmation')).toBeInTheDocument();
       expect(screen.getByText('Are you sure you want to proceed?')).toBeInTheDocument();
       expect(screen.getByText('Yes, proceed')).toBeInTheDocument();
@@ -261,17 +247,13 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      // Show confirmation
       await user.click(screen.getByText('Show Confirmation'));
 
-      // Click confirm
       const confirmButton = screen.getByText('Yes, proceed');
       await user.click(confirmButton);
 
-      // Modal should be closed
       expect(screen.queryByText('Test Confirmation')).not.toBeInTheDocument();
 
-      // Success toast should appear
       expect(screen.getByText('Confirmed')).toBeInTheDocument();
       expect(screen.getByText('Action was confirmed')).toBeInTheDocument();
     });
@@ -285,17 +267,13 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      // Show confirmation
       await user.click(screen.getByText('Show Confirmation'));
 
-      // Click cancel
       const cancelButton = screen.getByText('Cancel');
       await user.click(cancelButton);
 
-      // Modal should be closed
       expect(screen.queryByText('Test Confirmation')).not.toBeInTheDocument();
 
-      // Info toast should appear
       expect(screen.getByText('Cancelled')).toBeInTheDocument();
       expect(screen.getByText('Action was cancelled')).toBeInTheDocument();
     });
@@ -309,24 +287,19 @@ describe('ToastContext', () => {
         </TestWrapper>
       );
 
-      // Show confirmation
       await user.click(screen.getByText('Show Confirmation'));
 
-      // Click on overlay (outside modal)
       const overlay = screen.getByText('Test Confirmation').closest('.confirmation-overlay');
       await user.click(overlay!);
 
-      // Modal should be closed
       expect(screen.queryByText('Test Confirmation')).not.toBeInTheDocument();
 
-      // Cancel toast should appear
       expect(screen.getByText('Cancelled')).toBeInTheDocument();
     });
   });
 
   describe('Error Handling', () => {
     it('should throw error when useToast is used outside ToastProvider', () => {
-      // Suppress console.error for this test
       const originalError = console.error;
       console.error = jest.fn();
 

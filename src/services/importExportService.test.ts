@@ -58,11 +58,9 @@ describe('File Upload Functionality', () => {
 
 describe('ImportExportService', () => {
   describe('validateImportData', () => {
-    // Create a minimal mock for the ImportExportService
     const createMockService = () => {
       return {
         validateImportData: jest.fn((data: unknown) => {
-          // Replicate the validation logic from the actual method
           if (!data || typeof data !== 'object' || data === null) {
             return false;
           }

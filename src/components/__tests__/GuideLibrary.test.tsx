@@ -71,11 +71,9 @@ describe('GuideLibrary Import/Export Tests', () => {
         </TestWrapper>
       );
 
-      // Find and click Export All button
       const exportAllButton = screen.getByText('Export All');
       await user.click(exportAllButton);
 
-      // Verify export function was called
       expect(mockUseGuides.exportAll).toHaveBeenCalledTimes(1);
     });
 
@@ -92,7 +90,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       const exportAllButton = screen.getByText('Export All');
       await user.click(exportAllButton);
 
-      // Wait for success toast to appear
       await waitFor(() => {
         expect(screen.getByText('Guide Exported')).toBeInTheDocument();
       });
@@ -112,7 +109,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       const exportAllButton = screen.getByText('Export All');
       await user.click(exportAllButton);
 
-      // Wait for error toast to appear
       await waitFor(() => {
         expect(screen.getByText('Failed to export guide')).toBeInTheDocument();
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -147,14 +143,11 @@ describe('GuideLibrary Import/Export Tests', () => {
         </TestWrapper>
       );
 
-      // Find the hidden file input and simulate file selection
       const fileInput = screen.getByLabelText('Import Backup');
       await user.upload(fileInput, mockFile);
 
-      // Verify import function was called with the file
       expect(mockUseGuides.importFromFile).toHaveBeenCalledWith(mockFile, expect.any(Function));
 
-      // Wait for success toast
       await waitFor(() => {
         expect(screen.getByText('Import Completed')).toBeInTheDocument();
         expect(screen.getByText('Imported: 1, Skipped: 0, Errors: 0')).toBeInTheDocument();
@@ -176,7 +169,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       const fileInput = screen.getByLabelText('Import Backup');
       await user.upload(fileInput, invalidFile);
 
-      // Wait for error toast
       await waitFor(() => {
         expect(screen.getByText('Import Failed')).toBeInTheDocument();
         expect(screen.getByText(/Failed to parse import file/)).toBeInTheDocument();
@@ -202,10 +194,8 @@ describe('GuideLibrary Import/Export Tests', () => {
       const fileInput = screen.getByLabelText('Import Backup');
       await user.upload(fileInput, txtFile);
 
-      // Verify import was called
       expect(mockUseGuides.importFromFile).toHaveBeenCalledWith(txtFile, expect.any(Function));
 
-      // Wait for success toast
       await waitFor(() => {
         expect(screen.getByText('Guide Created')).toBeInTheDocument();
         expect(screen.getByText('Guide created successfully from "guide.txt"')).toBeInTheDocument();
@@ -226,7 +216,6 @@ describe('GuideLibrary Import/Export Tests', () => {
         size: 100
       };
 
-      // Mock guides data
       mockUseGuides.guides = [mockGuide];
 
       render(
@@ -235,18 +224,15 @@ describe('GuideLibrary Import/Export Tests', () => {
         </TestWrapper>
       );
 
-      // Find delete button (assuming it's rendered for the guide)
       const deleteButtons = screen.getAllByText('Delete');
       if (deleteButtons.length > 0) {
         await user.click(deleteButtons[0]);
 
-        // Check for confirmation modal
         await waitFor(() => {
           expect(screen.getByText('Delete Guide')).toBeInTheDocument();
           expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument();
         });
 
-        // Click confirm - find the button in the confirmation modal
         const confirmationModal = screen.getByText('Delete Guide').closest('.confirmation-modal');
         const confirmButton = confirmationModal?.querySelector('.confirm-btn');
         if (confirmButton) {
@@ -268,15 +254,12 @@ describe('GuideLibrary Import/Export Tests', () => {
         </TestWrapper>
       );
 
-      // Click on "From URL" tab
       const urlTab = screen.getByText('From URL');
       await user.click(urlTab);
 
-      // Find fetch button and click it with empty URL
       const fetchButton = screen.getByText('Fetch Guide');
       await user.click(fetchButton);
 
-      // Should show warning toast for empty URL
       await waitFor(() => {
         expect(screen.getByText('URL Required')).toBeInTheDocument();
         expect(screen.getByText('Please enter a URL to fetch the guide')).toBeInTheDocument();
@@ -293,21 +276,17 @@ describe('GuideLibrary Import/Export Tests', () => {
         </TestWrapper>
       );
 
-      // Click on "From URL" tab
       const urlTab = screen.getByText('From URL');
       await user.click(urlTab);
 
-      // Enter URL
       const urlInput = screen.getByPlaceholderText(/Enter guide URL/);
       await user.type(urlInput, 'https://example.com/guide.txt');
 
-      // Click fetch
       const fetchButton = screen.getByText('Fetch Guide');
       await user.click(fetchButton);
 
       expect(mockUseGuides.fetchGuide).toHaveBeenCalledWith('https://example.com/guide.txt');
 
-      // Should show success toast
       await waitFor(() => {
         expect(screen.getByText('Guide Added')).toBeInTheDocument();
       });

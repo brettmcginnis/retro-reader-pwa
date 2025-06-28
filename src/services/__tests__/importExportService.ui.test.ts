@@ -1,4 +1,3 @@
-// Mock the database first
 jest.mock('../database', () => ({
   db: {
     init: jest.fn().mockResolvedValue(undefined),
@@ -18,7 +17,6 @@ import { db } from '../database';
 
 const mockDb = db as jest.Mocked<typeof db>;
 
-// Mock Blob constructor to add missing methods
 class MockBlob {
   public type: string;
   public size: number;
@@ -35,10 +33,8 @@ class MockBlob {
   }
 }
 
-// @ts-expect-error - Mock Blob for testing
 global.Blob = MockBlob as typeof Blob;
 
-// Mock URL.createObjectURL and related functions
 const mockCreateObjectURL = jest.fn();
 const mockRevokeObjectURL = jest.fn();
 const mockClick = jest.fn();
@@ -86,7 +82,6 @@ describe('ImportExportService UI Integration Tests', () => {
 
   describe('Export All Collection Test Case', () => {
     it('should export complete collection as JSON file (Test Case 1)', async () => {
-      // Setup test data
       const mockExportData = {
         guides: [
           {
@@ -132,14 +127,11 @@ describe('ImportExportService UI Integration Tests', () => {
 
       mockDb.exportData.mockResolvedValue(mockExportData);
 
-      // Execute export
       await service.exportAll();
 
-      // Verify database was called
       expect(mockDb.init).toHaveBeenCalled();
       expect(mockDb.exportData).toHaveBeenCalled();
 
-      // Verify file download was initiated
       expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));
       expect(document.createElement).toHaveBeenCalledWith('a');
       expect(mockAppendChild).toHaveBeenCalled();
@@ -147,13 +139,11 @@ describe('ImportExportService UI Integration Tests', () => {
       expect(mockRemoveChild).toHaveBeenCalled();
       expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
 
-      // Verify the blob contains the expected JSON structure
       const createObjectURLCall = mockCreateObjectURL.mock.calls[0];
       const blob = createObjectURLCall[0] as Blob;
       
       expect(blob.type).toBe('application/json');
       
-      // Read the blob content to verify structure
       const blobText = await blob.text();
       const exportedData = JSON.parse(blobText);
       
@@ -170,7 +160,6 @@ describe('ImportExportService UI Integration Tests', () => {
 
   describe('Import Collection Test Case', () => {
     it('should import valid collection and restore guides and bookmarks (Test Case 2)', async () => {
-      // Create valid collection file content
       const validCollection: GuideCollection = {
         guides: [
           {
@@ -212,21 +201,17 @@ describe('ImportExportService UI Integration Tests', () => {
         { type: 'application/json' }
       );
 
-      // Mock database responses - guide doesn't exist (new import)
       mockDb.getGuide.mockResolvedValue(null);
       mockDb.saveGuide.mockResolvedValue(undefined);
       mockDb.saveBookmark.mockResolvedValue(undefined);
       mockDb.saveProgress.mockResolvedValue(undefined);
 
-      // Execute import
       const result = await service.importFromFile(file);
 
-      // Verify import result
       expect(result.imported).toBe(1);
       expect(result.skipped).toBe(0);
       expect(result.errors).toHaveLength(0);
 
-      // Verify database operations
       expect(mockDb.getGuide).toHaveBeenCalledWith('imported-1');
       expect(mockDb.saveGuide).toHaveBeenCalledWith({
         ...validCollection.guides[0],
@@ -268,21 +253,16 @@ describe('ImportExportService UI Integration Tests', () => {
         { type: 'application/json' }
       );
 
-      // Mock existing guide
       const existingGuide = { id: 'existing-1', title: 'Existing Guide' };
       mockDb.getGuide.mockResolvedValue(existingGuide);
       mockDb.saveGuide.mockResolvedValue(undefined);
 
-      // Create confirmation callback that returns true (replace)
       const confirmCallback = jest.fn().mockResolvedValue(true);
 
-      // Execute import with confirmation
       const result = await service.importFromFile(file, confirmCallback);
 
-      // Verify confirmation was called
       expect(confirmCallback).toHaveBeenCalledWith('Existing Guide');
 
-      // Verify guide was replaced
       expect(result.imported).toBe(1);
       expect(result.skipped).toBe(0);
       expect(mockDb.saveGuide).toHaveBeenCalled();
@@ -313,20 +293,15 @@ describe('ImportExportService UI Integration Tests', () => {
         { type: 'application/json' }
       );
 
-      // Mock existing guide
       const existingGuide = { id: 'existing-1', title: 'Existing Guide' };
       mockDb.getGuide.mockResolvedValue(existingGuide);
 
-      // Create confirmation callback that returns false (skip)
       const confirmCallback = jest.fn().mockResolvedValue(false);
 
-      // Execute import with confirmation
       const result = await service.importFromFile(file, confirmCallback);
 
-      // Verify confirmation was called
       expect(confirmCallback).toHaveBeenCalledWith('Existing Guide');
 
-      // Verify guide was skipped
       expect(result.imported).toBe(0);
       expect(result.skipped).toBe(1);
       expect(mockDb.saveGuide).not.toHaveBeenCalled();
@@ -335,19 +310,16 @@ describe('ImportExportService UI Integration Tests', () => {
 
   describe('Invalid Import Test Case', () => {
     it('should reject invalid JSON and throw error (Test Case 3)', async () => {
-      // Create invalid JSON file
       const invalidFile = new File(
         ['{ invalid json content'],
         'invalid.json',
         { type: 'application/json' }
       );
 
-      // Execute import and expect it to fail
       await expect(service.importFromFile(invalidFile)).rejects.toThrow(/Failed to parse import file/);
     });
 
     it('should reject JSON with invalid structure', async () => {
-      // Create JSON with wrong structure
       const invalidStructure = {
         wrongProperty: 'value',
         missingGuides: true
@@ -359,16 +331,13 @@ describe('ImportExportService UI Integration Tests', () => {
         { type: 'application/json' }
       );
 
-      // Execute import and expect it to fail
       await expect(service.importFromFile(invalidFile)).rejects.toThrow('Invalid import data format');
     });
 
     it('should handle missing required properties', async () => {
-      // Create JSON missing required properties
       const incompleteData = {
         guides: [],
         bookmarks: [],
-        // Missing progress, version, exportDate
       };
 
       const invalidFile = new File(
@@ -381,7 +350,6 @@ describe('ImportExportService UI Integration Tests', () => {
     });
 
     it('should accept valid date strings (fixes the original bug)', async () => {
-      // Create collection with date as string (as it would be after JSON.parse)
       const collectionWithStringDate = {
         guides: [],
         bookmarks: [],
@@ -396,7 +364,6 @@ describe('ImportExportService UI Integration Tests', () => {
         { type: 'application/json' }
       );
 
-      // This should NOT throw an error
       const result = await service.importFromFile(file);
       expect(result.imported).toBe(0);
       expect(result.skipped).toBe(0);
@@ -417,7 +384,6 @@ describe('ImportExportService UI Integration Tests', () => {
       expect(result.skipped).toBe(0);
       expect(result.errors).toHaveLength(0);
 
-      // Verify guide was saved with correct data
       expect(mockDb.saveGuide).toHaveBeenCalledWith({
         id: expect.any(String),
         title: 'My Guide', // Extracted from filename

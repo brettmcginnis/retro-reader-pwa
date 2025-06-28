@@ -1,6 +1,5 @@
 import { Guide } from '../../types';
 
-// Simple test without complex mocking
 describe('GuideService Types', () => {
   it('should define Guide interface correctly', () => {
     const guide: Guide = {
