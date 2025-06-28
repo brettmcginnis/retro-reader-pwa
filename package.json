@@ -9,9 +9,11 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "jest --testPathIgnorePatterns=\"__tests__\"",
+    "test:watch": "jest --testPathIgnorePatterns=\"__tests__\" --watch",
+    "test:coverage": "jest --testPathIgnorePatterns=\"__tests__\" --coverage",
+    "test:ui": "jest --testPathPatterns=\"__tests__\"",
+    "test:ui:watch": "jest --testPathPatterns=\"__tests__\" --watch"
   },
   "dependencies": {
     "idb": "^8.0.0",
@@ -19,6 +21,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@happy-dom/jest-environment": "^18.0.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -33,6 +36,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "happy-dom": "^18.0.1",
     "jest": "^30.0.2",
     "jest-environment-jsdom": "^30.0.2",
     "ts-jest": "^29.4.0",

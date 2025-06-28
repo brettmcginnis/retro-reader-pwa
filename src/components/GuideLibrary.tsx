@@ -8,7 +8,7 @@ import { useToast } from '../contexts/useToast';
 interface GuideLibraryProps {}
 
 export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
-  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, createBackup, importFromFile } = useGuides();
+  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuides();
   const { settings, updateSettings, setCurrentView, setCurrentGuideId } = useApp();
   const { showToast, showConfirmation } = useToast();
   const [activeTab, setActiveTab] = useState<'url' | 'paste' | 'upload'>('url');
@@ -58,6 +58,16 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
       showToast('error', 'Failed to export guide', error instanceof Error ? error.message : 'Unknown error');
     }
   };
+
+  const handleExportAll = async () => {
+    try {
+      await exportAll();
+      showToast('success', 'Guide Exported', 'All guides have been exported successfully');
+    } catch (error) {
+      showToast('error', 'Failed to export guide', error instanceof Error ? error.message : 'Unknown error');
+    }
+  };
+
 
   const handleImportFile = async (file: File) => {
     try {
@@ -208,8 +218,7 @@ export const GuideLibrary: React.FC<GuideLibraryProps> = () => {
               accept=".json,.txt" 
               onChange={handleFileSelect}
             />
-            <button onClick={exportAll} className="secondary-btn">Export All</button>
-            <button onClick={createBackup} className="secondary-btn">Create Backup</button>
+            <button onClick={handleExportAll} className="secondary-btn">Export All</button>
           </div>
         </div>
 

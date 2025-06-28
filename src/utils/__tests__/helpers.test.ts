@@ -1,4 +1,3 @@
-// Utility function tests
 describe('Helper Functions', () => {
   describe('URL utilities', () => {
     it('should extract filename from URL', () => {
@@ -54,7 +53,6 @@ describe('Helper Functions', () => {
         return string.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
       };
 
-      // Test that the function at least doesn't crash
       expect(typeof escapeRegex('test.txt')).toBe('string');
       expect(typeof escapeRegex('test*')).toBe('string');
       expect(typeof escapeRegex('test+')).toBe('string');
@@ -110,7 +108,6 @@ describe('Helper Functions', () => {
         },
       };
 
-      // These should not throw errors
       expect(safeLocalStorage.getItem('test-key')).toBeNull();
       expect(safeLocalStorage.setItem('test-key', 'test-value')).toBe(true);
       expect(safeLocalStorage.getItem('test-key')).toBe('test-value');

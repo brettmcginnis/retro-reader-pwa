@@ -109,13 +109,6 @@ export const useGuides = () => {
     }
   };
 
-  const createBackup = async () => {
-    try {
-      await importExportService.createBackup();
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to create backup');
-    }
-  };
 
   const importFromFile = async (file: File, onConfirm?: (title: string) => Promise<boolean>) => {
     try {
@@ -137,7 +130,6 @@ export const useGuides = () => {
     getGuide,
     exportGuide,
     exportAll,
-    createBackup,
     importFromFile,
     refresh: loadGuides,
   };

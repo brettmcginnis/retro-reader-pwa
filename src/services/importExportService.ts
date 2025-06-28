@@ -198,12 +198,23 @@ export class ImportExportService {
     }
     
     const collection = data as GuideCollection;
+    
+    // Check for valid date (can be Date object or valid date string)
+    const isValidDate = (dateValue: unknown): boolean => {
+      if (dateValue instanceof Date) return true;
+      if (typeof dateValue === 'string') {
+        const parsed = new Date(dateValue);
+        return !isNaN(parsed.getTime());
+      }
+      return false;
+    };
+    
     return (
       Array.isArray(collection.guides) &&
       Array.isArray(collection.bookmarks) &&
       Array.isArray(collection.progress) &&
       typeof collection.version === 'string' &&
-      collection.exportDate instanceof Date
+      isValidDate(collection.exportDate)
     );
   }
 
@@ -336,32 +347,5 @@ export class ImportExportService {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }
-
-  async createBackup(): Promise<void> {
-    await this.ensureDbInitialized();
-    
-    const data = await db.exportData();
-    const backup = {
-      ...data,
-      backupDate: new Date(),
-      version: ImportExportService.VERSION,
-      type: 'backup'
-    };
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    this.downloadJSON(backup, `retro-reader-backup-${timestamp}.json`);
-  }
-
-  async restoreFromBackup(file: File, onConfirm?: (title: string) => Promise<boolean>): Promise<{ imported: number; skipped: number; errors: string[] }> {
-    await this.ensureDbInitialized();
-    
-    const result = await this.importFromFile(file, onConfirm);
-    
-    if (result.errors.length > 0) {
-      console.warn('Import completed with errors:', result.errors);
-    }
-
-    return result;
   }
 }

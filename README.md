@@ -12,6 +12,8 @@ A Progressive Web App for reading and bookmarking retro game guides, optimized f
 - **Search**: Find content within guides quickly
 - **Responsive Design**: Works on desktop and mobile devices
 - **Dark/Light Theme**: Toggle between themes for comfortable reading
+- **Toast Notifications**: Modern, non-blocking user feedback system
+- **Confirmation Dialogs**: Elegant modals for destructive actions
 
 ## Getting Started
 
@@ -97,6 +99,27 @@ npm run preview
 - CSS Grid/Flexbox
 - PWA Manifest
 
+## Testing
+
+The project includes comprehensive tests for UI interactions, toast notifications, and import/export functionality.
+
+```bash
+# Run all tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate test coverage report
+npm run test:coverage
+```
+
+### Test Structure
+- **Unit Tests**: Service functions and utilities
+- **Integration Tests**: Import/export workflows with database
+- **UI Tests**: Component interactions and toast notifications
+- **Test Cases**: Located in `/testcases/` folder
+
 ## Development
 
 ```bash
@@ -105,4 +128,16 @@ npm run typecheck
 
 # Linting
 npm run lint
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
 ```
+
+### Development Guidelines
+- All user feedback uses toast notifications (no browser alerts)
+- Destructive actions require confirmation dialogs
+- TypeScript strict mode enforced
+- Tests required for new features
