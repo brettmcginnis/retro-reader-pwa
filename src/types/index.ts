@@ -36,14 +36,6 @@ export interface GuideCollection {
   version: string;
 }
 
-export interface AppSettings {
-  theme: 'light' | 'dark';
-  fontSize: number;
-  lineHeight: number;
-  fontFamily: string;
-  autoSave: boolean;
-}
-
 export interface GuideMetadata {
   title: string;
   author?: string;

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
-import { useApp } from '../contexts/useApp';
 import { useToast } from '../contexts/useToast';
 
 interface GuideReaderProps {
@@ -10,7 +9,6 @@ interface GuideReaderProps {
 }
 
 export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
-  const { settings } = useApp();
   const { progress, saveProgress } = useProgress(guide.id);
   const { addBookmark } = useBookmarks(guide.id);
   const { showToast } = useToast();
@@ -404,9 +402,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
           <button onClick={handleAddBookmark} className="control-btn">
             Bookmark
           </button>
-          <button onClick={() => showToast('info', 'Coming Soon', 'Settings panel will be available in a future update')} className="control-btn">
-            Settings
-          </button>
         </div>
       </div>
       
@@ -484,9 +479,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         ref={containerRef}
         className="reader-content-container"
         style={{
-          fontSize: `${settings.fontSize}px`,
-          lineHeight: settings.lineHeight.toString(),
-          fontFamily: settings.fontFamily,
           height: '80vh',
           overflowY: 'auto'
         }}

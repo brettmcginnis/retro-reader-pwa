@@ -1,5 +1,5 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { Guide, Bookmark, ReadingProgress, AppSettings } from '../types';
+import { Guide, Bookmark, ReadingProgress } from '../types';
 
 interface RetroReaderDB extends DBSchema {
   guides: {
@@ -16,10 +16,6 @@ interface RetroReaderDB extends DBSchema {
     key: string;
     value: ReadingProgress;
     indexes: { 'by-last-read': Date };
-  };
-  settings: {
-    key: string;
-    value: AppSettings;
   };
 }
 
@@ -51,10 +47,6 @@ class DatabaseService {
           if (!db.objectStoreNames.contains('progress')) {
             const progressStore = db.createObjectStore('progress', { keyPath: 'guideId' });
             progressStore.createIndex('by-last-read', 'lastRead');
-          }
-  
-          if (!db.objectStoreNames.contains('settings')) {
-            db.createObjectStore('settings', { keyPath: 'id' });
           }
         },
       });
@@ -135,22 +127,6 @@ class DatabaseService {
     return await db.get('progress', guideId);
   }
 
-  async getSettings(): Promise<AppSettings> {
-    const db = this.ensureDB();
-    const settings = await db.get('settings', 'app-settings');
-    return settings || {
-      theme: 'light',
-      fontSize: 14,
-      lineHeight: 1.5,
-      fontFamily: 'monospace',
-      autoSave: true
-    };
-  }
-
-  async saveSettings(settings: AppSettings): Promise<void> {
-    const db = this.ensureDB();
-    await db.put('settings', { ...settings, id: 'app-settings' } as AppSettings & { id: string });
-  }
 
   async exportData(): Promise<{ guides: Guide[], bookmarks: Bookmark[], progress: ReadingProgress[] }> {
     const db = this.ensureDB();

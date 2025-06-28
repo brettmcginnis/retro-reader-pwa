@@ -1,4 +1,4 @@
-import { Guide, ReadingProgress, Bookmark, AppSettings } from '../index';
+import { Guide, ReadingProgress, Bookmark } from '../index';
 
 describe('Type Definitions', () => {
   it('should define Guide type correctly', () => {
@@ -55,33 +55,6 @@ describe('Type Definitions', () => {
     expect(bookmark.dateCreated).toBeInstanceOf(Date);
   });
 
-  it('should define AppSettings type correctly', () => {
-    const settings: AppSettings = {
-      theme: 'light',
-      fontSize: 16,
-      fontFamily: 'monospace',
-      lineHeight: 1.5,
-      autoSave: true,
-    };
-
-    expect(typeof settings.theme).toBe('string');
-    expect(typeof settings.fontSize).toBe('number');
-    expect(typeof settings.fontFamily).toBe('string');
-    expect(typeof settings.lineHeight).toBe('number');
-    expect(typeof settings.autoSave).toBe('boolean');
-  });
-
-  it('should allow partial AppSettings updates', () => {
-    const partialSettings: Partial<AppSettings> = {
-      fontSize: 18,
-    };
-
-    expect(typeof partialSettings.fontSize).toBe('number');
-    expect(partialSettings.fontFamily).toBeUndefined();
-    expect(partialSettings.lineHeight).toBeUndefined();
-    expect(partialSettings.theme).toBeUndefined();
-    expect(partialSettings.autoSave).toBeUndefined();
-  });
 
   it('should handle Guide creation without optional fields', () => {
     const minimalGuide: Omit<Guide, 'id' | 'dateAdded' | 'dateModified'> = {
