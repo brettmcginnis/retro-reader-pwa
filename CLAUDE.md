@@ -5,6 +5,26 @@ Retro Reader PWA - A Progressive Web App for reading and bookmarking retro game 
 
 ## Recent Major Changes
 
+### Reading Position Tracking Fix
+**Date**: 2025-01-29
+**Context**: Fixed issue where reading position wasn't saved during natural scrolling
+
+**Changes Made**:
+1. **Updated Scroll Handler**:
+   - Modified `handleScroll` in GuideReader to calculate current line from scroll position
+   - Added `setCurrentLine(currentLineFromScroll)` to track position during scrolling
+   - Position now saves automatically after scrolling stops
+
+2. **Improved Initial Position Restore**:
+   - Enhanced initial scroll logic to ensure saved position is restored
+   - Added explicit state updates when restoring position
+
+3. **Added Test Coverage**:
+   - New test: "should track current line when scrolling naturally"
+   - Validates position tracking during scroll events
+
+**Result**: Reading position is now properly saved and restored when users scroll through guides
+
 ### Toast Notification System Implementation
 **Date**: 2025-01-26
 **Context**: Replaced all browser `alert()` and `confirm()` calls with a modern toast notification system

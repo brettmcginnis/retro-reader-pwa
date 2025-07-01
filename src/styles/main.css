@@ -1052,6 +1052,42 @@ mark {
 }
 
 /* Responsive */
+/* Bookmark Modal */
+.bookmark-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.bookmark-modal {
+  background-color: var(--bg-primary);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 400px;
+  animation: modalIn 0.2s ease-out;
+}
+
+/* Line interaction styles */
+.line {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.line:active {
+  background-color: var(--bg-tertiary);
+}
+
 @media (max-width: 768px) {
   .toast-container {
     top: 10px;
@@ -1066,5 +1102,10 @@ mark {
   
   .confirmation-modal {
     margin: 10px;
+  }
+  
+  .bookmark-modal {
+    width: 95%;
+    margin: 1rem;
   }
 }
