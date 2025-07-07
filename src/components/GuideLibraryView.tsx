@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import clsx from 'clsx';
 import { Guide } from '../types';
 import { UrlImport } from './UrlImport';
 import { GuideCard } from './GuideCard';
 import { PasteModal } from './PasteModal';
+import { Button } from './Button';
+import { Upload, FileText, Link, Moon, Sun } from 'lucide-react';
 
 interface GuideLibraryViewProps {
   guides: Guide[];
@@ -55,91 +58,126 @@ export const GuideLibraryView: React.FC<GuideLibraryViewProps> = ({
   };
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1>Retro Reader</h1>
-        <div className="header-actions">
-          <button onClick={onToggleTheme} className="icon-btn" title="Toggle Theme">
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
+    <div className="min-h-screen bg-retro-50 dark:bg-retro-950">
+      <header className="bg-white dark:bg-retro-900 border-b border-retro-200 dark:border-retro-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <h1 className="text-2xl font-bold text-retro-900 dark:text-retro-100">Retro Reader</h1>
+            <button 
+              onClick={onToggleTheme} 
+              className="p-2 text-retro-600 dark:text-retro-400 hover:text-retro-900 dark:hover:text-retro-100 hover:bg-retro-100 dark:hover:bg-retro-800 rounded-lg transition-colors"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="main-content">
-        <div className="add-guide-section">
-          <h2>Add New Guide</h2>
-          <div className="add-guide-tabs">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white dark:bg-retro-900 rounded-lg shadow-sm border border-retro-200 dark:border-retro-700 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-retro-900 dark:text-retro-100 mb-4">Add New Guide</h2>
+          
+          <div className="flex space-x-1 mb-6 border-b border-retro-200 dark:border-retro-700">
             <button 
-              className={`tab-btn ${activeTab === 'url' ? 'active' : ''}`}
+              className={clsx(
+                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'url' 
+                  ? 'text-blue-600 border-blue-600' 
+                  : 'text-retro-600 dark:text-retro-400 border-transparent hover:text-retro-900 dark:hover:text-retro-100'
+              )}
               onClick={() => setActiveTab('url')}
             >
+              <Link className="w-4 h-4 inline-block mr-2" />
               From URL
             </button>
             <button 
-              className={`tab-btn ${activeTab === 'paste' ? 'active' : ''}`}
+              className={clsx(
+                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'paste' 
+                  ? 'text-blue-600 border-blue-600' 
+                  : 'text-retro-600 dark:text-retro-400 border-transparent hover:text-retro-900 dark:hover:text-retro-100'
+              )}
               onClick={() => setActiveTab('paste')}
             >
+              <FileText className="w-4 h-4 inline-block mr-2" />
               Paste Content
             </button>
             <button 
-              className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
+              className={clsx(
+                'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'upload' 
+                  ? 'text-blue-600 border-blue-600' 
+                  : 'text-retro-600 dark:text-retro-400 border-transparent hover:text-retro-900 dark:hover:text-retro-100'
+              )}
               onClick={() => setActiveTab('upload')}
             >
+              <Upload className="w-4 h-4 inline-block mr-2" />
               Upload File
             </button>
           </div>
           
           {activeTab === 'url' && (
-            <div className="import-method">
+            <div className="space-y-4">
               <UrlImport onFetch={onFetchGuide} loading={fetchLoading} />
             </div>
           )}
           
           {activeTab === 'paste' && (
-            <div className="import-method">
-              <button onClick={() => setShowPasteModal(true)} className="primary-btn">
+            <div className="space-y-4">
+              <Button variant="primary" onClick={() => setShowPasteModal(true)}>
                 Paste Guide Content
-              </button>
-              <p className="help-text">Copy text from GameFAQs or other sites and paste it here.</p>
+              </Button>
+              <p className="text-sm text-retro-600 dark:text-retro-400">
+                Copy text from GameFAQs or other sites and paste it here.
+              </p>
             </div>
           )}
           
           {activeTab === 'upload' && (
-            <div className="import-method">
-              <label htmlFor="txt-upload" className="primary-btn file-upload-btn">
+            <div className="space-y-4">
+              <label htmlFor="txt-upload" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-colors">
                 Choose Text File
               </label>
               <input 
                 type="file" 
                 id="txt-upload" 
-                className="file-input-hidden" 
+                className="sr-only" 
                 accept=".txt" 
                 onChange={onFileSelect}
               />
-              <p className="help-text">Upload a .txt file to create a new guide. The filename will be used as the guide title.</p>
+              <p className="text-sm text-retro-600 dark:text-retro-400">
+                Upload a .txt file to create a new guide. The filename will be used as the guide title.
+              </p>
             </div>
           )}
           
-          <div className="import-export-actions">
-            <label htmlFor="import-file" className="secondary-btn">Import Backup</label>
+          <div className="flex items-center gap-4 mt-6 pt-6 border-t border-retro-200 dark:border-retro-700">
+            <label htmlFor="import-file" className="inline-flex items-center px-4 py-2 border border-retro-300 dark:border-retro-600 rounded-md shadow-sm text-sm font-medium text-retro-700 dark:text-retro-300 bg-white dark:bg-retro-800 hover:bg-retro-50 dark:hover:bg-retro-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-colors">
+              Import Backup
+            </label>
             <input 
               type="file" 
               id="import-file" 
               ref={fileInputRef}
-              style={{ display: 'none' }} 
+              className="sr-only" 
               accept=".json,.txt" 
               onChange={onFileSelect}
             />
-            <button onClick={onExportAll} className="secondary-btn">Export All</button>
+            <Button variant="secondary" onClick={onExportAll}>
+              Export All
+            </Button>
           </div>
         </div>
 
-        <div className="guide-library">
-          <h2>Your Guide Library</h2>
-          <div className="guide-grid">
+        <div>
+          <h2 className="text-lg font-semibold text-retro-900 dark:text-retro-100 mb-4">Your Guide Library</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {guides.length === 0 ? (
-              <div className="empty-state">
-                <p>No guides yet. Add your first guide by entering a URL above!</p>
+              <div className="col-span-full text-center py-12">
+                <p className="text-retro-600 dark:text-retro-400">
+                  No guides yet. Add your first guide by entering a URL above!
+                </p>
               </div>
             ) : (
               guides.map(guide => (

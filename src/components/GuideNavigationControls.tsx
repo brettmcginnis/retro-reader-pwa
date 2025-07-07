@@ -1,5 +1,7 @@
 import React from 'react';
-
+import clsx from 'clsx';
+import { Button } from './Button';
+import { MapPin, Navigation } from 'lucide-react';
 import { MIN_LINE } from '../constants';
 
 interface GuideNavigationControlsProps {
@@ -58,9 +60,15 @@ export const GuideNavigationControls: React.FC<GuideNavigationControlsProps> = (
   };
 
   return (
-    <div className="guide-navigation">
-      <form onSubmit={handleGoToLine} className="go-to-line">
-        <label htmlFor="line-input">Go to line:</label>
+    <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
+      <form onSubmit={handleGoToLine} className="flex items-center gap-2 w-full sm:w-auto">
+        <label htmlFor="line-input" className={clsx(
+          'text-sm font-medium',
+          'text-retro-700 dark:text-retro-300',
+          'whitespace-nowrap'
+        )}>
+          Go to line:
+        </label>
         <input
           id="line-input"
           name="line"
@@ -71,33 +79,51 @@ export const GuideNavigationControls: React.FC<GuideNavigationControlsProps> = (
           onChange={handleLineInputChange}
           onKeyDown={handleKeyDown}
           disabled={isLoading}
+          className={clsx(
+            'w-20 px-2 py-1 text-sm',
+            'border border-retro-300 dark:border-retro-600 rounded-md',
+            'bg-white dark:bg-retro-800',
+            'text-retro-900 dark:text-retro-100',
+            'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'disabled:opacity-50'
+          )}
         />
-        <button type="submit" disabled={isLoading}>Go</button>
+        <Button type="submit" variant="secondary" size="sm" disabled={isLoading}>
+          Go
+        </Button>
       </form>
       
-      <div className="navigation-buttons">
-        <button 
+      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <Button 
           onClick={onJumpToCurrentPosition}
           disabled={isLoading}
-          className="jump-btn"
+          variant="secondary"
+          size="sm"
           title="Jump to saved reading position"
+          className="flex items-center gap-1 flex-1 sm:flex-initial"
         >
-          Current Position
-        </button>
-        <button 
+          <Navigation className="w-4 h-4" />
+          <span className="hidden sm:inline">Current Position</span>
+          <span className="sm:hidden">Position</span>
+        </Button>
+        <Button 
           onClick={onSetAsCurrentPosition}
           disabled={isLoading}
-          className="set-position-btn"
+          variant="primary"
+          size="sm"
           title="Save current line as reading position"
+          className="flex items-center gap-1 flex-1 sm:flex-initial"
         >
-          Set Position
-        </button>
+          <MapPin className="w-4 h-4" />
+          <span className="hidden sm:inline">Set Position</span>
+          <span className="sm:hidden">Set</span>
+        </Button>
       </div>
       
-      <div className="progress-info">
+      <div className="text-sm text-retro-600 dark:text-retro-400 w-full sm:w-auto text-center sm:text-left">
         Line {currentLine} of {totalLines}
         {totalLines > 0 && (
-          <span className="progress-percentage">
+          <span className="ml-2 text-retro-500 dark:text-retro-500">
             ({Math.round((currentLine / totalLines) * 100)}%)
           </span>
         )}

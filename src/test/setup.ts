@@ -1,7 +1,28 @@
 import '@testing-library/jest-dom';
+import { mockAnimationsApi } from 'jsdom-testing-mocks';
+
+// Mock animations for Headless UI
+mockAnimationsApi();
 
 // Ensure proper DOM setup for React 19 and React Testing Library compatibility
 global.IS_REACT_ACT_ENVIRONMENT = true;
+
+// Fix for Headless UI focus issue with happy-dom
+if (typeof window !== 'undefined' && window.HTMLElement) {
+  const focusDescriptor = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'focus');
+  
+  // If focus has a getter, we need to delete it first and redefine it
+  if (focusDescriptor && focusDescriptor.get) {
+    delete window.HTMLElement.prototype.focus;
+    Object.defineProperty(window.HTMLElement.prototype, 'focus', {
+      value: function() {
+        // Mock focus implementation
+      },
+      writable: true,
+      configurable: true
+    });
+  }
+}
 
 // Set up a proper container for React Testing Library
 if (typeof document !== 'undefined') {

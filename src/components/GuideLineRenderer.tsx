@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 
 interface GuideLineRendererProps {
   line: string;
@@ -13,7 +14,7 @@ interface GuideLineRendererProps {
   onTouchEnd: () => void;
 }
 
-export const GuideLineRenderer: React.FC<GuideLineRendererProps> = ({
+const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
   line,
   lineNumber,
   isSelected,
@@ -42,18 +43,51 @@ export const GuideLineRenderer: React.FC<GuideLineRendererProps> = ({
 
   return (
     <div 
-      className={`line ${isSelected ? 'selected' : ''}`}
+      className={clsx(
+        // Layout and display
+        'flex',
+        // Typography
+        'font-mono text-sm',
+        // Interactive states
+        'select-none cursor-pointer',
+        'hover:bg-retro-100 dark:hover:bg-retro-800',
+        // Selected state
+        isSelected && 'bg-blue-100 dark:bg-blue-900/30'
+      )}
       style={{ height: `${lineHeight}px` }}
+      data-testid={`line-${lineNumber}`}
       onMouseDown={() => onMouseDown(lineNumber)}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
       onTouchStart={() => onTouchStart(lineNumber)}
       onTouchEnd={onTouchEnd}
     >
-      <span className="line-number">{lineNumber}</span>
-      <span className="line-content">
+      <span className={clsx(
+        // Layout
+        'flex-shrink-0 w-16 pr-4',
+        // Typography
+        'text-right',
+        // Colors
+        'text-retro-500 dark:text-retro-500',
+        // Interactive
+        'select-none'
+      )}>
+        {lineNumber}
+      </span>
+      <span className={clsx(
+        // Layout
+        'flex-1',
+        // Typography
+        'whitespace-pre-wrap break-all',
+        // Colors
+        'text-retro-900 dark:text-retro-100'
+      )}>
         {highlightSearchQuery(line, searchQuery)}
       </span>
     </div>
   );
 };
+
+GuideLineRendererComponent.displayName = 'GuideLineRenderer';
+
+export const GuideLineRenderer = React.memo(GuideLineRendererComponent);
