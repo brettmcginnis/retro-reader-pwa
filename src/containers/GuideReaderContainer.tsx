@@ -12,7 +12,7 @@ interface GuideReaderContainerProps {
 
 export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide }) => {
   const { progress, saveProgress } = useProgress(guide.id);
-  const { addBookmark } = useBookmarks(guide.id);
+  const { addBookmark, bookmarks } = useBookmarks(guide.id);
   const { showToast } = useToast();
   
   // Basic state
@@ -216,6 +216,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       isLoading={isLoading}
       searchQuery={searchQuery}
       searchResults={searchResults}
+      bookmarks={bookmarks}
       initialLine={hasSetInitialPosition.current ? currentLine : (progress?.line || 1)}
       onLineChange={handleLineChange}
       onSearch={performSearch}

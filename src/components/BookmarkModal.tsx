@@ -10,6 +10,7 @@ interface BookmarkModalProps {
   onTitleChange: (title: string) => void;
   onNoteChange: (note: string) => void;
   onSave: () => void;
+  onSetAsCurrentPosition: () => void;
   onClose: () => void;
 }
 
@@ -21,6 +22,7 @@ export const BookmarkModal: React.FC<BookmarkModalProps> = ({
   onTitleChange,
   onNoteChange,
   onSave,
+  onSetAsCurrentPosition,
   onClose
 }) => {
   return (
@@ -31,6 +33,20 @@ export const BookmarkModal: React.FC<BookmarkModalProps> = ({
       size="md"
     >
       <div className="space-y-4">
+        <div>
+          <label htmlFor="bookmark-line" className="block text-sm font-medium text-retro-700 dark:text-retro-300 mb-1">
+            Line
+          </label>
+          <input
+            id="bookmark-line"
+            type="text"
+            value={line}
+            readOnly
+            className="w-full rounded-md border-retro-300 dark:border-retro-600 bg-retro-50 dark:bg-retro-900 text-retro-900 dark:text-retro-100 shadow-sm sm:text-sm cursor-not-allowed"
+            aria-label="Line number"
+          />
+        </div>
+        
         <div>
           <label htmlFor="bookmark-title" className="block text-sm font-medium text-retro-700 dark:text-retro-300 mb-1">
             Title
@@ -62,13 +78,18 @@ export const BookmarkModal: React.FC<BookmarkModalProps> = ({
           />
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
+        <div className="flex justify-between pt-4">
+          <Button variant="secondary" onClick={onSetAsCurrentPosition}>
+            Set as Current Position
           </Button>
-          <Button variant="primary" onClick={onSave}>
-            Save
-          </Button>
+          <div className="flex space-x-3">
+            <Button variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={onSave}>
+              Save
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

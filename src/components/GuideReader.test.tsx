@@ -180,7 +180,7 @@ describe('GuideReader Tests', () => {
       }, { timeout: 3000 });
 
       const modalTitleInput = screen.getByRole('textbox', { name: /title/i });
-      expect(modalTitleInput).toHaveValue('Line 2');
+      expect(modalTitleInput).toHaveValue('Line 2: This is test content for line 2');
     });
 
     it('should not leave reading area when bookmark modal appears', async () => {
@@ -381,5 +381,116 @@ describe('GuideReader Tests', () => {
       expect(jumpButton).toBeInTheDocument();
     });
 
+  });
+
+  describe('Bookmark Highlighting', () => {
+    it('should highlight bookmarked lines and current position', async () => {
+      // Set up bookmarks including a current position
+      mockUseBookmarks.bookmarks = [
+        {
+          id: 'bookmark-1',
+          guideId: 'test-guide-1',
+          line: 5,
+          title: 'Regular bookmark',
+          dateCreated: new Date()
+        },
+        {
+          id: 'current-position-test-guide-1',
+          guideId: 'test-guide-1',
+          line: 10,
+          title: 'Current Position',
+          dateCreated: new Date(),
+          isCurrentPosition: true
+        }
+      ];
+
+      render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Guide')).toBeInTheDocument();
+      });
+
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-5')).toBeInTheDocument();
+        expect(screen.getByTestId('line-10')).toBeInTheDocument();
+      });
+
+      // Check regular bookmark highlighting
+      const bookmarkedLine = screen.getByTestId('line-5');
+      expect(bookmarkedLine).toHaveClass('bg-purple-50', 'dark:bg-purple-900/20');
+
+      // Check current position highlighting
+      const currentPositionLine = screen.getByTestId('line-10');
+      expect(currentPositionLine).toHaveClass('bg-yellow-100', 'dark:bg-yellow-900/30', 'border-l-4', 'border-yellow-500');
+    });
+
+    it('should pre-fill bookmark title with line content', async () => {
+      render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Guide')).toBeInTheDocument();
+      });
+
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
+
+      // Simulate long press on line 2
+      const lineElement = screen.getByTestId('line-2');
+      fireEvent.mouseDown(lineElement);
+      act(() => {
+        jest.advanceTimersByTime(600);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
+      });
+
+      // Check that title is pre-filled with line content
+      const titleInput = screen.getByLabelText('Title');
+      expect(titleInput).toHaveValue('Line 2: This is test content for line 2');
+    });
+
+    it('should display Set as Current Position button in bookmark modal', async () => {
+      render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Guide')).toBeInTheDocument();
+      });
+
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
+
+      // Open bookmark modal
+      const lineElement = screen.getByTestId('line-2');
+      fireEvent.mouseDown(lineElement);
+      act(() => {
+        jest.advanceTimersByTime(600);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
+      });
+
+      // Check for Set as Current Position button
+      const setCurrentButton = screen.getByRole('button', { name: 'Set as Current Position' });
+      expect(setCurrentButton).toBeInTheDocument();
+    });
   });
 });
