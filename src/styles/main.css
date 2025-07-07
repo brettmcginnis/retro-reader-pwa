@@ -1153,3 +1153,16 @@ mark {
     min-width: 120px;
   }
 }
+
+/* Virtual scrolling styles */
+.guide-content-virtual {
+  position: relative;
+}
+
+.guide-content-offset {
+  will-change: transform;
+}
+
+.file-input-hidden {
+  display: none;
+}

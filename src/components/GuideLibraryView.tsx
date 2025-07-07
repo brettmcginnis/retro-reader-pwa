@@ -112,7 +112,7 @@ export const GuideLibraryView: React.FC<GuideLibraryViewProps> = ({
               <input 
                 type="file" 
                 id="txt-upload" 
-                style={{ display: 'none' }} 
+                className="file-input-hidden" 
                 accept=".txt" 
                 onChange={onFileSelect}
               />
