@@ -10,11 +10,16 @@ global.IS_REACT_ACT_ENVIRONMENT = true;
 // Fix for Headless UI focus issue with happy-dom
 if (typeof window !== 'undefined' && window.HTMLElement) {
   const focusDescriptor = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'focus');
-  if (focusDescriptor && !focusDescriptor.set) {
+  
+  // If focus has a getter, we need to delete it first and redefine it
+  if (focusDescriptor && focusDescriptor.get) {
+    delete window.HTMLElement.prototype.focus;
     Object.defineProperty(window.HTMLElement.prototype, 'focus', {
-      ...focusDescriptor,
-      configurable: true,
+      value: function() {
+        // Mock focus implementation
+      },
       writable: true,
+      configurable: true
     });
   }
 }

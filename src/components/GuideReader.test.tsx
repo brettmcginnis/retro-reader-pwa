@@ -158,22 +158,26 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
-      // Find line 2 element
-      const line2Content = screen.getByText(/Line 2: This is test content for line 2/);
-      const lineElement = line2Content.parentElement?.parentElement;
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
+
+      // Find line 2 element by test id
+      const lineElement = screen.getByTestId('line-2');
 
       // Simulate mousedown
-      fireEvent.mouseDown(lineElement!);
+      fireEvent.mouseDown(lineElement);
 
-      // Fast-forward timer to trigger long press
+      // Fast-forward timer to trigger long press (500ms + buffer)
       act(() => {
         jest.advanceTimersByTime(600);
       });
 
+      // Wait for the modal to appear - check for the specific title
       await waitFor(() => {
-        // Check for the bookmark modal to be displayed
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
+        expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
+      }, { timeout: 3000 });
 
       const modalTitleInput = screen.getByRole('textbox', { name: /title/i });
       expect(modalTitleInput).toHaveValue('Line 2');
@@ -190,23 +194,27 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
+
       // Get initial progress
       const initialProgressText = screen.getByText(/Line \d+ of 200/);
       const initialProgress = initialProgressText.textContent;
 
       // Find line 2 element
-      const line2Content = screen.getByText(/Line 2: This is test content for line 2/);
-      const lineElement = line2Content.parentElement?.parentElement;
+      const lineElement = screen.getByTestId('line-2');
 
       // Simulate long press
-      fireEvent.mouseDown(lineElement!);
+      fireEvent.mouseDown(lineElement);
       act(() => {
         jest.advanceTimersByTime(600);
       });
 
       await waitFor(() => {
-        // Check for the bookmark modal to be displayed
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        // Check for the bookmark modal text to be displayed
+        expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
       });
 
       // Check that progress hasn't changed
@@ -214,7 +222,7 @@ describe('GuideReader Tests', () => {
       expect(currentProgressText.textContent).toBe(initialProgress);
       
       // Check that line 2 is still visible
-      expect(line2Content).toBeInTheDocument();
+      expect(screen.getByText(/Line 2: This is test content for line 2/)).toBeInTheDocument();
     });
 
     it('should save bookmark when form is submitted', async () => {
@@ -239,18 +247,22 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
-      // Find and long press line 2
-      const line2Content = screen.getByText(/Line 2: This is test content for line 2/);
-      const lineElement = line2Content.parentElement?.parentElement;
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
 
-      fireEvent.mouseDown(lineElement!);
+      // Find and long press line 2
+      const lineElement = screen.getByTestId('line-2');
+
+      fireEvent.mouseDown(lineElement);
       act(() => {
         jest.advanceTimersByTime(600);
       });
 
       await waitFor(() => {
-        // Check for the bookmark modal to be displayed
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        // Check for the bookmark modal text to be displayed
+        expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
       });
 
       // Fill in the form
@@ -287,12 +299,16 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
+
       // Find line 2 element
-      const line2Content = screen.getByText(/Line 2: This is test content for line 2/);
-      const lineElement = line2Content.parentElement?.parentElement;
+      const lineElement = screen.getByTestId('line-2');
 
       // Start long press
-      fireEvent.mouseDown(lineElement!);
+      fireEvent.mouseDown(lineElement);
 
       // Fast-forward timer partially
       act(() => {
@@ -300,7 +316,7 @@ describe('GuideReader Tests', () => {
       });
 
       // Mouse leaves before long press completes
-      fireEvent.mouseLeave(lineElement!);
+      fireEvent.mouseLeave(lineElement);
 
       // Fast-forward rest of timer
       act(() => {
@@ -322,12 +338,16 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
+      // Wait for lines to be rendered
+      await waitFor(() => {
+        expect(screen.getByTestId('line-2')).toBeInTheDocument();
+      });
+
       // Find line 2 element
-      const line2Content = screen.getByText(/Line 2: This is test content for line 2/);
-      const lineElement = line2Content.parentElement?.parentElement;
+      const lineElement = screen.getByTestId('line-2');
 
       // Simulate touch start
-      fireEvent.touchStart(lineElement!);
+      fireEvent.touchStart(lineElement);
 
       // Fast-forward timer to trigger long press
       act(() => {
@@ -335,8 +355,8 @@ describe('GuideReader Tests', () => {
       });
 
       await waitFor(() => {
-        // Check for the bookmark modal to be displayed
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        // Check for the bookmark modal text to be displayed
+        expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
       });
     });
   });

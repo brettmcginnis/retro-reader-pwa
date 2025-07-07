@@ -285,13 +285,21 @@ describe('GuideLibrary Import/Export Tests', () => {
       const urlTab = screen.getByRole('button', { name: /from url/i });
       await user.click(urlTab);
 
+      // Wait for the tab content to be visible
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter guide url/i)).toBeInTheDocument();
+      });
+
       const urlInput = screen.getByPlaceholderText(/enter guide url/i);
       await user.type(urlInput, 'https://example.com/guide.txt');
 
       const fetchButton = screen.getByRole('button', { name: /fetch guide/i });
       await user.click(fetchButton);
 
-      expect(mockUseGuides.fetchGuide).toHaveBeenCalledWith('https://example.com/guide.txt');
+      // Wait for the async operation to complete
+      await waitFor(() => {
+        expect(mockUseGuides.fetchGuide).toHaveBeenCalledWith('https://example.com/guide.txt');
+      });
 
       await waitFor(() => {
         expect(toast.success).toHaveBeenCalled();

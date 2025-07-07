@@ -55,6 +55,7 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
         isSelected && 'bg-blue-100 dark:bg-blue-900/30'
       )}
       style={{ height: `${lineHeight}px` }}
+      data-testid={`line-${lineNumber}`}
       onMouseDown={() => onMouseDown(lineNumber)}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
