@@ -1,4 +1,4 @@
-jest.mock('../database', () => ({
+jest.mock('./database', () => ({
   db: {
     init: jest.fn().mockResolvedValue(undefined),
     exportData: jest.fn(),
@@ -11,9 +11,9 @@ jest.mock('../database', () => ({
   }
 }));
 
-import { ImportExportService } from '../importExportService';
-import { GuideCollection } from '../../types';
-import { db } from '../database';
+import { ImportExportService } from './importExportService';
+import { GuideCollection } from '../types';
+import { db } from './database';
 
 const mockDb = db as jest.Mocked<typeof db>;
 
