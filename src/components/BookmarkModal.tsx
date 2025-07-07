@@ -1,4 +1,6 @@
 import React from 'react';
+import { Modal } from './Modal';
+import { Button } from './Button';
 
 interface BookmarkModalProps {
   isOpen: boolean;
@@ -21,32 +23,54 @@ export const BookmarkModal: React.FC<BookmarkModalProps> = ({
   onSave,
   onClose
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <h3>Add Bookmark at Line {line}</h3>
-        <input
-          type="text"
-          placeholder="Bookmark title"
-          aria-label="Title"
-          value={title}
-          onChange={e => onTitleChange(e.target.value)}
-          autoFocus
-        />
-        <textarea
-          placeholder="Notes (optional)"
-          aria-label="Notes"
-          value={note}
-          onChange={e => onNoteChange(e.target.value)}
-          rows={3}
-        />
-        <div className="modal-actions">
-          <button onClick={onSave}>Save</button>
-          <button onClick={onClose}>Cancel</button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Add Bookmark at Line ${line}`}
+      size="md"
+    >
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="bookmark-title" className="block text-sm font-medium text-retro-700 dark:text-retro-300 mb-1">
+            Title
+          </label>
+          <input
+            id="bookmark-title"
+            type="text"
+            placeholder="Bookmark title"
+            aria-label="Title"
+            value={title}
+            onChange={e => onTitleChange(e.target.value)}
+            className="w-full rounded-md border-retro-300 dark:border-retro-600 bg-white dark:bg-retro-800 text-retro-900 dark:text-retro-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            autoFocus
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="bookmark-notes" className="block text-sm font-medium text-retro-700 dark:text-retro-300 mb-1">
+            Notes (optional)
+          </label>
+          <textarea
+            id="bookmark-notes"
+            placeholder="Notes (optional)"
+            aria-label="Notes"
+            value={note}
+            onChange={e => onNoteChange(e.target.value)}
+            rows={3}
+            className="w-full rounded-md border-retro-300 dark:border-retro-600 bg-white dark:bg-retro-800 text-retro-900 dark:text-retro-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          />
+        </div>
+
+        <div className="flex justify-end space-x-3 pt-4">
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={onSave}>
+            Save
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };

@@ -29,17 +29,17 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
     if (currentView === 'library') return null;
 
     return (
-      <nav className={currentView === 'reader' ? 'reader-nav' : 'bookmarks-nav'}>
+      <nav className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-retro-900 border-b border-retro-200 dark:border-retro-700">
         <button 
           onClick={onBackToLibrary} 
-          className="nav-btn"
+          className="px-4 py-2 text-sm font-medium text-retro-700 dark:text-retro-300 hover:text-retro-900 dark:hover:text-retro-100 hover:bg-retro-100 dark:hover:bg-retro-800 rounded-md transition-colors"
         >
           ← Library
         </button>
         {currentView === 'reader' && (
           <button 
             onClick={() => onViewChange('bookmarks')} 
-            className="nav-btn"
+            className="px-4 py-2 text-sm font-medium text-retro-700 dark:text-retro-300 hover:text-retro-900 dark:hover:text-retro-100 hover:bg-retro-100 dark:hover:bg-retro-800 rounded-md transition-colors"
           >
             Bookmarks
           </button>
@@ -47,7 +47,7 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
         {currentView === 'bookmarks' && (
           <button 
             onClick={() => onViewChange('reader')} 
-            className="nav-btn"
+            className="px-4 py-2 text-sm font-medium text-retro-700 dark:text-retro-300 hover:text-retro-900 dark:hover:text-retro-100 hover:bg-retro-100 dark:hover:bg-retro-800 rounded-md transition-colors"
           >
             Read Guide
           </button>
@@ -64,8 +64,8 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
       case 'reader':
         if (isLoadingGuide) {
           return (
-            <div className="loading-container">
-              <div className="loading-message">Loading guide...</div>
+            <div className="flex items-center justify-center h-screen bg-retro-50 dark:bg-retro-950">
+              <div className="text-lg text-retro-600 dark:text-retro-400">Loading guide...</div>
             </div>
           );
         }
@@ -75,7 +75,7 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
         }
         
         return (
-          <div className="reader-container">
+          <div className="flex flex-col h-screen bg-retro-50 dark:bg-retro-950">
             {renderNavigation()}
             {currentGuide && <GuideReader guide={currentGuide} />}
           </div>
@@ -84,8 +84,8 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
       case 'bookmarks':
         if (isLoadingGuide) {
           return (
-            <div className="loading-container">
-              <div className="loading-message">Loading guide...</div>
+            <div className="flex items-center justify-center h-screen bg-retro-50 dark:bg-retro-950">
+              <div className="text-lg text-retro-600 dark:text-retro-400">Loading guide...</div>
             </div>
           );
         }
@@ -95,7 +95,7 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
         }
         
         return (
-          <div className="bookmarks-container">
+          <div className="flex flex-col h-screen bg-retro-50 dark:bg-retro-950">
             {renderNavigation()}
             {currentGuide && (
               <BookmarkManager 

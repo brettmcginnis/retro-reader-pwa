@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Bookmark, Guide } from '../types';
 import { AddBookmarkModal } from './AddBookmarkModal';
 import { EditBookmarkModal } from './EditBookmarkModal';
+import { Button } from './Button';
+import { Bookmark as BookmarkIcon, MapPin, Calendar, Edit2, Trash2, Download, AlertCircle } from 'lucide-react';
 
 interface BookmarkManagerViewProps {
   guide: Guide;
@@ -42,73 +44,128 @@ export const BookmarkManagerView: React.FC<BookmarkManagerViewProps> = ({
   };
 
   return (
-    <div className="bookmark-manager">
-      <div className="bookmark-header">
-        <h2>Bookmarks for {guide.title}</h2>
-        <button onClick={() => setShowAddModal(true)} className="primary-btn">
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-retro-900 dark:text-retro-100">
+          Bookmarks for {guide.title}
+        </h2>
+        <Button onClick={() => setShowAddModal(true)} variant="primary">
+          <BookmarkIcon className="w-4 h-4 mr-2" />
           Add Bookmark
-        </button>
+        </Button>
       </div>
       
-      <div className="bookmark-list">
+      <div className="space-y-6">
         {currentPositionBookmark && (
-          <div className="current-position-section">
-            <h3>Current Reading Position</h3>
-            <div className="bookmark-item current-position">
-              <div className="bookmark-info">
-                <div className="bookmark-title">📍 {currentPositionBookmark.title}</div>
-                <div className="bookmark-details">
-                  Line {currentPositionBookmark.line} • Last updated: {formatDate(currentPositionBookmark.dateCreated)}
+          <div>
+            <h3 className="text-lg font-semibold text-retro-800 dark:text-retro-200 mb-3">
+              Current Reading Position
+            </h3>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 text-blue-900 dark:text-blue-100 font-medium">
+                    <MapPin className="w-4 h-4" />
+                    {currentPositionBookmark.title}
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-blue-700 dark:text-blue-300">
+                    <span>Line {currentPositionBookmark.line}</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      Last updated: {formatDate(currentPositionBookmark.dateCreated)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="bookmark-actions">
-                <button onClick={() => onGotoLine(currentPositionBookmark.line)} className="goto-btn">
+                <Button 
+                  onClick={() => onGotoLine(currentPositionBookmark.line)} 
+                  variant="primary"
+                  size="sm"
+                >
                   Resume
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         )}
         
-        {sortedBookmarks.length > 0 && <h3>Saved Bookmarks</h3>}
-        
-        {sortedBookmarks.length === 0 && !currentPositionBookmark ? (
-          <div className="empty-state">No bookmarks yet. Add some while reading!</div>
-        ) : (
-          sortedBookmarks.map(bookmark => (
-            <div key={bookmark.id} className="bookmark-item">
-              <div className="bookmark-info">
-                <div className="bookmark-title">{bookmark.title}</div>
-                <div className="bookmark-details">
-                  Line {bookmark.line} • {formatDate(bookmark.dateCreated)}
+        {sortedBookmarks.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold text-retro-800 dark:text-retro-200 mb-3">
+              Saved Bookmarks
+            </h3>
+            <div className="space-y-2">
+              {sortedBookmarks.map(bookmark => (
+                <div key={bookmark.id} className="bg-white dark:bg-retro-900 border border-retro-200 dark:border-retro-700 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-retro-900 dark:text-retro-100">
+                        {bookmark.title}
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-sm text-retro-600 dark:text-retro-400">
+                        <span>Line {bookmark.line}</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(bookmark.dateCreated)}
+                        </span>
+                      </div>
+                      {bookmark.note && (
+                        <div className="mt-2 text-sm text-retro-700 dark:text-retro-300 bg-retro-50 dark:bg-retro-800/50 rounded p-2">
+                          {bookmark.note}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 ml-4">
+                      <Button 
+                        onClick={() => onGotoLine(bookmark.line)} 
+                        variant="ghost"
+                        size="sm"
+                      >
+                        Go
+                      </Button>
+                      <Button 
+                        onClick={() => setEditingBookmark(bookmark)} 
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        onClick={() => onDeleteBookmark(bookmark.id)} 
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                {bookmark.note && (
-                  <div className="bookmark-note">{bookmark.note}</div>
-                )}
-              </div>
-              <div className="bookmark-actions">
-                <button onClick={() => onGotoLine(bookmark.line)} className="goto-btn">
-                  Go
-                </button>
-                <button onClick={() => setEditingBookmark(bookmark)} className="edit-btn">
-                  Edit
-                </button>
-                <button onClick={() => onDeleteBookmark(bookmark.id)} className="delete-btn">
-                  Delete
-                </button>
-              </div>
+              ))}
             </div>
-          ))
+          </div>
+        )}
+        
+        {sortedBookmarks.length === 0 && !currentPositionBookmark && (
+          <div className="text-center py-12 text-retro-600 dark:text-retro-400">
+            <BookmarkIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No bookmarks yet. Add some while reading!</p>
+          </div>
         )}
       </div>
       
-      <div className="bookmark-actions">
-        <button onClick={onExportBookmarks} className="secondary-btn">
+      <div className="flex items-center gap-4 mt-8 pt-6 border-t border-retro-200 dark:border-retro-700">
+        <Button onClick={onExportBookmarks} variant="secondary">
+          <Download className="w-4 h-4 mr-2" />
           Export Bookmarks
-        </button>
-        <button onClick={onClearAll} className="danger-btn">
+        </Button>
+        <Button 
+          onClick={onClearAll} 
+          variant="ghost"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+        >
+          <AlertCircle className="w-4 h-4 mr-2" />
           Clear All
-        </button>
+        </Button>
       </div>
 
       {showAddModal && (

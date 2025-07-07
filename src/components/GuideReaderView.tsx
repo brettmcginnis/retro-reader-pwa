@@ -26,7 +26,7 @@ interface GuideReaderViewProps {
   onInitialScroll: () => void;
 }
 
-export const GuideReaderView: React.FC<GuideReaderViewProps> = ({
+const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   guide,
   lines,
   currentLine,
@@ -137,8 +137,8 @@ export const GuideReaderView: React.FC<GuideReaderViewProps> = ({
   // Render loading state
   if (isLoading) {
     return (
-      <div className="guide-reader loading">
-        <div className="loading-message">Loading guide...</div>
+      <div className="flex items-center justify-center h-screen bg-retro-50 dark:bg-retro-950">
+        <div className="text-lg text-retro-600 dark:text-retro-400">Loading guide...</div>
       </div>
     );
   }
@@ -149,8 +149,8 @@ export const GuideReaderView: React.FC<GuideReaderViewProps> = ({
   const offsetTop = start * lineHeightRef.current;
 
   return (
-    <div className="guide-reader">
-      <header className="reader-header">
+    <div className="flex flex-col h-screen bg-retro-50 dark:bg-retro-950">
+      <header className="bg-white dark:bg-retro-900 border-b border-retro-200 dark:border-retro-700 p-4">
         <h1>{guide.title}</h1>
         <button onClick={() => setShowSearch(!showSearch)}>
           {showSearch ? 'Hide Search' : 'Search'}
@@ -176,11 +176,11 @@ export const GuideReaderView: React.FC<GuideReaderViewProps> = ({
       />
 
       <div 
-        className="guide-content-container" 
+        className="flex-1 overflow-y-auto bg-white dark:bg-retro-900 scrollbar-thin" 
         ref={containerRef}
         onScroll={updateVisibleRange}
       >
-        <div className="guide-content" ref={contentRef} style={{ height: totalHeight }}>
+        <div className="relative" ref={contentRef} style={{ height: totalHeight }}>
           <div style={{ transform: `translateY(${offsetTop}px)` }}>
             {visibleLines.map((line, index) => {
               const lineNumber = start + index + 1;
@@ -217,3 +217,7 @@ export const GuideReaderView: React.FC<GuideReaderViewProps> = ({
     </div>
   );
 };
+
+GuideReaderViewComponent.displayName = 'GuideReaderView';
+
+export const GuideReaderView = React.memo(GuideReaderViewComponent);
