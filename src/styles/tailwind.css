@@ -83,4 +83,19 @@
     background-color: rgba(202, 138, 4, 0.5);
     color: #f1f5f9;
   }
+  
+  /* Guide content specific styles for retro game guides */
+  .guide-content {
+    font-family: 'Cascadia Code', 'Fira Code', 'Monaco', 'Consolas', monospace;
+    white-space: pre;
+    overflow-x: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .guide-container {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: auto;
+  }
 }

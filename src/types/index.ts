@@ -25,6 +25,8 @@ export interface ReadingProgress {
   line: number;
   percentage: number;
   lastRead: Date;
+  fontSize?: number;
+  zoomLevel?: number;
 }
 
 export interface GuideCollection {

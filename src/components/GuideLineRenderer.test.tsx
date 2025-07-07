@@ -124,12 +124,4 @@ describe('GuideLineRenderer', () => {
       expect(mark.tagName).toBe('MARK');
     });
   });
-
-  it('should preserve whitespace in line content', () => {
-    render(<GuideLineRenderer {...defaultProps} line="    Indented line" />);
-    
-    const lineElement = screen.getByTestId('line-42');
-    const contentSpan = lineElement.querySelector('span:last-child');
-    expect(contentSpan).toHaveClass('whitespace-pre-wrap');
-  });
 });

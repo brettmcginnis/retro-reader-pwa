@@ -1,25 +1,33 @@
 import React from 'react';
 import clsx from 'clsx';
 import { Button } from './Button';
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPin, Navigation, Minus, Plus, ZoomIn, ZoomOut } from 'lucide-react';
 import { MIN_LINE } from '../constants';
 
 interface GuideNavigationControlsProps {
   currentLine: number;
   totalLines: number;
   isLoading: boolean;
+  fontSize?: number;
+  zoomLevel?: number;
   onLineChange: (line: number) => void;
   onJumpToCurrentPosition: () => void;
   onSetAsCurrentPosition: () => void;
+  onFontSizeChange?: (size: number) => void;
+  onZoomChange?: (zoom: number) => void;
 }
 
 export const GuideNavigationControls: React.FC<GuideNavigationControlsProps> = ({
   currentLine,
   totalLines,
   isLoading,
+  fontSize = 14,
+  zoomLevel = 1,
   onLineChange,
   onJumpToCurrentPosition,
-  onSetAsCurrentPosition
+  onSetAsCurrentPosition,
+  onFontSizeChange,
+  onZoomChange
 }) => {
   const handleGoToLine = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -119,6 +127,74 @@ export const GuideNavigationControls: React.FC<GuideNavigationControlsProps> = (
           <span className="sm:hidden">Set</span>
         </Button>
       </div>
+      
+      {onFontSizeChange && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-retro-600 dark:text-retro-400">Font:</span>
+          <Button
+            onClick={() => onFontSizeChange(fontSize - 1)}
+            disabled={isLoading || fontSize <= 10}
+            variant="secondary"
+            size="sm"
+            title="Decrease font size"
+            className="p-1"
+          >
+            <Minus className="w-4 h-4" />
+          </Button>
+          <span className="text-sm text-retro-700 dark:text-retro-300 w-8 text-center">
+            {fontSize}
+          </span>
+          <Button
+            onClick={() => onFontSizeChange(fontSize + 1)}
+            disabled={isLoading || fontSize >= 24}
+            variant="secondary"
+            size="sm"
+            title="Increase font size"
+            className="p-1"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+      
+      {onZoomChange && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-retro-600 dark:text-retro-400">Zoom:</span>
+          <Button
+            onClick={() => onZoomChange(zoomLevel - 0.1)}
+            disabled={isLoading || zoomLevel <= 0.5}
+            variant="secondary"
+            size="sm"
+            title="Zoom out"
+            className="p-1"
+          >
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <span className="text-sm text-retro-700 dark:text-retro-300 w-12 text-center">
+            {Math.round(zoomLevel * 100)}%
+          </span>
+          <Button
+            onClick={() => onZoomChange(zoomLevel + 0.1)}
+            disabled={isLoading || zoomLevel >= 2}
+            variant="secondary"
+            size="sm"
+            title="Zoom in"
+            className="p-1"
+          >
+            <ZoomIn className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={() => onZoomChange(1)}
+            disabled={isLoading || zoomLevel === 1}
+            variant="secondary"
+            size="sm"
+            title="Reset zoom"
+            className="text-xs px-2"
+          >
+            100%
+          </Button>
+        </div>
+      )}
       
       <div className="text-sm text-retro-600 dark:text-retro-400 w-full sm:w-auto text-center sm:text-left">
         Line {currentLine} of {totalLines}
