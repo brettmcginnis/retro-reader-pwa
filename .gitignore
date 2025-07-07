@@ -28,6 +28,7 @@ coverage/
 
 # Claude assistant files
 .claude/
+tasks/
 
 *tsbuildinfo
 

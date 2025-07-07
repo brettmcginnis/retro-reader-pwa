@@ -117,6 +117,44 @@ class DatabaseService {
     await db.delete('bookmarks', id);
   }
 
+  async saveCurrentPositionBookmark(guideId: string, line: number): Promise<void> {
+    this.ensureDB();
+    
+    // First, convert any existing current position bookmark to a regular bookmark
+    const existingBookmarks = await this.getBookmarks(guideId);
+    const currentPositionBookmark = existingBookmarks.find(b => b.isCurrentPosition);
+    if (currentPositionBookmark) {
+      // Convert to regular bookmark by removing isCurrentPosition flag
+      const regularBookmark: Bookmark = {
+        ...currentPositionBookmark,
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        title: currentPositionBookmark.title === 'Current Position' ? `Previous Position (Line ${currentPositionBookmark.line})` : currentPositionBookmark.title,
+        isCurrentPosition: false
+      };
+      await this.saveBookmark(regularBookmark);
+      
+      // Delete the old current position bookmark
+      await this.deleteBookmark(currentPositionBookmark.id);
+    }
+    
+    // Create new current position bookmark
+    const bookmark: Bookmark = {
+      id: `current-position-${guideId}`,
+      guideId,
+      line,
+      title: 'Current Position',
+      dateCreated: new Date(),
+      isCurrentPosition: true
+    };
+    
+    await this.saveBookmark(bookmark);
+  }
+
+  async getCurrentPositionBookmark(guideId: string): Promise<Bookmark | null> {
+    const bookmarks = await this.getBookmarks(guideId);
+    return bookmarks.find(b => b.isCurrentPosition) || null;
+  }
+
   async saveProgress(progress: ReadingProgress): Promise<void> {
     const db = this.ensureDB();
     await db.put('progress', progress);

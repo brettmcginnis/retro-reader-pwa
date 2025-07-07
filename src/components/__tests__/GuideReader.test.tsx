@@ -1,14 +1,13 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GuideReader } from '../GuideReader';
 import { Guide } from '../../types';
 import { ToastProvider } from '../../contexts/ToastContext';
 import { AppProvider } from '../../contexts/AppContext';
 
 const mockUseProgress = {
   progress: null,
-  saveProgress: jest.fn(),
+  saveProgress: jest.fn().mockResolvedValue(undefined),
   loading: false,
   error: null,
   refresh: jest.fn()
@@ -31,6 +30,17 @@ jest.mock('../../hooks/useProgress', () => ({
 jest.mock('../../hooks/useBookmarks', () => ({
   useBookmarks: () => mockUseBookmarks
 }));
+
+jest.mock('../../services/database', () => ({
+  db: {
+    saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
+    getCurrentPositionBookmark: jest.fn().mockResolvedValue(null),
+    init: jest.fn().mockResolvedValue(undefined)
+  }
+}));
+
+// Import after mocks are set up
+import { GuideReader } from '../GuideReader';
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <AppProvider>
@@ -110,7 +120,6 @@ describe('GuideReader Tests', () => {
       mockUseProgress.progress = {
         guideId: 'test-guide-1',
         line: 100,
-        position: 0,
         percentage: 50,
         lastRead: new Date()
       };
@@ -213,7 +222,6 @@ describe('GuideReader Tests', () => {
         id: 'bookmark-1',
         guideId: 'test-guide-1',
         line: 2,
-        position: 0,
         title: 'Important Section',
         note: 'Remember this',
         dateCreated: new Date()
@@ -256,7 +264,6 @@ describe('GuideReader Tests', () => {
       expect(mockUseBookmarks.addBookmark).toHaveBeenCalledWith({
         guideId: 'test-guide-1',
         line: 2,
-        position: 0,
         title: 'Important Section',
         note: 'Remember this'
       });
@@ -328,5 +335,27 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
       });
     });
+  });
+
+  describe('Jump to Current Position', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should have a jump to current position button', async () => {
+      render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(mockGuide.title)).toBeInTheDocument();
+      });
+
+      const jumpButton = screen.getByRole('button', { name: /current position/i });
+      expect(jumpButton).toBeInTheDocument();
+    });
+
   });
 });

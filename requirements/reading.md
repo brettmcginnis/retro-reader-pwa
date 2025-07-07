@@ -1,0 +1,1 @@
+- there should be a button to jump to current position
