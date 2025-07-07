@@ -20,6 +20,10 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const [totalLines, setTotalLines] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Font size and zoom level state - will be loaded from progress
+  const [fontSize, setFontSize] = useState(14); // Default to 14px
+  const [zoomLevel, setZoomLevel] = useState(1); // Default to 100%
+  
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ line: number; content: string }[]>([]);
@@ -57,6 +61,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       guideRef.current = [];
     };
   }, [guide]);
+  
+  // Load font size and zoom from progress
+  useEffect(() => {
+    if (progress) {
+      if (progress.fontSize) setFontSize(progress.fontSize);
+      if (progress.zoomLevel) setZoomLevel(progress.zoomLevel);
+    }
+  }, [progress]);
   
   // Set initial position from saved progress or current position bookmark - only once
   useEffect(() => {
@@ -96,12 +108,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       saveProgress({
         guideId: guide.id,
         line: currentLine,
-        percentage: Math.min(100, Math.max(0, (currentLine / totalLines) * 100))
+        percentage: Math.min(100, Math.max(0, (currentLine / totalLines) * 100)),
+        fontSize,
+        zoomLevel
       }).catch(err => console.error('Failed to save progress:', err));
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [currentLine, guide.id, isLoading, saveProgress, totalLines]);
+  }, [currentLine, guide.id, isLoading, saveProgress, totalLines, fontSize, zoomLevel]);
   
   // Search handling
   const performSearch = useCallback((query: string) => {
@@ -205,6 +219,18 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     hasInitiallyScrolled.current = true;
   }, []);
   
+  // Handle font size change
+  const handleFontSizeChange = useCallback((newSize: number) => {
+    const size = Math.max(10, Math.min(24, newSize)); // Clamp between 10 and 24
+    setFontSize(size);
+  }, []);
+  
+  // Handle zoom level change
+  const handleZoomChange = useCallback((newZoom: number) => {
+    const zoom = Math.max(0.5, Math.min(2, newZoom)); // Clamp between 50% and 200%
+    setZoomLevel(zoom);
+  }, []);
+  
   const lines = guideRef.current;
   
   return (
@@ -218,6 +244,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       searchResults={searchResults}
       bookmarks={bookmarks}
       initialLine={hasSetInitialPosition.current ? currentLine : (progress?.line || 1)}
+      fontSize={fontSize}
+      zoomLevel={zoomLevel}
       onLineChange={handleLineChange}
       onSearch={performSearch}
       onAddBookmark={handleAddBookmark}
@@ -225,6 +253,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onJumpToCurrentPosition={handleJumpToCurrentPosition}
       onScrollingStateChange={handleScrollingStateChange}
       onInitialScroll={handleInitialScroll}
+      onFontSizeChange={handleFontSizeChange}
+      onZoomChange={handleZoomChange}
     />
   );
 };

@@ -8,6 +8,7 @@ interface GuideLineRendererProps {
   isBookmarked: boolean;
   isCurrentPosition: boolean;
   lineHeight: number;
+  fontSize: number;
   searchQuery: string;
   onMouseDown: (lineNumber: number) => void;
   onMouseUp: () => void;
@@ -23,6 +24,7 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
   isBookmarked,
   isCurrentPosition,
   lineHeight,
+  fontSize,
   searchQuery,
   onMouseDown,
   onMouseUp,
@@ -51,7 +53,7 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
         // Layout and display
         'flex',
         // Typography
-        'font-mono text-sm',
+        'font-mono',
         // Interactive states
         'select-none cursor-pointer',
         'hover:bg-retro-100 dark:hover:bg-retro-800',
@@ -62,7 +64,7 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
         // Regular bookmark highlighting (subtle)
         isBookmarked && !isCurrentPosition && 'bg-purple-50 dark:bg-purple-900/20'
       )}
-      style={{ height: `${lineHeight}px` }}
+      style={{ height: `${lineHeight}px`, fontSize: `${fontSize}px` }}
       data-testid={`line-${lineNumber}`}
       onMouseDown={() => onMouseDown(lineNumber)}
       onMouseUp={onMouseUp}
@@ -84,9 +86,9 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
       </span>
       <span className={clsx(
         // Layout
-        'flex-1',
+        'flex-1 overflow-x-auto',
         // Typography
-        'whitespace-pre-wrap break-all',
+        'whitespace-pre',
         // Colors
         'text-retro-900 dark:text-retro-100'
       )}>

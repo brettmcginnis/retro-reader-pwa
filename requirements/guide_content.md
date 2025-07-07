@@ -21,6 +21,11 @@
 - Column alignment must be preserved
 - Special characters and box-drawing characters must render correctly
 
+#### Persistence 
+
+- Font Size and Zoom should be saved PER guide, not as a global setting
+- Font Size and Zoom should be restored when opening a guide
+
 ### Implementation Guidelines
 
 ```css

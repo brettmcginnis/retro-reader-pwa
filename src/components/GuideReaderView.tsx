@@ -18,6 +18,8 @@ interface GuideReaderViewProps {
   searchResults: { line: number; content: string }[];
   bookmarks: Bookmark[];
   initialLine: number;
+  fontSize: number;
+  zoomLevel: number;
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
@@ -25,6 +27,8 @@ interface GuideReaderViewProps {
   onJumpToCurrentPosition: () => Promise<number | null>;
   onScrollingStateChange: (isScrolling: boolean) => void;
   onInitialScroll: () => void;
+  onFontSizeChange: (size: number) => void;
+  onZoomChange: (zoom: number) => void;
 }
 
 const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
@@ -37,13 +41,17 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   searchResults,
   bookmarks,
   initialLine,
+  fontSize,
+  zoomLevel,
   onLineChange: _onLineChange,
   onSearch,
   onAddBookmark,
   onSetAsCurrentPosition,
   onJumpToCurrentPosition,
   onScrollingStateChange: _onScrollingStateChange,
-  onInitialScroll
+  onInitialScroll,
+  onFontSizeChange,
+  onZoomChange
 }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
@@ -57,6 +65,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   const lineHeightRef = useRef(LINE_HEIGHT);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyScrolled = useRef(false);
+  
 
   // Create a map of bookmarked lines for quick lookup
   const bookmarkedLines = new Map<number, Bookmark>();
@@ -142,6 +151,13 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     }
   };
 
+  // Update line height when font size changes
+  useEffect(() => {
+    lineHeightRef.current = Math.ceil(fontSize * 1.5);
+    // Trigger a recalculation of visible range
+    updateVisibleRange();
+  }, [fontSize, updateVisibleRange]);
+
   // Initial scroll to saved position
   useEffect(() => {
     if (!hasInitiallyScrolled.current && initialLine > 1 && totalLines > 0) {
@@ -187,17 +203,29 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         currentLine={currentLine}
         totalLines={totalLines}
         isLoading={isLoading}
+        fontSize={fontSize}
+        zoomLevel={zoomLevel}
         onLineChange={scrollToLine}
         onJumpToCurrentPosition={handleJumpToCurrentPosition}
         onSetAsCurrentPosition={handleSetAsCurrentPosition}
+        onFontSizeChange={onFontSizeChange}
+        onZoomChange={onZoomChange}
       />
 
       <div 
-        className="flex-1 overflow-y-auto bg-white dark:bg-retro-900 scrollbar-thin" 
+        className="flex-1 overflow-auto bg-white dark:bg-retro-900 scrollbar-thin" 
         ref={containerRef}
         onScroll={updateVisibleRange}
       >
-        <div className="relative" ref={contentRef} style={{ height: totalHeight }}>
+        <div 
+          className="relative origin-top-left" 
+          ref={contentRef} 
+          style={{ 
+            height: totalHeight * zoomLevel,
+            transform: `scale(${zoomLevel})`,
+            width: `${100 / zoomLevel}%`
+          }}
+        >
           <div style={{ transform: `translateY(${offsetTop}px)` }}>
             {visibleLines.map((line, index) => {
               const lineNumber = start + index + 1;
@@ -211,6 +239,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
                   isBookmarked={!!bookmark}
                   isCurrentPosition={bookmark?.isCurrentPosition || false}
                   lineHeight={lineHeightRef.current}
+                  fontSize={fontSize}
                   searchQuery={searchQuery}
                   onMouseDown={handleLongPressStart}
                   onMouseUp={handleLongPressEnd}
