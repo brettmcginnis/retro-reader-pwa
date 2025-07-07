@@ -1,3 +1,6 @@
-- Scrolling position is saved as user scrolls
-- When a user returns to a guide, the scrolling position is restored
+- There is a special dedicated bookmark that is known as "current position"
+    - current position is updated when long presses a line
+    - the line is highlighted
+    - when opening a guide the user is restored to this bookmark
+    - Bookmark overlay has a button for "Set as Current Position"
 - A bookmark saving overlay is displayed when a user long presses a line

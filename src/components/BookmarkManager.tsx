@@ -94,7 +94,10 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
   };
 
 
-  const sortedBookmarks = [...bookmarks].sort((a, b) => a.line - b.line);
+  // Separate current position bookmark from regular bookmarks
+  const currentPositionBookmark = bookmarks.find(b => b.isCurrentPosition);
+  const regularBookmarks = bookmarks.filter(b => !b.isCurrentPosition);
+  const sortedBookmarks = [...regularBookmarks].sort((a, b) => a.line - b.line);
 
 
   return (
@@ -108,7 +111,28 @@ export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoL
       
       
       <div className="bookmark-list">
-        {sortedBookmarks.length === 0 ? (
+        {currentPositionBookmark && (
+          <div className="current-position-section">
+            <h3>Current Reading Position</h3>
+            <div className="bookmark-item current-position">
+              <div className="bookmark-info">
+                <div className="bookmark-title">📍 {currentPositionBookmark.title}</div>
+                <div className="bookmark-details">
+                  Line {currentPositionBookmark.line} • Last updated: {formatDate(currentPositionBookmark.dateCreated)}
+                </div>
+              </div>
+              <div className="bookmark-actions">
+                <button onClick={() => onGotoLine(currentPositionBookmark.line)} className="goto-btn">
+                  Resume
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {sortedBookmarks.length > 0 && <h3>Saved Bookmarks</h3>}
+        
+        {sortedBookmarks.length === 0 && !currentPositionBookmark ? (
           <div className="empty-state">No bookmarks yet. Add some while reading!</div>
         ) : (
           sortedBookmarks.map(bookmark => (

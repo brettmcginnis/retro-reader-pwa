@@ -3,6 +3,7 @@ import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useToast } from '../contexts/useToast';
+import { db } from '../services/database';
 
 interface GuideReaderProps {
   guide: Guide;
@@ -68,15 +69,33 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     };
   }, [guide]);
   
-  // Set initial position from saved progress - only once
+  // Set initial position from saved progress or current position bookmark - only once
   const hasSetInitialPosition = useRef(false);
   useEffect(() => {
-    if (progress && !isLoading && !hasSetInitialPosition.current) {
-      setCurrentLine(progress.line);
-      setCurrentPosition(progress.position);
-      hasSetInitialPosition.current = true;
+    if (!isLoading && !hasSetInitialPosition.current) {
+      // Check for current position bookmark first
+      db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
+        if (currentPosBookmark) {
+          setCurrentLine(currentPosBookmark.line);
+          setCurrentPosition(currentPosBookmark.position);
+          hasSetInitialPosition.current = true;
+        } else if (progress) {
+          // Fall back to progress if no current position bookmark
+          setCurrentLine(progress.line);
+          setCurrentPosition(progress.position);
+          hasSetInitialPosition.current = true;
+        }
+      }).catch(err => {
+        console.error('Failed to load current position bookmark:', err);
+        // Fall back to progress on error
+        if (progress) {
+          setCurrentLine(progress.line);
+          setCurrentPosition(progress.position);
+          hasSetInitialPosition.current = true;
+        }
+      });
     }
-  }, [progress, isLoading]);
+  }, [progress, isLoading, guide.id]);
   
   // Get line height after render
   useEffect(() => {
@@ -168,23 +187,46 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   // Initial scroll to current line - only once on mount
   const hasInitiallyScrolled = useRef(false);
   useEffect(() => {
-    if (!isLoading && progress && containerRef.current && !hasInitiallyScrolled.current) {
-      // Use a small delay to ensure rendering is complete
-      const timer = setTimeout(() => {
-        const targetScrollTop = (progress.line - 1) * lineHeightRef.current;
-        containerRef.current?.scrollTo({ top: targetScrollTop, behavior: 'auto' });
+    if (!isLoading && containerRef.current && !hasInitiallyScrolled.current) {
+      // Check for current position bookmark first
+      db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
+        const initialLine = currentPosBookmark ? currentPosBookmark.line : (progress ? progress.line : 1);
+        const initialPosition = currentPosBookmark ? currentPosBookmark.position : (progress ? progress.position : 0);
         
-        // Also update the current line state to match
-        setCurrentLine(progress.line);
-        setCurrentPosition(progress.position);
+        // Use a small delay to ensure rendering is complete
+        const timer = setTimeout(() => {
+          const targetScrollTop = (initialLine - 1) * lineHeightRef.current;
+          containerRef.current?.scrollTo({ top: targetScrollTop, behavior: 'auto' });
+          
+          // Also update the current line state to match
+          setCurrentLine(initialLine);
+          setCurrentPosition(initialPosition);
+          
+          updateVisibleRange();
+          hasInitiallyScrolled.current = true;
+        }, 200);
         
-        updateVisibleRange();
-        hasInitiallyScrolled.current = true;
-      }, 200);
-      
-      return () => clearTimeout(timer);
+        return () => clearTimeout(timer);
+      }).catch(err => {
+        console.error('Failed to load initial position:', err);
+        // Fall back to progress on error
+        if (progress) {
+          const timer = setTimeout(() => {
+            const targetScrollTop = (progress.line - 1) * lineHeightRef.current;
+            containerRef.current?.scrollTo({ top: targetScrollTop, behavior: 'auto' });
+            
+            setCurrentLine(progress.line);
+            setCurrentPosition(progress.position);
+            
+            updateVisibleRange();
+            hasInitiallyScrolled.current = true;
+          }, 200);
+          
+          return () => clearTimeout(timer);
+        }
+      });
     }
-  }, [isLoading, progress, updateVisibleRange]);
+  }, [isLoading, progress, updateVisibleRange, guide.id]);
   
   // Track visible lines on scroll with virtual scrolling
   useEffect(() => {
@@ -407,6 +449,19 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       showToast('error', 'Failed to add bookmark', error instanceof Error ? error.message : 'Unknown error');
     }
   }, [bookmarkLine, bookmarkTitle, bookmarkNote, guide.id, addBookmark, showToast]);
+
+  // Set as current position
+  const handleSetAsCurrentPosition = useCallback(async () => {
+    try {
+      await db.saveCurrentPositionBookmark(guide.id, bookmarkLine, 0);
+      showToast('success', 'Current position set!', `Line ${bookmarkLine} is now your current reading position`);
+      setShowBookmarkModal(false);
+      setBookmarkTitle('');
+      setBookmarkNote('');
+    } catch (error) {
+      showToast('error', 'Failed to set current position', error instanceof Error ? error.message : 'Unknown error');
+    }
+  }, [bookmarkLine, guide.id, showToast]);
   
   // Rendering functions
   const renderLoadingState = () => (
@@ -458,11 +513,29 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     );
   }, [isLoading, currentLine, goToLine, visibleRange, totalLines, handleLongPressStart, handleLongPressEnd]);
   
+  // Jump to current position
+  const handleJumpToCurrentPosition = useCallback(async () => {
+    try {
+      const currentPosBookmark = await db.getCurrentPositionBookmark(guide.id);
+      if (currentPosBookmark) {
+        goToLine(currentPosBookmark.line);
+        showToast('success', 'Jumped to current position', `Line ${currentPosBookmark.line}`);
+      } else {
+        showToast('info', 'No current position saved', 'Tap any line to set your current reading position');
+      }
+    } catch (error) {
+      showToast('error', 'Failed to jump to position', error instanceof Error ? error.message : 'Unknown error');
+    }
+  }, [guide.id, goToLine, showToast]);
+
   return (
     <div className="guide-reader">
       <div className="reader-header">
         <h1 className="guide-title">{guide.title}</h1>
         <div className="reader-controls">
+          <button onClick={handleJumpToCurrentPosition} className="control-btn primary">
+            📍 Current Position
+          </button>
           <button onClick={() => setShowSearch(!showSearch)} className="control-btn">
             Search
           </button>
@@ -584,7 +657,10 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
             </div>
             <div className="modal-actions">
               <button onClick={handleSaveBookmark} className="primary-btn">
-                Save
+                Save Bookmark
+              </button>
+              <button onClick={handleSetAsCurrentPosition} className="primary-btn">
+                📍 Set as Current Position
               </button>
               <button onClick={() => setShowBookmarkModal(false)} className="secondary-btn">
                 Cancel

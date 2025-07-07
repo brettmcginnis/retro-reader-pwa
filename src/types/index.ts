@@ -18,6 +18,7 @@ export interface Bookmark {
   title: string;
   note?: string;
   dateCreated: Date;
+  isCurrentPosition?: boolean;
 }
 
 export interface ReadingProgress {

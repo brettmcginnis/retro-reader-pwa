@@ -117,6 +117,35 @@ class DatabaseService {
     await db.delete('bookmarks', id);
   }
 
+  async saveCurrentPositionBookmark(guideId: string, line: number, position: number = 0): Promise<void> {
+    this.ensureDB();
+    
+    // First, remove any existing current position bookmark for this guide
+    const existingBookmarks = await this.getBookmarks(guideId);
+    const currentPositionBookmark = existingBookmarks.find(b => b.isCurrentPosition);
+    if (currentPositionBookmark) {
+      await this.deleteBookmark(currentPositionBookmark.id);
+    }
+    
+    // Create new current position bookmark
+    const bookmark: Bookmark = {
+      id: `current-position-${guideId}`,
+      guideId,
+      line,
+      position,
+      title: 'Current Position',
+      dateCreated: new Date(),
+      isCurrentPosition: true
+    };
+    
+    await this.saveBookmark(bookmark);
+  }
+
+  async getCurrentPositionBookmark(guideId: string): Promise<Bookmark | null> {
+    const bookmarks = await this.getBookmarks(guideId);
+    return bookmarks.find(b => b.isCurrentPosition) || null;
+  }
+
   async saveProgress(progress: ReadingProgress): Promise<void> {
     const db = this.ensureDB();
     await db.put('progress', progress);
