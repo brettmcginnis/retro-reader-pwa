@@ -1,5 +1,6 @@
 import React, { useState, ReactNode, useCallback } from 'react';
 import { Toast, ToastType, ConfirmationOptions } from '../types';
+import { TOAST_DEFAULT_DURATION } from '../constants';
 import ToastComponent from './ToastComponent';
 import { ToastContext } from './ToastContextInstance';
 
@@ -19,7 +20,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     type: ToastType,
     title: string,
     message?: string,
-    duration: number = 5000
+    duration: number = TOAST_DEFAULT_DURATION
   ): string => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     
