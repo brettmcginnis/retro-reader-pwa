@@ -155,7 +155,13 @@ Object.defineProperty(window, 'IDBObjectStore', {
 // Mock navigator.serviceWorker
 Object.defineProperty(navigator, 'serviceWorker', {
   value: {
-    register: jest.fn(() => Promise.resolve()),
+    register: jest.fn(() => Promise.resolve({
+      scope: '/retro-reader-pwa/',
+      updateViaCache: 'none',
+      active: null,
+      installing: null,
+      waiting: null,
+    })),
   },
   writable: true,
 });

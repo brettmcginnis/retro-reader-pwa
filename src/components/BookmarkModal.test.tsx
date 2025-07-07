@@ -3,6 +3,9 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BookmarkModal } from './BookmarkModal';
 
+// Mock the Modal component to avoid HeadlessUI transition warnings
+jest.mock('./Modal');
+
 describe('BookmarkModal', () => {
   const defaultProps = {
     isOpen: true,
