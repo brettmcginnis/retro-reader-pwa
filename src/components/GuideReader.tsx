@@ -25,6 +25,12 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ line: number; content: string }[]>([]);
   
+  // Bookmark modal state
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false);
+  const [bookmarkLine, setBookmarkLine] = useState<number>(1);
+  const [bookmarkTitle, setBookmarkTitle] = useState('');
+  const [bookmarkNote, setBookmarkNote] = useState('');
+  
   // References
   const guideRef = useRef<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,19 +39,16 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   const userScrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lineHeightRef = useRef(20);
   const lastContentRef = useRef<string>('');
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Initialize guide data - only once
   useEffect(() => {
-    console.log('Guide effect triggered. Guide ID:', guide.id, 'Content length:', guide.content.length);
-    
     // Only reload if content actually changed
     if (lastContentRef.current === guide.content) {
-      console.log('Content unchanged, skipping reload');
       return;
     }
     
     const loadGuide = () => {
-      console.log('Loading guide data...');
       
       // Split content into lines
       const lines = guide.content.split('\n');
@@ -170,6 +173,11 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       const timer = setTimeout(() => {
         const targetScrollTop = (progress.line - 1) * lineHeightRef.current;
         containerRef.current?.scrollTo({ top: targetScrollTop, behavior: 'auto' });
+        
+        // Also update the current line state to match
+        setCurrentLine(progress.line);
+        setCurrentPosition(progress.position);
+        
         updateVisibleRange();
         hasInitiallyScrolled.current = true;
       }, 200);
@@ -183,8 +191,20 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     if (isLoading || !containerRef.current) return;
     
     const handleScroll = () => {
-      // Only update visible range, don't update current line automatically
+      // Update visible range for virtual scrolling
       updateVisibleRange();
+      
+      // Calculate current line based on scroll position
+      const container = containerRef.current;
+      if (container) {
+        const scrollTop = container.scrollTop;
+        const lineHeight = lineHeightRef.current;
+        const currentLineFromScroll = Math.max(1, Math.floor(scrollTop / lineHeight) + 1);
+        
+        // Update current line if it has changed
+        setCurrentLine(currentLineFromScroll);
+        setCurrentPosition(0); // Reset position when scrolling
+      }
       
       // Mark that user is actively scrolling
       userScrollingRef.current = true;
@@ -347,6 +367,47 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   };
   
+  // Long press handlers
+  const handleLongPressStart = useCallback((lineNumber: number) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setBookmarkLine(lineNumber);
+      setBookmarkTitle(`Line ${lineNumber}`);
+      setBookmarkNote('');
+      setShowBookmarkModal(true);
+    }, 500); // 500ms for long press
+  }, []);
+  
+  const handleLongPressEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+  
+  // Save bookmark from modal
+  const handleSaveBookmark = useCallback(async () => {
+    if (!bookmarkTitle.trim()) {
+      showToast('warning', 'Title Required', 'Please enter a title for the bookmark');
+      return;
+    }
+    
+    try {
+      await addBookmark({
+        guideId: guide.id,
+        line: bookmarkLine,
+        position: 0,
+        title: bookmarkTitle.trim(),
+        note: bookmarkNote.trim() || undefined
+      });
+      showToast('success', 'Bookmark added!', `Bookmark "${bookmarkTitle}" created at line ${bookmarkLine}`);
+      setShowBookmarkModal(false);
+      setBookmarkTitle('');
+      setBookmarkNote('');
+    } catch (error) {
+      showToast('error', 'Failed to add bookmark', error instanceof Error ? error.message : 'Unknown error');
+    }
+  }, [bookmarkLine, bookmarkTitle, bookmarkNote, guide.id, addBookmark, showToast]);
+  
   // Rendering functions
   const renderLoadingState = () => (
     <div className="loading-state">
@@ -379,6 +440,12 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
                 data-line={lineNumber}
                 className={`line ${isCurrentLine ? 'current-line' : ''}`}
                 onClick={() => goToLine(lineNumber)}
+                onMouseDown={() => handleLongPressStart(lineNumber)}
+                onMouseUp={handleLongPressEnd}
+                onMouseLeave={handleLongPressEnd}
+                onTouchStart={() => handleLongPressStart(lineNumber)}
+                onTouchEnd={handleLongPressEnd}
+                onTouchCancel={handleLongPressEnd}
                 style={{ height: lineHeightRef.current }}
               >
                 <span className="line-number">{lineNumber}</span>
@@ -389,7 +456,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         </div>
       </div>
     );
-  }, [isLoading, currentLine, goToLine, visibleRange, totalLines]);
+  }, [isLoading, currentLine, goToLine, visibleRange, totalLines, handleLongPressStart, handleLongPressEnd]);
   
   return (
     <div className="guide-reader">
@@ -485,6 +552,47 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       >
         {renderContent}
       </div>
+
+      {showBookmarkModal && (
+        <div className="bookmark-modal-overlay" onClick={() => setShowBookmarkModal(false)}>
+          <div className="bookmark-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Add Bookmark at Line {bookmarkLine}</h3>
+              <button onClick={() => setShowBookmarkModal(false)} className="close-btn">&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label htmlFor="bookmark-title">Title:</label>
+                <input 
+                  type="text" 
+                  id="bookmark-title"
+                  value={bookmarkTitle}
+                  onChange={(e) => setBookmarkTitle(e.target.value)}
+                  placeholder="Bookmark title"
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="bookmark-note">Note (optional):</label>
+                <textarea 
+                  id="bookmark-note"
+                  value={bookmarkNote}
+                  onChange={(e) => setBookmarkNote(e.target.value)}
+                  placeholder="Add a note..."
+                />
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button onClick={handleSaveBookmark} className="primary-btn">
+                Save
+              </button>
+              <button onClick={() => setShowBookmarkModal(false)} className="secondary-btn">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
