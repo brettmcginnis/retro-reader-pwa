@@ -73,6 +73,8 @@ describe('GuideLibrary Import/Export Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
+    // Reset the fetchGuide mock to ensure it returns a resolved promise
+    mockUseGuides.fetchGuide.mockResolvedValue(undefined);
   });
 
   describe('Export All Functionality', () => {

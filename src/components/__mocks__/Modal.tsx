@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -16,20 +16,6 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   size = 'md' 
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen && modalRef.current) {
-      // Focus the modal content when opened
-      const focusableElement = modalRef.current.querySelector<HTMLElement>(
-        'input, textarea, button, select, a[href], [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusableElement) {
-        focusableElement.focus();
-      }
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   const sizeClasses = {
@@ -40,7 +26,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="relative z-50" role="dialog" ref={modalRef}>
+    <div className="relative z-50" role="dialog">
       <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" />
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4 text-center">

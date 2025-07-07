@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BookmarkModal } from './BookmarkModal';
 
@@ -52,34 +52,30 @@ describe('BookmarkModal', () => {
     expect(screen.getByText('Notes (optional)')).toBeInTheDocument();
   });
 
-  it('should call onTitleChange when title is edited', async () => {
-    const user = userEvent.setup();
+  it('should call onTitleChange when title is edited', () => {
     render(<BookmarkModal {...defaultProps} />);
     
     const titleInput = screen.getByLabelText('Title');
-    // Clear and type new value
-    await user.clear(titleInput);
-    await user.type(titleInput, 'New title');
+    // Use fireEvent for more reliable CI behavior
+    fireEvent.change(titleInput, { target: { value: 'Test bookmark titleX' } });
     
     // Verify that onTitleChange was called
     expect(defaultProps.onTitleChange).toHaveBeenCalled();
-    // Check that it was called with empty string (from clear)
-    expect(defaultProps.onTitleChange).toHaveBeenCalledWith('');
+    expect(defaultProps.onTitleChange).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onTitleChange).toHaveBeenCalledWith('Test bookmark titleX');
   });
 
-  it('should call onNoteChange when note is edited', async () => {
-    const user = userEvent.setup();
+  it('should call onNoteChange when note is edited', () => {
     render(<BookmarkModal {...defaultProps} />);
     
     const notesTextarea = screen.getByLabelText('Notes');
-    // Clear and type new value
-    await user.clear(notesTextarea);
-    await user.type(notesTextarea, 'New note');
+    // Use fireEvent for more reliable CI behavior
+    fireEvent.change(notesTextarea, { target: { value: 'Test noteY' } });
     
     // Verify that onNoteChange was called
     expect(defaultProps.onNoteChange).toHaveBeenCalled();
-    // Check that it was called with empty string (from clear)
-    expect(defaultProps.onNoteChange).toHaveBeenCalledWith('');
+    expect(defaultProps.onNoteChange).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onNoteChange).toHaveBeenCalledWith('Test noteY');
   });
 
   it('should display all action buttons', () => {
