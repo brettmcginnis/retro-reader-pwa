@@ -3,4 +3,5 @@
     - the line is highlighted
     - when opening a guide the user is restored to this bookmark
     - Bookmark overlay has a button for "Set as Current Position"
+    - when a new current position is set, the existing current bookmark should be saved
 - A bookmark saving overlay is displayed when a user long presses a line

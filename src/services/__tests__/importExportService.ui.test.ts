@@ -108,7 +108,6 @@ describe('ImportExportService UI Integration Tests', () => {
             id: 'b1',
             guideId: '1',
             line: 10,
-            position: 0,
             title: 'Important Section',
             note: 'This is important',
             dateCreated: new Date('2023-01-05')
@@ -118,7 +117,6 @@ describe('ImportExportService UI Integration Tests', () => {
           {
             guideId: '1',
             line: 50,
-            position: 0,
             percentage: 25,
             lastRead: new Date('2023-01-06')
           }
@@ -177,7 +175,6 @@ describe('ImportExportService UI Integration Tests', () => {
             id: 'imported-b1',
             guideId: 'imported-1',
             line: 20,
-            position: 0,
             title: 'Imported Bookmark',
             dateCreated: new Date('2023-01-03')
           }
@@ -186,7 +183,6 @@ describe('ImportExportService UI Integration Tests', () => {
           {
             guideId: 'imported-1',
             line: 30,
-            position: 0,
             percentage: 40,
             lastRead: new Date('2023-01-04')
           }

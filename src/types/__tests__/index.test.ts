@@ -25,14 +25,12 @@ describe('Type Definitions', () => {
     const progress: ReadingProgress = {
       guideId: 'guide-1',
       line: 10,
-      position: 50,
       percentage: 25.5,
       lastRead: new Date('2023-01-01'),
     };
 
     expect(typeof progress.guideId).toBe('string');
     expect(typeof progress.line).toBe('number');
-    expect(typeof progress.position).toBe('number');
     expect(typeof progress.percentage).toBe('number');
     expect(progress.lastRead).toBeInstanceOf(Date);
   });
@@ -42,7 +40,6 @@ describe('Type Definitions', () => {
       id: 'bookmark-1',
       guideId: 'guide-1',
       line: 100,
-      position: 0,
       title: 'Important Section',
       dateCreated: new Date('2023-01-01'),
     };
@@ -50,7 +47,6 @@ describe('Type Definitions', () => {
     expect(typeof bookmark.id).toBe('string');
     expect(typeof bookmark.guideId).toBe('string');
     expect(typeof bookmark.line).toBe('number');
-    expect(typeof bookmark.position).toBe('number');
     expect(typeof bookmark.title).toBe('string');
     expect(bookmark.dateCreated).toBeInstanceOf(Date);
   });

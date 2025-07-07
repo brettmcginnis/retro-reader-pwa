@@ -14,7 +14,6 @@ export interface Bookmark {
   id: string;
   guideId: string;
   line: number;
-  position: number;
   title: string;
   note?: string;
   dateCreated: Date;
@@ -24,7 +23,6 @@ export interface Bookmark {
 export interface ReadingProgress {
   guideId: string;
   line: number;
-  position: number;
   percentage: number;
   lastRead: Date;
 }

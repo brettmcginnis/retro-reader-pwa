@@ -211,15 +211,16 @@ describe('ImportExportService', () => {
           {
             id: '1',
             guideId: '1',
+            line: 100,
             title: 'Bookmark',
-            position: 100,
             dateCreated: new Date().toISOString()
           }
         ],
         progress: [
           {
             guideId: '1',
-            position: 50,
+            line: 50,
+            percentage: 25,
             lastRead: new Date().toISOString()
           }
         ],

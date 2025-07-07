@@ -120,7 +120,6 @@ describe('GuideReader Tests', () => {
       mockUseProgress.progress = {
         guideId: 'test-guide-1',
         line: 100,
-        position: 0,
         percentage: 50,
         lastRead: new Date()
       };
@@ -223,7 +222,6 @@ describe('GuideReader Tests', () => {
         id: 'bookmark-1',
         guideId: 'test-guide-1',
         line: 2,
-        position: 0,
         title: 'Important Section',
         note: 'Remember this',
         dateCreated: new Date()
@@ -266,7 +264,6 @@ describe('GuideReader Tests', () => {
       expect(mockUseBookmarks.addBookmark).toHaveBeenCalledWith({
         guideId: 'test-guide-1',
         line: 2,
-        position: 0,
         title: 'Important Section',
         note: 'Remember this'
       });

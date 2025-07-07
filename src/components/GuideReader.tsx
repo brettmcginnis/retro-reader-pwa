@@ -16,7 +16,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   
   // Basic state
   const [currentLine, setCurrentLine] = useState(1);
-  const [currentPosition, setCurrentPosition] = useState(0);
   const [totalLines, setTotalLines] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 100 });
@@ -77,12 +76,10 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
         if (currentPosBookmark) {
           setCurrentLine(currentPosBookmark.line);
-          setCurrentPosition(currentPosBookmark.position);
           hasSetInitialPosition.current = true;
         } else if (progress) {
           // Fall back to progress if no current position bookmark
           setCurrentLine(progress.line);
-          setCurrentPosition(progress.position);
           hasSetInitialPosition.current = true;
         }
       }).catch(err => {
@@ -90,7 +87,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         // Fall back to progress on error
         if (progress) {
           setCurrentLine(progress.line);
-          setCurrentPosition(progress.position);
           hasSetInitialPosition.current = true;
         }
       });
@@ -121,13 +117,12 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       saveProgress({
         guideId: guide.id,
         line: currentLine,
-        position: currentPosition,
         percentage: Math.min(100, Math.max(0, (currentLine / totalLines) * 100))
       }).catch(err => console.error('Failed to save progress:', err));
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [currentLine, currentPosition, guide.id, isLoading, saveProgress, totalLines]);
+  }, [currentLine, guide.id, isLoading, saveProgress, totalLines]);
   
   // Calculate visible lines based on scroll position
   const updateVisibleRange = useCallback(() => {
@@ -166,7 +161,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
     
     // Set current line
     setCurrentLine(targetLine);
-    setCurrentPosition(0);
     
     // Calculate scroll position for virtual scrolling
     const targetScrollTop = (targetLine - 1) * lineHeightRef.current;
@@ -191,7 +185,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       // Check for current position bookmark first
       db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
         const initialLine = currentPosBookmark ? currentPosBookmark.line : (progress ? progress.line : 1);
-        const initialPosition = currentPosBookmark ? currentPosBookmark.position : (progress ? progress.position : 0);
         
         // Use a small delay to ensure rendering is complete
         const timer = setTimeout(() => {
@@ -200,7 +193,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
           
           // Also update the current line state to match
           setCurrentLine(initialLine);
-          setCurrentPosition(initialPosition);
           
           updateVisibleRange();
           hasInitiallyScrolled.current = true;
@@ -216,7 +208,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
             containerRef.current?.scrollTo({ top: targetScrollTop, behavior: 'auto' });
             
             setCurrentLine(progress.line);
-            setCurrentPosition(progress.position);
             
             updateVisibleRange();
             hasInitiallyScrolled.current = true;
@@ -245,7 +236,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         
         // Update current line if it has changed
         setCurrentLine(currentLineFromScroll);
-        setCurrentPosition(0); // Reset position when scrolling
       }
       
       // Mark that user is actively scrolling
@@ -312,7 +302,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         await addBookmark({
           guideId: guide.id,
           line: currentLine,
-          position: currentPosition,
           title
         });
         showToast('success', 'Bookmark added!', `Bookmark "${title}" created at line ${currentLine}`);
@@ -320,7 +309,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
         showToast('error', 'Failed to add bookmark', error instanceof Error ? error.message : 'Unknown error');
       }
     }
-  }, [currentLine, currentPosition, guide.id, addBookmark, showToast]);
+  }, [currentLine, guide.id, addBookmark, showToast]);
   
   // Keyboard navigation
   useEffect(() => {
@@ -437,7 +426,6 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
       await addBookmark({
         guideId: guide.id,
         line: bookmarkLine,
-        position: 0,
         title: bookmarkTitle.trim(),
         note: bookmarkNote.trim() || undefined
       });
@@ -453,7 +441,7 @@ export const GuideReader: React.FC<GuideReaderProps> = ({ guide }) => {
   // Set as current position
   const handleSetAsCurrentPosition = useCallback(async () => {
     try {
-      await db.saveCurrentPositionBookmark(guide.id, bookmarkLine, 0);
+      await db.saveCurrentPositionBookmark(guide.id, bookmarkLine);
       showToast('success', 'Current position set!', `Line ${bookmarkLine} is now your current reading position`);
       setShowBookmarkModal(false);
       setBookmarkTitle('');

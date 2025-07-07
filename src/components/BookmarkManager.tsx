@@ -226,7 +226,6 @@ const AddBookmarkModal: React.FC<AddBookmarkModalProps> = ({ guideId, maxLine, o
       await onSave({
         guideId,
         line,
-        position: 0,
         title: title.trim(),
         note: note.trim() || undefined
       });
