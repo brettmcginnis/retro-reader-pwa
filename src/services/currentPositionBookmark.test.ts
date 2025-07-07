@@ -1,8 +1,8 @@
-import { db } from '../database';
-import { Bookmark } from '../../types';
+import { db } from './database';
+import { Bookmark } from '../types';
 
 // Mock the database module
-jest.mock('../database', () => {
+jest.mock('./database', () => {
   return {
     db: {
       init: jest.fn().mockResolvedValue(undefined),

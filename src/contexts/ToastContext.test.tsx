@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ToastProvider } from '../ToastContext';
-import { useToast } from '../useToast';
-import { ToastType } from '../../types';
+import { ToastProvider } from './ToastContext';
+import { useToast } from './useToast';
+import { ToastType } from '../types';
 
 const TestToastComponent: React.FC = () => {
   const { showToast, showConfirmation, clearAllToasts } = useToast();
@@ -147,8 +147,10 @@ describe('ToastContext', () => {
 
       expect(screen.getByText('success Title')).toBeInTheDocument();
 
-      // Advance timers without manual act()
-      jest.advanceTimersByTime(3000);
+      // Advance timers to trigger auto-dismiss
+      await act(async () => {
+        jest.advanceTimersByTime(3000);
+      });
 
       await waitFor(() => {
         expect(screen.queryByText('success Title')).not.toBeInTheDocument();

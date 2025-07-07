@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Guide } from '../../types';
-import { ToastProvider } from '../../contexts/ToastContext';
-import { AppProvider } from '../../contexts/AppContext';
+import { Guide } from '../types';
+import { ToastProvider } from '../contexts/ToastContext';
+import { AppProvider } from '../contexts/AppContext';
 
 const mockUseProgress = {
   progress: null,
@@ -23,15 +23,15 @@ const mockUseBookmarks = {
   refresh: jest.fn()
 };
 
-jest.mock('../../hooks/useProgress', () => ({
+jest.mock('../hooks/useProgress', () => ({
   useProgress: () => mockUseProgress
 }));
 
-jest.mock('../../hooks/useBookmarks', () => ({
+jest.mock('../hooks/useBookmarks', () => ({
   useBookmarks: () => mockUseBookmarks
 }));
 
-jest.mock('../../services/database', () => ({
+jest.mock('../services/database', () => ({
   db: {
     saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
     getCurrentPositionBookmark: jest.fn().mockResolvedValue(null),
@@ -40,7 +40,7 @@ jest.mock('../../services/database', () => ({
 }));
 
 // Import after mocks are set up
-import { GuideReader } from '../GuideReader';
+import { GuideReader } from './GuideReader';
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <AppProvider>

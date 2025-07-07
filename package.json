@@ -9,11 +9,11 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "test": "jest --testPathIgnorePatterns=\"__tests__\"",
-    "test:watch": "jest --testPathIgnorePatterns=\"__tests__\" --watch",
-    "test:coverage": "jest --testPathIgnorePatterns=\"__tests__\" --coverage",
-    "test:ui": "jest --testPathPatterns=\"__tests__\"",
-    "test:ui:watch": "jest --testPathPatterns=\"__tests__\" --watch"
+    "test": "jest --testMatch=\"**/*.test.ts\"",
+    "test:watch": "jest --testMatch=\"**/*.test.ts\" --watch",
+    "test:coverage": "jest --coverage",
+    "test:ui": "jest --testMatch=\"**/*.test.tsx\"",
+    "test:ui:watch": "jest --testMatch=\"**/*.test.tsx\" --watch"
   },
   "dependencies": {
     "idb": "^8.0.0",
