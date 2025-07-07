@@ -1,0 +1,3 @@
+- Scrolling position is saved as user scrolls
+- When a user returns to a guide, the scrolling position is restored
+- A bookmark saving overlay is displayed when a user long presses a line
