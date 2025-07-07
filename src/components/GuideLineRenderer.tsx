@@ -5,6 +5,8 @@ interface GuideLineRendererProps {
   line: string;
   lineNumber: number;
   isSelected: boolean;
+  isBookmarked: boolean;
+  isCurrentPosition: boolean;
   lineHeight: number;
   searchQuery: string;
   onMouseDown: (lineNumber: number) => void;
@@ -18,6 +20,8 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
   line,
   lineNumber,
   isSelected,
+  isBookmarked,
+  isCurrentPosition,
   lineHeight,
   searchQuery,
   onMouseDown,
@@ -52,7 +56,11 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
         'select-none cursor-pointer',
         'hover:bg-retro-100 dark:hover:bg-retro-800',
         // Selected state
-        isSelected && 'bg-blue-100 dark:bg-blue-900/30'
+        isSelected && 'bg-blue-100 dark:bg-blue-900/30',
+        // Current position bookmark highlighting
+        isCurrentPosition && 'bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500',
+        // Regular bookmark highlighting (subtle)
+        isBookmarked && !isCurrentPosition && 'bg-purple-50 dark:bg-purple-900/20'
       )}
       style={{ height: `${lineHeight}px` }}
       data-testid={`line-${lineNumber}`}

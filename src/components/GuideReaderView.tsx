@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import { Guide } from '../types';
+import { Guide, Bookmark } from '../types';
 import { LINE_HEIGHT, LONGPRESS_DELAY, BOOKMARK_VIBRATION_DURATION, OVERSCAN_COUNT } from '../constants';
 
 import { GuideLineRenderer } from './GuideLineRenderer';
@@ -16,6 +16,7 @@ interface GuideReaderViewProps {
   isLoading: boolean;
   searchQuery: string;
   searchResults: { line: number; content: string }[];
+  bookmarks: Bookmark[];
   initialLine: number;
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
@@ -34,6 +35,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   isLoading,
   searchQuery,
   searchResults,
+  bookmarks,
   initialLine,
   onLineChange: _onLineChange,
   onSearch,
@@ -55,6 +57,12 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   const lineHeightRef = useRef(LINE_HEIGHT);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyScrolled = useRef(false);
+
+  // Create a map of bookmarked lines for quick lookup
+  const bookmarkedLines = new Map<number, Bookmark>();
+  bookmarks.forEach(bookmark => {
+    bookmarkedLines.set(bookmark.line, bookmark);
+  });
 
   // Calculate visible range for virtual scrolling
   const updateVisibleRange = useCallback(() => {
@@ -93,11 +101,13 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         navigator.vibrate(BOOKMARK_VIBRATION_DURATION);
       }
       setBookmarkLine(lineNumber);
-      setBookmarkTitle(`Line ${lineNumber}`);
+      // Pre-fill title with the actual line content, trimmed
+      const lineContent = lines[lineNumber - 1]?.trim() || `Line ${lineNumber}`;
+      setBookmarkTitle(lineContent);
       setBookmarkNote('');
       setShowBookmarkModal(true);
     }, LONGPRESS_DELAY);
-  }, []);
+  }, [lines]);
 
   const handleLongPressEnd = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -123,6 +133,13 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
 
   const handleSetAsCurrentPosition = async () => {
     await onSetAsCurrentPosition(currentLine);
+  };
+
+  const handleSetBookmarkLineAsCurrentPosition = async () => {
+    const success = await onSetAsCurrentPosition(bookmarkLine);
+    if (success) {
+      setShowBookmarkModal(false);
+    }
   };
 
   // Initial scroll to saved position
@@ -184,12 +201,15 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
           <div style={{ transform: `translateY(${offsetTop}px)` }}>
             {visibleLines.map((line, index) => {
               const lineNumber = start + index + 1;
+              const bookmark = bookmarkedLines.get(lineNumber);
               return (
                 <GuideLineRenderer
                   key={lineNumber}
                   line={line}
                   lineNumber={lineNumber}
                   isSelected={lineNumber === currentLine}
+                  isBookmarked={!!bookmark}
+                  isCurrentPosition={bookmark?.isCurrentPosition || false}
                   lineHeight={lineHeightRef.current}
                   searchQuery={searchQuery}
                   onMouseDown={handleLongPressStart}
@@ -212,6 +232,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onTitleChange={setBookmarkTitle}
         onNoteChange={setBookmarkNote}
         onSave={handleSaveBookmark}
+        onSetAsCurrentPosition={handleSetBookmarkLineAsCurrentPosition}
         onClose={() => setShowBookmarkModal(false)}
       />
     </div>
