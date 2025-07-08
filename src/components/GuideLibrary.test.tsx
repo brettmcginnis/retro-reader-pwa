@@ -254,7 +254,7 @@ describe('GuideLibrary Import/Export Tests', () => {
   });
 
   describe('URL Import', () => {
-    it('should show warning toast for empty URL', async () => {
+    it('should disable fetch button for empty URL', async () => {
       const user = userEvent.setup();
       
       render(
@@ -267,11 +267,15 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.click(urlTab);
 
       const fetchButton = screen.getByRole('button', { name: /fetch guide/i });
-      await user.click(fetchButton);
-
-      await waitFor(() => {
-        expect(toast.custom).toHaveBeenCalled();
-      });
+      
+      // Button should be disabled when URL is empty
+      expect(fetchButton).toBeDisabled();
+      
+      // Type a URL and button should be enabled
+      const urlInput = screen.getByPlaceholderText(/enter guide url/i);
+      await user.type(urlInput, 'https://example.com/guide.txt');
+      
+      expect(fetchButton).not.toBeDisabled();
     });
 
     it('should attempt to fetch guide with valid URL', async () => {

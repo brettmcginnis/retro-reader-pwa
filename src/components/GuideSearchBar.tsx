@@ -44,9 +44,9 @@ export const GuideSearchBar: React.FC<GuideSearchBarProps> = ({
             Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
           </div>
           <div className="max-h-60 overflow-y-auto">
-            {searchResults.slice(0, 10).map((result) => (
+            {searchResults.slice(0, 10).map((result, index) => (
               <button
-                key={result.line}
+                key={`${result.line}-${index}`}
                 className="w-full px-3 py-2 text-left text-sm hover:bg-retro-100 dark:hover:bg-retro-700 focus:bg-retro-100 dark:focus:bg-retro-700 focus:outline-none transition-colors"
                 onClick={() => onJumpToResult(result.line)}
               >
