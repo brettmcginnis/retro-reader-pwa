@@ -31,12 +31,29 @@ jest.mock('../hooks/useBookmarks', () => ({
   useBookmarks: () => mockUseBookmarks
 }));
 
+const mockDb = {
+  saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
+  getCurrentPositionBookmark: jest.fn().mockResolvedValue(null),
+  init: jest.fn().mockResolvedValue(undefined)
+};
+
 jest.mock('../services/database', () => ({
-  db: {
-    saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
-    getCurrentPositionBookmark: jest.fn().mockResolvedValue(null),
-    init: jest.fn().mockResolvedValue(undefined)
-  }
+  db: mockDb
+}));
+
+const mockUseApp = jest.fn(() => ({
+  navigationTargetLine: null,
+  setNavigationTargetLine: jest.fn(),
+  currentView: 'reader',
+  setCurrentView: jest.fn(),
+  currentGuideId: 'test-guide-1',
+  setCurrentGuideId: jest.fn(),
+  theme: 'light',
+  toggleTheme: jest.fn()
+}));
+
+jest.mock('../contexts/useApp', () => ({
+  useApp: mockUseApp
 }));
 
 // Import after mocks are set up
@@ -491,6 +508,159 @@ describe('GuideReader Tests', () => {
       // Check for Set as Current Position button
       const setCurrentButton = screen.getByRole('button', { name: 'Set as Current Position' });
       expect(setCurrentButton).toBeInTheDocument();
+    });
+  });
+
+  describe('Bookmark Navigation Integration', () => {
+    it('should scroll to bookmark line when navigating from bookmark manager', async () => {
+      // Setup navigation target in context
+      const mockSetNavigationTargetLine = jest.fn();
+      mockUseApp.mockReturnValue({
+        navigationTargetLine: 75,
+        setNavigationTargetLine: mockSetNavigationTargetLine,
+        currentView: 'reader',
+        setCurrentView: jest.fn(),
+        currentGuideId: 'test-guide-1',
+        setCurrentGuideId: jest.fn(),
+        theme: 'light',
+        toggleTheme: jest.fn()
+      });
+
+      render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Guide')).toBeInTheDocument();
+      });
+
+      // Allow time for initial scroll to navigation target
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+
+      // Check that navigation input shows the target line
+      const goToLineInput = screen.getByRole('spinbutton');
+      await waitFor(() => {
+        expect(goToLineInput).toHaveValue(75);
+      });
+
+      // Verify navigation target was cleared after use
+      expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
+    });
+
+    it('should handle navigation target after component is already loaded', async () => {
+      const mockSetNavigationTargetLine = jest.fn();
+      
+      // Start without navigation target
+      // Update the global mockUseApp
+      mockUseApp.mockReturnValue({
+        navigationTargetLine: null,
+        setNavigationTargetLine: mockSetNavigationTargetLine,
+        currentView: 'reader',
+        setCurrentView: jest.fn(),
+        currentGuideId: 'test-guide-1',
+        setCurrentGuideId: jest.fn(),
+        theme: 'light',
+        toggleTheme: jest.fn()
+      });
+
+      const { rerender } = render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Guide')).toBeInTheDocument();
+      });
+
+      // Verify starting at line 1
+      const goToLineInput = screen.getByRole('spinbutton');
+      expect(goToLineInput).toHaveValue(1);
+
+      // Update context with navigation target
+      mockUseApp.mockReturnValue({
+        navigationTargetLine: 50,
+        setNavigationTargetLine: mockSetNavigationTargetLine,
+        currentView: 'reader',
+        setCurrentView: jest.fn(),
+        currentGuideId: 'test-guide-1',
+        setCurrentGuideId: jest.fn(),
+        theme: 'light',
+        toggleTheme: jest.fn()
+      });
+
+      rerender(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      // Allow time for scroll
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+
+      // Should now show line 50
+      await waitFor(() => {
+        expect(goToLineInput).toHaveValue(50);
+      });
+
+      // Navigation target should be cleared
+      expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
+    });
+
+    it('should prioritize navigation target over current position bookmark', async () => {
+      const mockSetNavigationTargetLine = jest.fn();
+      
+      // Set up both navigation target and current position bookmark
+      mockUseApp.mockReturnValue({
+        navigationTargetLine: 25,
+        setNavigationTargetLine: mockSetNavigationTargetLine,
+        currentView: 'reader',
+        setCurrentView: jest.fn(),
+        currentGuideId: 'test-guide-1',
+        setCurrentGuideId: jest.fn(),
+        theme: 'light',
+        toggleTheme: jest.fn()
+      });
+
+      // Mock getCurrentPositionBookmark to return a bookmark
+      const mockGetCurrentPositionBookmark = jest.fn().mockResolvedValue({
+        id: 'current-position-test-guide-1',
+        guideId: 'test-guide-1',
+        line: 80,
+        title: 'Current Position',
+        dateCreated: new Date(),
+        isCurrentPosition: true
+      });
+      mockDb.getCurrentPositionBookmark = mockGetCurrentPositionBookmark;
+
+      render(
+        <TestWrapper>
+          <GuideReader guide={mockGuide} />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Guide')).toBeInTheDocument();
+      });
+
+      // Allow time for initial scroll
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+
+      // Should use navigation target (25) instead of current position (80)
+      const goToLineInput = screen.getByRole('spinbutton');
+      await waitFor(() => {
+        expect(goToLineInput).toHaveValue(25);
+      });
+
+      expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
     });
   });
 });

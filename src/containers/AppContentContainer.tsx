@@ -5,7 +5,7 @@ import { Guide } from '../types';
 import { AppContentView } from '../components/AppContentView';
 
 export const AppContentContainer: React.FC = () => {
-  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId } = useApp();
+  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId, setNavigationTargetLine } = useApp();
   const { getGuide } = useGuides();
   const [currentGuide, setCurrentGuide] = React.useState<Guide | null>(null);
   const [isLoadingGuide, setIsLoadingGuide] = React.useState<boolean>(false);
@@ -103,6 +103,12 @@ export const AppContentContainer: React.FC = () => {
     setCurrentView(view);
   };
 
+  const handleNavigateToLine = (line: number) => {
+    // Set the target line in context and switch to reader view
+    setNavigationTargetLine(line);
+    setCurrentView('reader');
+  };
+
   return (
     <AppContentView
       currentView={currentView}
@@ -110,6 +116,7 @@ export const AppContentContainer: React.FC = () => {
       isLoadingGuide={isLoadingGuide}
       onBackToLibrary={handleBackToLibrary}
       onViewChange={handleViewChange}
+      onNavigateToLine={handleNavigateToLine}
     />
   );
 };

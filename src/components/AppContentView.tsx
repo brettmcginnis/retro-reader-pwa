@@ -10,6 +10,7 @@ interface AppContentViewProps {
   isLoadingGuide: boolean;
   onBackToLibrary: () => void;
   onViewChange: (view: 'library' | 'reader' | 'bookmarks') => void;
+  onNavigateToLine: (line: number) => void;
 }
 
 export const AppContentView: React.FC<AppContentViewProps> = ({
@@ -17,12 +18,12 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
   currentGuide,
   isLoadingGuide,
   onBackToLibrary,
-  onViewChange
+  onViewChange,
+  onNavigateToLine
 }) => {
-  const handleGotoLine = () => {
-    // This will be handled by switching to reader view
-    // The GuideReader component will handle the line navigation
-    onViewChange('reader');
+  const handleGotoLine = (line: number) => {
+    // Navigate to the reader view with the target line
+    onNavigateToLine(line);
   };
 
   const renderNavigation = () => {
