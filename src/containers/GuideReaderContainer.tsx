@@ -3,6 +3,7 @@ import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useToast } from '../contexts/useToast';
+import { useApp } from '../contexts/useApp';
 import { db } from '../services/database';
 import { GuideReaderView } from '../components/GuideReaderView';
 
@@ -14,6 +15,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const { progress, saveProgress } = useProgress(guide.id);
   const { addBookmark, bookmarks } = useBookmarks(guide.id);
   const { showToast } = useToast();
+  const { navigationTargetLine, setNavigationTargetLine } = useApp();
   
   // Basic state
   const [currentLine, setCurrentLine] = useState(1);
@@ -70,29 +72,48 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     }
   }, [progress]);
   
-  // Set initial position from saved progress or current position bookmark - only once
+  // Set initial position from navigation target, saved progress or current position bookmark - only once
   useEffect(() => {
     if (!isLoading && !hasSetInitialPosition.current) {
-      // Check for current position bookmark first
-      db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
-        if (currentPosBookmark) {
-          setCurrentLine(currentPosBookmark.line);
-          hasSetInitialPosition.current = true;
-        } else if (progress) {
-          // Fall back to progress if no current position bookmark
-          setCurrentLine(progress.line);
-          hasSetInitialPosition.current = true;
-        }
-      }).catch(err => {
-        console.error('Failed to load current position bookmark:', err);
-        // Fall back to progress on error
-        if (progress) {
-          setCurrentLine(progress.line);
-          hasSetInitialPosition.current = true;
-        }
-      });
+      // Check for navigation target first
+      if (navigationTargetLine !== null) {
+        setCurrentLine(navigationTargetLine);
+        hasSetInitialPosition.current = true;
+        // Clear the navigation target after using it
+        setNavigationTargetLine(null);
+      } else {
+        // Check for current position bookmark
+        db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
+          if (currentPosBookmark) {
+            setCurrentLine(currentPosBookmark.line);
+            hasSetInitialPosition.current = true;
+          } else if (progress) {
+            // Fall back to progress if no current position bookmark
+            setCurrentLine(progress.line);
+            hasSetInitialPosition.current = true;
+          }
+        }).catch(err => {
+          console.error('Failed to load current position bookmark:', err);
+          // Fall back to progress on error
+          if (progress) {
+            setCurrentLine(progress.line);
+            hasSetInitialPosition.current = true;
+          }
+        });
+      }
     }
-  }, [progress, isLoading, guide.id]);
+  }, [progress, isLoading, guide.id, navigationTargetLine, setNavigationTargetLine]);
+
+  // Handle navigation target changes after initial load
+  useEffect(() => {
+    if (navigationTargetLine !== null && hasSetInitialPosition.current && !isLoading) {
+      setCurrentLine(navigationTargetLine);
+      // Reset the scrolled flag to trigger scrolling
+      hasInitiallyScrolled.current = false;
+      // Clear the navigation target
+      setNavigationTargetLine(null);
+    }
+  }, [navigationTargetLine, setNavigationTargetLine, isLoading]);
   
   // Save progress when current line changes (with debounce)
   useEffect(() => {
