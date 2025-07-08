@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { Guide } from '../types';
+import { Guide, Bookmark } from '../types';
 
 // Mock hooks and services
 const mockSaveProgress = jest.fn().mockResolvedValue(undefined);
@@ -56,19 +56,38 @@ jest.mock('../services/database', () => ({
   db: mockDb
 }));
 
-interface GuideReaderViewProps {
+// Simplified mock props for testing - using actual types from GuideReaderView
+interface MockGuideReaderViewProps {
+  guide: Guide;
+  lines: string[];
+  currentLine: number;
+  totalLines: number;
+  isLoading: boolean;
+  searchQuery: string;
+  searchResults: { line: number; content: string }[];
+  bookmarks: Bookmark[];
   initialLine: number;
-  onScroll: (line: number) => void;
+  fontSize: number;
+  zoomLevel: number;
+  onLineChange: (line: number) => void;
+  onSearch: (query: string) => void;
+  onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
+  onSetAsCurrentPosition: (line: number) => Promise<boolean>;
+  onJumpToCurrentPosition: () => Promise<number | null>;
+  onScrollingStateChange: (isScrolling: boolean) => void;
   onInitialScroll: () => void;
+  onFontSizeChange: (size: number) => void;
+  onZoomChange: (zoom: number) => void;
 }
 
 // Mock GuideReaderView component
 jest.mock('../components/GuideReaderView', () => ({
   GuideReaderView: ({ 
-    initialLine, 
-    onScroll, 
+    initialLine,
+    currentLine, 
+    onLineChange, 
     onInitialScroll 
-  }: GuideReaderViewProps) => {
+  }: MockGuideReaderViewProps) => {
     React.useEffect(() => {
       // Simulate initial scroll
       if (onInitialScroll) {
@@ -79,7 +98,11 @@ jest.mock('../components/GuideReaderView', () => ({
     return (
       <div data-testid="guide-reader-view">
         <div data-testid="initial-line">{initialLine}</div>
-        <button onClick={() => onScroll(50)}>Scroll to Line 50</button>
+        <div data-testid="current-line">{currentLine || 1}</div>
+        <button onClick={() => {
+          // Simulate line change
+          onLineChange(50);
+        }}>Scroll to Line 50</button>
       </div>
     );
   }
@@ -99,9 +122,15 @@ describe('GuideReaderContainer', () => {
     size: 1000
   };
 
+  // Store original console methods
+  const originalConsoleError = console.error;
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    
+    // Mock console.error to suppress expected errors in tests
+    console.error = jest.fn();
     
     // Reset mock implementations to defaults
     mockUseApp.mockReturnValue({
@@ -123,6 +152,8 @@ describe('GuideReaderContainer', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+    // Restore console methods
+    console.error = originalConsoleError;
   });
 
   describe('Navigation Target Line', () => {
@@ -231,7 +262,7 @@ describe('GuideReaderContainer', () => {
     });
 
     it('should handle getCurrentPositionBookmark error gracefully', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation();
+      // Don't spy on console.error since we already mocked it
       mockGetCurrentPositionBookmark.mockRejectedValue(new Error('DB Error'));
 
       mockUseProgress.mockReturnValue({
@@ -249,12 +280,10 @@ describe('GuideReaderContainer', () => {
       render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith('Failed to load current position bookmark:', expect.any(Error));
+        expect(console.error).toHaveBeenCalledWith('Failed to load current position bookmark:', expect.any(Error));
         // Should fall back to progress
         expect(screen.getByTestId('initial-line')).toHaveTextContent('10');
       });
-
-      consoleError.mockRestore();
     });
   });
 
@@ -266,16 +295,36 @@ describe('GuideReaderContainer', () => {
         expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
       });
 
+      // Wait for initial scroll to complete
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      // Clear any initial saves
+      mockSaveProgress.mockClear();
+
       // Simulate scroll
       const scrollButton = screen.getByText('Scroll to Line 50');
       scrollButton.click();
 
-      // Fast forward past debounce timer
-      act(() => {
-        jest.advanceTimersByTime(1000);
+      // Wait for the currentLine to update
+      await waitFor(() => {
+        expect(screen.getByTestId('current-line')).toHaveTextContent('50');
       });
 
-      expect(mockSaveProgress).toHaveBeenCalledWith({
+      // Fast forward past debounce timer
+      act(() => {
+        jest.advanceTimersByTime(1100);
+      });
+
+      // Wait for save to be called
+      await waitFor(() => {
+        expect(mockSaveProgress).toHaveBeenCalled();
+      });
+
+      // Check the last call
+      const lastCall = mockSaveProgress.mock.calls[mockSaveProgress.mock.calls.length - 1][0];
+      expect(lastCall).toEqual({
         guideId: 'test-guide-1',
         line: 50,
         percentage: 50,
@@ -337,7 +386,7 @@ describe('GuideReaderContainer', () => {
 
   describe('Error Handling', () => {
     it('should handle save progress errors gracefully', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation();
+      // Don't spy on console.error since we already mocked it
       mockSaveProgress.mockRejectedValue(new Error('Save failed'));
 
       render(<GuideReaderContainer guide={mockGuide} />);
@@ -356,10 +405,8 @@ describe('GuideReaderContainer', () => {
       });
 
       await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith('Failed to save progress:', expect.any(Error));
+        expect(console.error).toHaveBeenCalledWith('Failed to save progress:', expect.any(Error));
       });
-
-      consoleError.mockRestore();
     });
   });
 });

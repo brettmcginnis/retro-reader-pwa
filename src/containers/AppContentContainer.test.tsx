@@ -80,9 +80,24 @@ describe('AppContentContainer', () => {
     size: 1000
   };
 
+  // Mock console to suppress service worker logs
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+  // Utility to wait for loading to complete
+  const waitForLoadingToComplete = async () => {
+    await waitFor(() => {
+      expect(screen.getByTestId('is-loading')).toHaveTextContent('false');
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetGuide.mockResolvedValue(mockGuide);
+    
+    // Mock console.log to suppress service worker messages
+    console.log = jest.fn();
+    console.error = jest.fn();
     
     // Reset mock to default state
     mockUseApp.mockReturnValue({
@@ -94,9 +109,17 @@ describe('AppContentContainer', () => {
     });
   });
 
+  afterEach(() => {
+    // Restore console methods
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+  });
+
   describe('Guide Loading', () => {
     it('should load guide when currentGuideId changes', async () => {
       const { rerender } = render(<AppContentContainer />);
+      
+      await waitForLoadingToComplete();
       
       expect(screen.getByTestId('current-guide')).toHaveTextContent('null');
       expect(screen.getByTestId('is-loading')).toHaveTextContent('false');
@@ -112,17 +135,21 @@ describe('AppContentContainer', () => {
 
       rerender(<AppContentContainer />);
 
+      // Wait for the guide to be loaded
       await waitFor(() => {
         expect(mockGetGuide).toHaveBeenCalledWith('test-guide-1');
       });
 
+      // Wait for loading to complete and guide to be displayed
+      await waitForLoadingToComplete();
+      
       await waitFor(() => {
         expect(screen.getByTestId('current-guide')).toHaveTextContent('Test Guide');
       });
     });
 
     it('should handle guide loading error', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation();
+      // Don't spy on console.error since we already mocked it
       mockGetGuide.mockRejectedValueOnce(new Error('Failed to load'));
 
       mockUseApp.mockReturnValue({
@@ -135,16 +162,24 @@ describe('AppContentContainer', () => {
 
       render(<AppContentContainer />);
 
+      // Wait for the error to be handled and loading to complete
+      await waitFor(() => {
+        expect(mockGetGuide).toHaveBeenCalledWith('test-guide-1');
+      });
+
+      await waitForLoadingToComplete();
+
       await waitFor(() => {
         expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
         expect(mockSetCurrentView).toHaveBeenCalledWith('library');
       });
 
-      consoleError.mockRestore();
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalledWith('Failed to load guide:', expect.any(Error));
     });
 
     it('should handle missing guide', async () => {
-      const consoleError = jest.spyOn(console, 'error').mockImplementation();
+      // Don't spy on console.error since we already mocked it
       mockGetGuide.mockResolvedValueOnce(null);
 
       mockUseApp.mockReturnValue({
@@ -157,12 +192,20 @@ describe('AppContentContainer', () => {
 
       render(<AppContentContainer />);
 
+      // Wait for the guide check to complete
+      await waitFor(() => {
+        expect(mockGetGuide).toHaveBeenCalledWith('test-guide-1');
+      });
+
+      await waitForLoadingToComplete();
+
       await waitFor(() => {
         expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
         expect(mockSetCurrentView).toHaveBeenCalledWith('library');
       });
 
-      consoleError.mockRestore();
+      // Verify error was logged
+      expect(console.error).toHaveBeenCalledWith('Guide not found:', 'test-guide-1');
     });
   });
 
@@ -301,16 +344,17 @@ describe('AppContentContainer', () => {
     });
 
     it('should handle service worker registration failure', async () => {
-      const consoleLog = jest.spyOn(console, 'log').mockImplementation();
+      // Don't spy on console.log since we already mocked it
       (navigator.serviceWorker.register as jest.Mock).mockRejectedValueOnce(new Error('SW failed'));
       
       render(<AppContentContainer />);
       
-      await waitFor(() => {
-        expect(consoleLog).toHaveBeenCalledWith('SW registration failed: ', expect.any(Error));
-      });
+      // Wait for initial render to complete
+      await waitForLoadingToComplete();
       
-      consoleLog.mockRestore();
+      await waitFor(() => {
+        expect(console.log).toHaveBeenCalledWith('SW registration failed: ', expect.any(Error));
+      });
     });
   });
 });
