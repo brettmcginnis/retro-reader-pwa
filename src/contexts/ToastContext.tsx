@@ -15,42 +15,30 @@ interface ToastProviderProps {
  */
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const showToast = (type: ToastType, title: string, message?: string, duration?: number): string => {
-    const content = (
-      <div className="flex items-start space-x-3">
-        {type === 'success' && <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />}
-        {type === 'error' && <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />}
-        {type === 'warning' && <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />}
-        {type === 'info' && <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />}
-        <div className="flex-1">
-          <p className="font-medium text-retro-900 dark:text-retro-100">{title}</p>
-          {message && <p className="text-sm text-retro-600 dark:text-retro-400 mt-1">{message}</p>}
+    const toastId = toast.custom(
+      (t) => (
+        <div className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        } max-w-md w-full bg-white dark:bg-retro-900 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-20`}>
+          <div className="flex-1 w-0 p-4">
+            <div className="flex items-start space-x-3">
+              {type === 'success' && <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />}
+              {type === 'error' && <X className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />}
+              {type === 'warning' && <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />}
+              {type === 'info' && <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />}
+              <div className="flex-1">
+                <p className="font-medium text-retro-900 dark:text-retro-100">{title}</p>
+                {message && <p className="text-sm text-retro-600 dark:text-retro-400 mt-1">{message}</p>}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      ),
+      {
+        duration: duration || (type === 'error' ? 6000 : 4000),
+        position: 'top-right' as const,
+      }
     );
-
-    const options = {
-      duration: duration || (type === 'error' ? 6000 : 4000),
-      position: 'top-right' as const,
-    };
-
-    let toastId: string;
-    
-    // Use different toast methods based on type to match test expectations
-    switch (type) {
-      case 'success':
-        toastId = toast.success(content, options);
-        break;
-      case 'error':
-        toastId = toast.error(content, options);
-        break;
-      case 'info':
-        toastId = toast.loading(content, options);
-        break;
-      case 'warning':
-      default:
-        toastId = toast.custom(content, options);
-        break;
-    }
 
     return String(toastId);
   };
@@ -119,11 +107,6 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
       {children}
       <Toaster
         position="top-right"
-        toastOptions={{
-          custom: {
-            className: 'bg-white dark:bg-retro-900 shadow-lg rounded-lg p-4 max-w-sm border border-retro-200 dark:border-retro-700',
-          },
-        }}
       />
     </ToastContext.Provider>
   );

@@ -119,7 +119,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.click(exportAllButton);
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalled();
+        expect(toast.custom).toHaveBeenCalled();
       });
     });
 
@@ -138,7 +138,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.click(exportAllButton);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalled();
+        expect(toast.custom).toHaveBeenCalled();
       });
     });
   });
@@ -176,7 +176,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       expect(mockUseGuides.importFromFile).toHaveBeenCalledWith(mockFile, expect.any(Function));
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalled();
+        expect(toast.custom).toHaveBeenCalled();
       });
     });
 
@@ -196,7 +196,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.upload(fileInput, invalidFile);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalled();
+        expect(toast.custom).toHaveBeenCalled();
       });
     });
 
@@ -222,7 +222,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       expect(mockUseGuides.importFromFile).toHaveBeenCalledWith(txtFile, expect.any(Function));
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalled();
+        expect(toast.custom).toHaveBeenCalled();
       });
     });
   });
@@ -328,7 +328,7 @@ describe('GuideLibrary Import/Export Tests', () => {
         expect(mockUseGuides.fetchGuide).toHaveBeenCalledWith('https://example.com/guide.txt');
       });
 
-      expect(toast.success).toHaveBeenCalled();
+      expect(toast.custom).toHaveBeenCalled();
     });
   });
 });
