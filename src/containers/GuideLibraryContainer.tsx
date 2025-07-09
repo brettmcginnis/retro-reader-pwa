@@ -35,13 +35,13 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
   const handleDeleteGuide = async (guide: Guide) => {
     showConfirmation({
       title: 'Delete Guide',
-      message: `Are you sure you want to delete "${guide.title}"? This action cannot be undone.`,
+      message: `Are you sure you want to delete '${guide.title}'? This action cannot be undone.`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       onConfirm: async () => {
         try {
           await deleteGuide(guide.id);
-          showToast('success', 'Guide Deleted', `"${guide.title}" has been deleted`);
+          showToast('success', 'Guide Deleted', `'${guide.title}' has been deleted`);
         } catch (error) {
           showToast('error', 'Failed to delete guide', error instanceof Error ? error.message : 'Unknown error');
         }
@@ -73,7 +73,7 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
         return new Promise((resolve) => {
           showConfirmation({
             title: 'Guide Already Exists',
-            message: `A guide titled "${title}" already exists. Do you want to replace it?`,
+            message: `A guide titled '${title}' already exists. Do you want to replace it?`,
             confirmText: 'Replace',
             cancelText: 'Skip',
             onConfirm: () => resolve(true),
@@ -86,7 +86,7 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
       const isTextFile = file.name.toLowerCase().endsWith('.txt');
       
       if (isTextFile && result.imported === 1) {
-        showToast('success', 'Guide Created', `Guide created successfully from "${file.name}"`);
+        showToast('success', 'Guide Created', `Guide created successfully from '${file.name}'`);
       } else {
         showToast('success', 'Import Completed', `Imported: ${result.imported}, Skipped: ${result.skipped}, Errors: ${result.errors.length}`);
       }

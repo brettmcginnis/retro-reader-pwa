@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { Bookmark } from '../types';
 import { db } from '../services/database';
 
+/**
+ * Hook for managing bookmarks - loading, adding, updating, and deleting.
+ * @param guideId - Optional guide ID to filter bookmarks for a specific guide
+ * @returns Object containing bookmarks array, loading state, error state, and bookmark operations
+ */
 export const useBookmarks = (guideId?: string) => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);

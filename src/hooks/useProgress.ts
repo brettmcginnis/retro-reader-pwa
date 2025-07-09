@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { ReadingProgress } from '../types';
 import { db } from '../services/database';
 
+/**
+ * Hook for managing reading progress - loading and saving progress state.
+ * @param guideId - Optional guide ID to manage progress for a specific guide
+ * @returns Object containing progress data, loading state, and save operation
+ */
 export const useProgress = (guideId?: string) => {
   const [progress, setProgress] = useState<ReadingProgress | null>(null);
   const [loading, setLoading] = useState(true);

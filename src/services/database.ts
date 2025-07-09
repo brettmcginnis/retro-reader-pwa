@@ -51,7 +51,7 @@ class DatabaseService {
         },
       });
     } catch (error) {
-      console.error("Error initializing database:", error);
+      console.error('Error initializing database:', error);
       throw error;
     }
   }

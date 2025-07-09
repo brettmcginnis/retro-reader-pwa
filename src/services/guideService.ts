@@ -1,6 +1,10 @@
 import { Guide, GuideMetadata } from '../types';
 import { db } from './database';
 
+/**
+ * Service for managing game guides - fetching, storing, and searching guide content.
+ * Handles guide persistence and provides utility methods for guide manipulation.
+ */
 export class GuideService {
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -12,11 +16,17 @@ export class GuideService {
       // This is a no-op if the DB is already initialized
       await db.init();
     } catch (error) {
-      console.error("Error initializing database:", error);
+      console.error('Error initializing database:', error);
       throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
+  /**
+   * Fetches a guide from a URL and saves it to the database.
+   * @param url - The URL to fetch the guide from
+   * @returns The fetched and saved guide
+   * @throws Error if fetching fails or database operation fails
+   */
   async fetchGuide(url: string): Promise<Guide> {
     try {
       // Ensure DB is initialized
@@ -137,32 +147,59 @@ export class GuideService {
     return undefined;
   }
 
+  /**
+   * Retrieves all guides from the database.
+   * @returns Array of all stored guides
+   */
   async getAllGuides(): Promise<Guide[]> {
     await this.ensureDbInitialized();
     return await db.getAllGuides();
   }
 
+  /**
+   * Retrieves a specific guide by ID.
+   * @param id - The guide ID
+   * @returns The guide if found, undefined otherwise
+   */
   async getGuide(id: string): Promise<Guide | undefined> {
     await this.ensureDbInitialized();
     return await db.getGuide(id);
   }
 
+  /**
+   * Deletes a guide from the database.
+   * @param id - The guide ID to delete
+   */
   async deleteGuide(id: string): Promise<void> {
     await this.ensureDbInitialized();
     await db.deleteGuide(id);
   }
 
+  /**
+   * Saves a guide to the database.
+   * @param guide - The guide to save
+   */
   async saveGuide(guide: Guide): Promise<void> {
     await this.ensureDbInitialized();
     await db.saveGuide(guide);
   }
 
+  /**
+   * Updates an existing guide in the database.
+   * @param guide - The guide with updated data
+   */
   async updateGuide(guide: Guide): Promise<void> {
     await this.ensureDbInitialized();
     guide.dateModified = new Date();
     await db.saveGuide(guide);
   }
 
+  /**
+   * Searches for a query string within a guide's content.
+   * @param guide - The guide to search in
+   * @param query - The search query (case-insensitive)
+   * @returns Array of search results with line numbers, content, and match count
+   */
   searchInGuide(guide: Guide, query: string): { line: number; content: string; matches: number }[] {
     const lines = guide.content.split('\n');
     const results: { line: number; content: string; matches: number }[] = [];
@@ -184,10 +221,21 @@ export class GuideService {
     return results;
   }
 
+  /**
+   * Gets the total number of lines in a guide.
+   * @param guide - The guide to count lines for
+   * @returns The number of lines
+   */
   getLineCount(guide: Guide): number {
     return guide.content.split('\n').length;
   }
 
+  /**
+   * Gets the content of a specific line in a guide.
+   * @param guide - The guide to get the line from
+   * @param lineNumber - The line number (1-indexed)
+   * @returns The content of the line, or empty string if line doesn't exist
+   */
   getLineContent(guide: Guide, lineNumber: number): string {
     const lines = guide.content.split('\n');
     return lines[lineNumber - 1] || '';

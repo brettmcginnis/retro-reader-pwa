@@ -8,6 +8,11 @@ interface ToastProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Provider component for toast notifications and confirmation dialogs.
+ * @param props - Component props
+ * @param props.children - Child components to wrap with toast context
+ */
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const showToast = (type: ToastType, title: string, message?: string, duration?: number): string => {
     const content = (

@@ -5,6 +5,11 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Provider component for global app state including theme, font size, and zoom settings.
+ * @param props - Component props
+ * @param props.children - Child components to wrap with app context
+ */
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     // Load theme from localStorage or default to 'light'
