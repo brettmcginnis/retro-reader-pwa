@@ -73,10 +73,11 @@ describe('ToastContext', () => {
       const successButton = screen.getByRole('button', { name: /show success/i });
       await user.click(successButton);
 
-      expect(toast.success).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(toast.custom).toHaveBeenCalledWith(
+        expect.any(Function),
         expect.objectContaining({
           duration: 3000,
+          position: 'top-right',
         })
       );
     });
@@ -93,10 +94,11 @@ describe('ToastContext', () => {
       const errorButton = screen.getByRole('button', { name: /show error/i });
       await user.click(errorButton);
 
-      expect(toast.error).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(toast.custom).toHaveBeenCalledWith(
+        expect.any(Function),
         expect.objectContaining({
           duration: 3000,
+          position: 'top-right',
         })
       );
     });
@@ -133,10 +135,11 @@ describe('ToastContext', () => {
       const infoButton = screen.getByRole('button', { name: /show info/i });
       await user.click(infoButton);
 
-      expect(toast.loading).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(toast.custom).toHaveBeenCalledWith(
+        expect.any(Function),
         expect.objectContaining({
           duration: 3000,
+          position: 'top-right',
         })
       );
     });
@@ -155,8 +158,7 @@ describe('ToastContext', () => {
       await user.click(screen.getByRole('button', { name: /show success/i }));
       await user.click(screen.getByRole('button', { name: /show error/i }));
 
-      expect(toast.success).toHaveBeenCalled();
-      expect(toast.error).toHaveBeenCalled();
+      expect(toast.custom).toHaveBeenCalledTimes(2);
 
       await user.click(screen.getByRole('button', { name: /clear all/i }));
 
@@ -229,7 +231,8 @@ describe('ToastContext', () => {
         expect(toast.dismiss).toHaveBeenCalledWith('test-id');
         // The onConfirm callback should trigger a success toast
         await waitFor(() => {
-          expect(toast.success).toHaveBeenCalled();
+          // Custom was called twice: once for confirmation dialog, once for success toast
+          expect(toast.custom).toHaveBeenCalledTimes(2);
         });
       }
     });
@@ -265,7 +268,8 @@ describe('ToastContext', () => {
         expect(toast.dismiss).toHaveBeenCalledWith('test-id');
         // The onCancel callback should trigger an info toast
         await waitFor(() => {
-          expect(toast.loading).toHaveBeenCalled();
+          // Custom was called twice: once for confirmation dialog, once for info toast
+          expect(toast.custom).toHaveBeenCalledTimes(2);
         });
       }
     });

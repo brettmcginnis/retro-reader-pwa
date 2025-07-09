@@ -96,10 +96,8 @@ Based on Google TypeScript Style Guide. See `examples/` for detailed examples.
 
 1. Understand the problem described in the issue
 2. Search the codebase for relevant files
-3. Ultrathink through the ask, and form a list of tasks to address the issue
-3. Implement the necessary changes to fix the issue
-4. Write and run tests to verify the fix
-5. Ensure code passes linting and building
-6. Create a descriptive commit message
+3. Ultrathink through the ask, and form a list of tasks. Write them to `tasks.md`.
+3. Read `tasks.md` and address them one at a time. Ensure test and lint passes before proceeding
+4. Print to console a descriptive commit message for the changes made
 
 Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.
