@@ -1,6 +1,10 @@
 import { Guide, GuideCollection } from '../types';
 import { db } from './database';
 
+/**
+ * Service for importing and exporting guides and bookmarks.
+ * Handles file downloads, uploads, and URL imports.
+ */
 export class ImportExportService {
   private static readonly VERSION = '1.0.0';
   
@@ -10,11 +14,14 @@ export class ImportExportService {
       // This is a no-op if the DB is already initialized
       await db.init();
     } catch (error) {
-      console.error("Error initializing database:", error);
+      console.error('Error initializing database:', error);
       throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
+  /**
+   * Exports all guides, bookmarks, and progress data as a JSON file download.
+   */
   async exportAll(): Promise<void> {
     await this.ensureDbInitialized();
     const data = await db.exportData();
@@ -29,6 +36,11 @@ export class ImportExportService {
     this.downloadJSON(collection, 'retro-reader-collection.json');
   }
 
+  /**
+   * Exports a single guide with its bookmarks as a JSON file download.
+   * @param guideId - The ID of the guide to export
+   * @throws Error if guide is not found
+   */
   async exportGuide(guideId: string): Promise<void> {
     await this.ensureDbInitialized();
     
@@ -52,6 +64,12 @@ export class ImportExportService {
     this.downloadJSON(collection, filename);
   }
 
+  /**
+   * Imports guides and bookmarks from a JSON file.
+   * @param file - The file to import from
+   * @param onConfirm - Optional callback to confirm overwriting existing guides
+   * @returns Import results with counts and any errors
+   */
   async importFromFile(file: File, onConfirm?: (title: string) => Promise<boolean>): Promise<{ imported: number; skipped: number; errors: string[] }> {
     await this.ensureDbInitialized();
     
@@ -163,7 +181,7 @@ export class ImportExportService {
           result.imported++;
         }
       } catch (error) {
-        result.errors.push(`Failed to import guide "${guide.title}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+        result.errors.push(`Failed to import guide '${guide.title}': ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
@@ -174,7 +192,7 @@ export class ImportExportService {
           dateCreated: new Date(bookmark.dateCreated)
         });
       } catch (error) {
-        result.errors.push(`Failed to import bookmark "${bookmark.title}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+        result.errors.push(`Failed to import bookmark '${bookmark.title}': ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
@@ -218,6 +236,11 @@ export class ImportExportService {
     );
   }
 
+  /**
+   * Exports a guide's content as a plain text file download.
+   * @param guideId - The ID of the guide to export
+   * @throws Error if guide is not found
+   */
   async exportAsText(guideId: string): Promise<void> {
     await this.ensureDbInitialized();
     
@@ -269,6 +292,11 @@ export class ImportExportService {
     URL.revokeObjectURL(url);
   }
 
+  /**
+   * Imports a guide from a URL.
+   * @param url - The URL to import the guide from
+   * @returns The imported guide
+   */
   async importFromUrl(url: string): Promise<Guide> {
     await this.ensureDbInitialized();
     

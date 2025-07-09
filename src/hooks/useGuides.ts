@@ -7,6 +7,10 @@ import { db } from '../services/database';
 const guideService = new GuideService();
 const importExportService = new ImportExportService();
 
+/**
+ * Hook for managing guides collection - loading, adding, and deleting guides.
+ * @returns Object containing guides array, loading state, error state, and guide operations
+ */
 export const useGuides = () => {
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loading, setLoading] = useState(true);

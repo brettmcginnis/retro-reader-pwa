@@ -178,7 +178,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
         title,
         note
       });
-      showToast('success', 'Bookmark added!', `Bookmark "${title}" created at line ${line}`);
+      showToast('success', 'Bookmark added!', `Bookmark '${title}' created at line ${line}`);
       return true;
     } catch (error) {
       showToast('error', 'Failed to add bookmark', error instanceof Error ? error.message : 'Unknown error');
