@@ -167,6 +167,12 @@ describe('ToastContext', () => {
   describe('Confirmation Dialog', () => {
     it('should display confirmation modal with correct content', async () => {
       const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
       
       render(
         <TestWrapper>
@@ -181,10 +187,25 @@ describe('ToastContext', () => {
       await waitFor(() => {
         expect(toast.custom).toHaveBeenCalled();
       });
+      
+      // Render the confirmation dialog content
+      if (customCallback) {
+        const { container } = render(customCallback({ id: 'test-id', visible: true }));
+        expect(container.textContent).toContain('Test Confirmation');
+        expect(container.textContent).toContain('Are you sure you want to proceed?');
+        expect(container.textContent).toContain('Yes, proceed');
+        expect(container.textContent).toContain('Cancel');
+      }
     });
 
     it('should handle confirmation action', async () => {
       const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
       
       render(
         <TestWrapper>
@@ -199,12 +220,28 @@ describe('ToastContext', () => {
         expect(toast.custom).toHaveBeenCalled();
       });
 
-      // Since we're mocking react-hot-toast, we can't actually click the confirm button
-      // Instead, we'll verify that the showConfirmation function was called correctly
+      // Render and interact with the confirmation dialog
+      if (customCallback) {
+        const { getByText } = render(customCallback({ id: 'test-id', visible: true }));
+        const confirmBtn = getByText('Yes, proceed');
+        await user.click(confirmBtn);
+        
+        expect(toast.dismiss).toHaveBeenCalledWith('test-id');
+        // The onConfirm callback should trigger a success toast
+        await waitFor(() => {
+          expect(toast.success).toHaveBeenCalled();
+        });
+      }
     });
 
     it('should handle cancel action', async () => {
       const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
       
       render(
         <TestWrapper>
@@ -219,8 +256,87 @@ describe('ToastContext', () => {
         expect(toast.custom).toHaveBeenCalled();
       });
 
-      // Since we're mocking react-hot-toast, we can't actually click the cancel button
-      // Instead, we'll verify that the showConfirmation function was called correctly
+      // Render and interact with the confirmation dialog
+      if (customCallback) {
+        const { getByText } = render(customCallback({ id: 'test-id', visible: true }));
+        const cancelBtn = getByText('Cancel');
+        await user.click(cancelBtn);
+        
+        expect(toast.dismiss).toHaveBeenCalledWith('test-id');
+        // The onCancel callback should trigger an info toast
+        await waitFor(() => {
+          expect(toast.loading).toHaveBeenCalled();
+        });
+      }
+    });
+    
+    it('should handle confirmation dialog with only confirm callback', async () => {
+      const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
+      
+      const TestComponentWithOnlyConfirm = () => {
+        const { showConfirmation } = useToast();
+        return (
+          <button onClick={() => showConfirmation({
+            title: 'Delete Item',
+            message: 'Are you sure?',
+            onConfirm: jest.fn()
+          })}>
+            Delete
+          </button>
+        );
+      };
+      
+      render(
+        <TestWrapper>
+          <TestComponentWithOnlyConfirm />
+        </TestWrapper>
+      );
+
+      await user.click(screen.getByText('Delete'));
+
+      // Render and interact with the confirmation dialog
+      if (customCallback) {
+        const { getByText } = render(customCallback({ id: 'test-id', visible: true }));
+        const cancelBtn = getByText('Cancel');
+        
+        // Click cancel when there's no onCancel callback
+        await user.click(cancelBtn);
+        expect(toast.dismiss).toHaveBeenCalledWith('test-id');
+      }
+    });
+
+    it('should render confirmation dialog with animation classes', async () => {
+      const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
+      
+      render(
+        <TestWrapper>
+          <TestToastComponent />
+        </TestWrapper>
+      );
+
+      await user.click(screen.getByRole('button', { name: /show confirmation/i }));
+
+      // Test visible state
+      if (customCallback) {
+        const { container: visibleContainer } = render(customCallback({ id: 'test-id', visible: true }));
+        expect(visibleContainer.querySelector('.animate-enter')).toBeInTheDocument();
+        
+        // Test hidden state
+        const { container: hiddenContainer } = render(customCallback({ id: 'test-id', visible: false }));
+        expect(hiddenContainer.querySelector('.animate-leave')).toBeInTheDocument();
+      }
     });
   });
 

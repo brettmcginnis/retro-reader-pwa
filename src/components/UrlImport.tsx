@@ -10,15 +10,23 @@ interface UrlImportProps {
 export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
   const [url, setUrl] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onFetch(url);
+    await onFetch(url);
     setUrl('');
+  };
+
+  const handleButtonClick = () => {
+    if (!url.trim()) return;
+    const currentUrl = url;
+    setUrl('');
+    onFetch(currentUrl);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSubmit(e);
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
     }
   };
 
@@ -35,7 +43,7 @@ export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
           disabled={loading}
         />
         <Button 
-          onClick={handleSubmit}
+          onClick={handleButtonClick}
           disabled={loading}
           variant="primary"
         >
