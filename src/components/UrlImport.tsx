@@ -16,9 +16,11 @@ export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
     setUrl('');
   };
 
-  const handleButtonClick = async () => {
-    await onFetch(url);
+  const handleButtonClick = () => {
+    if (!url.trim()) return;
+    const currentUrl = url;
     setUrl('');
+    onFetch(currentUrl);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -42,7 +44,7 @@ export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
         />
         <Button 
           onClick={handleButtonClick}
-          disabled={loading || !url.trim()}
+          disabled={loading}
           variant="primary"
         >
           {loading ? 'Fetching...' : 'Fetch Guide'}

@@ -1,10 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GuideLibrary } from './GuideLibrary';
 import { ToastProvider } from '../contexts/ToastContext';
 import { AppProvider } from '../contexts/AppContext';
 import toast from 'react-hot-toast';
+import { Guide } from '../types';
 
 // Mock react-hot-toast
 jest.mock('react-hot-toast', () => ({
@@ -73,8 +74,19 @@ describe('GuideLibrary Import/Export Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
-    // Reset the fetchGuide mock to ensure it returns a resolved promise
+    
+    // Reset all mocks
+    mockUseGuides.fetchGuide.mockReset();
+    mockUseGuides.createGuide.mockReset();
+    mockUseGuides.deleteGuide.mockReset();
+    mockUseGuides.exportGuide.mockReset();
+    mockUseGuides.exportAll.mockReset();
+    mockUseGuides.importFromFile.mockReset();
+    
+    // Set default resolved values
     mockUseGuides.fetchGuide.mockResolvedValue(undefined);
+    mockUseGuides.createGuide.mockResolvedValue({ id: 'test-id' } as Guide);
+    mockUseGuides.deleteGuide.mockResolvedValue(undefined);
   });
 
   describe('Export All Functionality', () => {
@@ -254,7 +266,7 @@ describe('GuideLibrary Import/Export Tests', () => {
   });
 
   describe('URL Import', () => {
-    it('should disable fetch button for empty URL', async () => {
+    it('should not fetch guide with empty URL', async () => {
       const user = userEvent.setup();
       
       render(
@@ -266,21 +278,24 @@ describe('GuideLibrary Import/Export Tests', () => {
       const urlTab = screen.getByRole('button', { name: /from url/i });
       await user.click(urlTab);
 
+      // Wait for the tab content to be visible
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/enter guide url/i)).toBeInTheDocument();
+      });
+
       const fetchButton = screen.getByRole('button', { name: /fetch guide/i });
-      
-      // Button should be disabled when URL is empty
-      expect(fetchButton).toBeDisabled();
-      
-      // Type a URL and button should be enabled
-      const urlInput = screen.getByPlaceholderText(/enter guide url/i);
-      await user.type(urlInput, 'https://example.com/guide.txt');
-      
-      expect(fetchButton).not.toBeDisabled();
+      await user.click(fetchButton);
+
+      // Should not call fetchGuide for empty URL
+      expect(mockUseGuides.fetchGuide).not.toHaveBeenCalled();
     });
 
     it('should attempt to fetch guide with valid URL', async () => {
       const user = userEvent.setup();
-      mockUseGuides.fetchGuide.mockResolvedValueOnce(undefined);
+      
+      // Clear and reset the mock
+      mockUseGuides.fetchGuide.mockClear();
+      mockUseGuides.fetchGuide.mockResolvedValue(undefined);
       
       render(
         <TestWrapper>
@@ -297,19 +312,23 @@ describe('GuideLibrary Import/Export Tests', () => {
       });
 
       const urlInput = screen.getByPlaceholderText(/enter guide url/i);
-      await user.type(urlInput, 'https://example.com/guide.txt');
-
       const fetchButton = screen.getByRole('button', { name: /fetch guide/i });
+      
+      // Use fireEvent to change the input value directly
+      fireEvent.change(urlInput, { target: { value: 'https://example.com/guide.txt' } });
+      
+      // Verify the input has the correct value
+      expect(urlInput).toHaveValue('https://example.com/guide.txt');
+      
+      // Click the button
       await user.click(fetchButton);
 
-      // Wait for the async operation to complete
+      // Wait for the fetchGuide to be called
       await waitFor(() => {
         expect(mockUseGuides.fetchGuide).toHaveBeenCalledWith('https://example.com/guide.txt');
       });
 
-      await waitFor(() => {
-        expect(toast.success).toHaveBeenCalled();
-      });
+      expect(toast.success).toHaveBeenCalled();
     });
   });
 });
