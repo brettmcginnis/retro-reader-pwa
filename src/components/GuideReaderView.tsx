@@ -248,6 +248,20 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     }
   };
 
+  // Prevent browser scroll restoration
+  useEffect(() => {
+    // Save current scroll restoration mode
+    const previousScrollRestoration = history.scrollRestoration;
+    
+    // Disable automatic scroll restoration
+    history.scrollRestoration = 'manual';
+    
+    // Restore previous mode on unmount
+    return () => {
+      history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
+
   // Update line height when font size or zoom changes
   useEffect(() => {
     lineHeightRef.current = Math.ceil(fontSize * 1.5);
@@ -280,9 +294,25 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   // Initial scroll to saved position
   useEffect(() => {
     if (!hasInitiallyScrolled.current && initialLine > 1 && totalLines > 0) {
-      hasInitiallyScrolled.current = true;
-      scrollToLine(initialLine, 'auto');
-      onInitialScroll();
+      console.log('[GuideReaderView] Initial scroll to line:', initialLine, 'of', totalLines);
+      
+      // Small timeout to ensure container is mounted
+      const timeoutId = setTimeout(() => {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+          // Double RAF to ensure layout is complete
+          requestAnimationFrame(() => {
+            if (containerRef.current && !hasInitiallyScrolled.current) {
+              hasInitiallyScrolled.current = true;
+              scrollToLine(initialLine, 'auto');
+              onInitialScroll();
+              console.log('[GuideReaderView] Initial scroll completed');
+            }
+          });
+        });
+      }, 50);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [initialLine, totalLines, scrollToLine, onInitialScroll]);
 
