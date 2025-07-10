@@ -10,6 +10,7 @@ import { NavigationModal } from './NavigationModal';
 import { BookmarksOverlay } from './BookmarksOverlay';
 import { BookmarkModal } from './BookmarkModal';
 import { FloatingProgressIndicator } from './FloatingProgressIndicator';
+import { GuideSearchBar } from './GuideSearchBar';
 import { useToast } from '../contexts/useToast';
 
 interface GuideReaderViewProps {
@@ -19,6 +20,7 @@ interface GuideReaderViewProps {
   totalLines: number;
   isLoading: boolean;
   searchQuery: string;
+  searchResults: { line: number; content: string }[];
   bookmarks: Bookmark[];
   initialLine: number;
   fontSize: number;
@@ -47,6 +49,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   totalLines,
   isLoading,
   searchQuery,
+  searchResults,
   bookmarks,
   initialLine,
   fontSize,
@@ -269,6 +272,18 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onZoomChange={onZoomChange}
       />
 
+      {/* Search Bar - Shows when search is active */}
+      {showSearch && (
+        <div className="fixed top-14 left-0 right-0 bg-white dark:bg-retro-900 border-b border-retro-200 dark:border-retro-700 z-40 p-4">
+          <GuideSearchBar
+            searchQuery={searchQuery}
+            searchResults={searchResults}
+            onSearch={onSearch}
+            onJumpToResult={(line) => scrollToLine(line)}
+          />
+        </div>
+      )}
+
       {/* Navigation controls for testing - contains only the input, not the line info */}
       <div className="sr-only" data-testid="test-navigation-controls">
         <form onSubmit={(e) => {
@@ -299,7 +314,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
       </div>
 
       <div 
-        className="flex-1 overflow-auto bg-white dark:bg-retro-900 scrollbar-thin pt-14 pb-16"
+        className={`flex-1 overflow-auto bg-white dark:bg-retro-900 scrollbar-thin ${showSearch ? 'pt-32' : 'pt-14'} pb-16`}
         ref={containerRef}
         onScroll={updateVisibleRange}
         style={{
