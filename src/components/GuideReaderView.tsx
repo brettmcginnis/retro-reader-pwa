@@ -83,10 +83,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyScrolled = useRef(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-  const lastTouchYRef = useRef<number | null>(null);
   
-  // Get toast functions
   const { showToast, showConfirmation } = useToast();
   
   // Create a map of bookmarked lines for quick lookup
@@ -103,8 +100,8 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     const { scrollTop, clientHeight } = container;
     const lineHeight = lineHeightRef.current;
     
-    const startIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - OVERSCAN_COUNT * 5);
-    const endIndex = Math.min(totalLines, Math.ceil((scrollTop + clientHeight) / lineHeight) + OVERSCAN_COUNT * 5);
+    const startIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - OVERSCAN_COUNT * 10);
+    const endIndex = Math.min(totalLines, Math.ceil((scrollTop + clientHeight) / lineHeight) + OVERSCAN_COUNT * 10);
     
     setVisibleRange(prev => {
       if (Math.abs(prev.start - startIndex) > OVERSCAN_COUNT || Math.abs(prev.end - endIndex) > OVERSCAN_COUNT) {
@@ -224,41 +221,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     }
   };
 
-  // Handle swipe gestures for mobile navigation
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (window.innerWidth >= 640) return; // Only on mobile
-    touchStartYRef.current = e.touches[0].clientY;
-    lastTouchYRef.current = e.touches[0].clientY;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (window.innerWidth >= 640 || !touchStartYRef.current) return;
-    
-    const currentY = e.touches[0].clientY;
-    const deltaY = touchStartYRef.current - currentY;
-    
-    // Only handle vertical swipes
-    if (Math.abs(deltaY) > 30) { // Reduced threshold for more responsive swiping
-      // Swipe up - next line
-      if (deltaY > 0 && currentLine < totalLines) {
-        scrollToLine(currentLine + 1);
-        touchStartYRef.current = currentY; // Reset for continuous swiping
-      }
-      // Swipe down - previous line
-      else if (deltaY < 0 && currentLine > 1) {
-        scrollToLine(currentLine - 1);
-        touchStartYRef.current = currentY; // Reset for continuous swiping
-      }
-    }
-    
-    lastTouchYRef.current = currentY;
-  }, [currentLine, totalLines, scrollToLine]);
-
-  const handleTouchEnd = useCallback(() => {
-    touchStartYRef.current = null;
-    lastTouchYRef.current = null;
-  }, []);
-
   // Update line height when font size changes
   useEffect(() => {
     lineHeightRef.current = Math.ceil(fontSize * 1.5);
@@ -340,9 +302,11 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         className="flex-1 overflow-auto bg-white dark:bg-retro-900 scrollbar-thin pt-14 pb-16"
         ref={containerRef}
         onScroll={updateVisibleRange}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          touchAction: 'pan-y'
+        }}
       >
         <div 
           className="relative origin-top-left" 
@@ -350,10 +314,14 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
           style={{ 
             height: totalHeight * zoomLevel,
             transform: `scale(${zoomLevel})`,
-            width: `${100 / zoomLevel}%`
+            width: `${100 / zoomLevel}%`,
+            willChange: 'transform'
           }}
         >
-          <div style={{ transform: `translateY(${offsetTop}px)` }}>
+          <div style={{ 
+            transform: `translateY(${offsetTop}px)`,
+            willChange: 'transform'
+          }}>
             {visibleLines.map((line, index) => {
               const lineNumber = start + index + 1;
               const bookmark = bookmarkedLines.get(lineNumber);
