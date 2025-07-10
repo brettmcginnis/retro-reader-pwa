@@ -294,8 +294,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   // Initial scroll to saved position
   useEffect(() => {
     if (!hasInitiallyScrolled.current && initialLine > 1 && totalLines > 0) {
-      console.log('[GuideReaderView] Initial scroll to line:', initialLine, 'of', totalLines);
-      
       // Small timeout to ensure container is mounted
       const timeoutId = setTimeout(() => {
         // Use requestAnimationFrame to ensure DOM is ready
@@ -306,7 +304,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
               hasInitiallyScrolled.current = true;
               scrollToLine(initialLine, 'auto');
               onInitialScroll();
-              console.log('[GuideReaderView] Initial scroll completed');
             }
           });
         });

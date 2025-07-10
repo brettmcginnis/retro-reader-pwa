@@ -111,11 +111,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Set initial position from navigation target, saved progress or current position bookmark - only once
   useEffect(() => {
     if (!isLoading && !hasSetInitialPosition.current) {
-      console.log('[GuideReaderContainer] Setting initial position. Navigation target:', navigationTargetLine, 'Progress:', progress?.line);
-      
       // Check for navigation target first
       if (navigationTargetLine !== null) {
-        console.log('[GuideReaderContainer] Using navigation target line:', navigationTargetLine);
         setCurrentLine(navigationTargetLine);
         hasSetInitialPosition.current = true;
         // Clear the navigation target after using it
@@ -124,22 +121,17 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
         // Check for current position bookmark
         db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
           if (currentPosBookmark) {
-            console.log('[GuideReaderContainer] Using current position bookmark:', currentPosBookmark.line);
             setCurrentLine(currentPosBookmark.line);
             hasSetInitialPosition.current = true;
           } else if (progress) {
             // Fall back to progress if no current position bookmark
-            console.log('[GuideReaderContainer] Using saved progress:', progress.line);
             setCurrentLine(progress.line);
             hasSetInitialPosition.current = true;
-          } else {
-            console.log('[GuideReaderContainer] No saved position found, staying at line 1');
           }
         }).catch(err => {
           console.error('Failed to load current position bookmark:', err);
           // Fall back to progress on error
           if (progress) {
-            console.log('[GuideReaderContainer] Using saved progress after error:', progress.line);
             setCurrentLine(progress.line);
             hasSetInitialPosition.current = true;
           }
