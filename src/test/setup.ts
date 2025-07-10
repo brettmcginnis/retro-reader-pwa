@@ -7,21 +7,66 @@ mockAnimationsApi();
 // Ensure proper DOM setup for React 19 and React Testing Library compatibility
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
-// Fix for Headless UI focus issue with happy-dom
+// Fix for Headless UI focus issue with happy-dom and track focus state
 if (typeof window !== 'undefined' && window.HTMLElement) {
+  // Track the currently focused element
+  let currentFocusedElement: Element | null = null;
+  
+  // Override document.activeElement to return our tracked element
+  Object.defineProperty(document, 'activeElement', {
+    get: function() {
+      return currentFocusedElement || document.body;
+    },
+    configurable: true
+  });
+  
   const focusDescriptor = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'focus');
   
   // If focus has a getter, we need to delete it first and redefine it
   if (focusDescriptor && focusDescriptor.get) {
     delete window.HTMLElement.prototype.focus;
-    Object.defineProperty(window.HTMLElement.prototype, 'focus', {
-      value: function() {
-        // Mock focus implementation
-      },
-      writable: true,
-      configurable: true
-    });
   }
+  
+  // Define a proper focus implementation
+  Object.defineProperty(window.HTMLElement.prototype, 'focus', {
+    value: function(this: HTMLElement) {
+      // Update the currently focused element
+      currentFocusedElement = this;
+      
+      // Dispatch focus events
+      const focusEvent = new FocusEvent('focus', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      this.dispatchEvent(focusEvent);
+    },
+    writable: true,
+    configurable: true
+  });
+  
+  // Also implement blur to clear focus
+  const blurDescriptor = Object.getOwnPropertyDescriptor(window.HTMLElement.prototype, 'blur');
+  if (blurDescriptor && blurDescriptor.get) {
+    delete window.HTMLElement.prototype.blur;
+  }
+  
+  Object.defineProperty(window.HTMLElement.prototype, 'blur', {
+    value: function(this: HTMLElement) {
+      if (currentFocusedElement === this) {
+        currentFocusedElement = null;
+      }
+      
+      const blurEvent = new FocusEvent('blur', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      this.dispatchEvent(blurEvent);
+    },
+    writable: true,
+    configurable: true
+  });
 }
 
 // Set up a proper container for React Testing Library
@@ -29,6 +74,60 @@ if (typeof document !== 'undefined') {
   const container = document.createElement('div');
   container.id = 'root';
   document.body.appendChild(container);
+}
+
+// Simulate autofocus behavior for elements with autoFocus attribute
+if (typeof window !== 'undefined') {
+  // Override createElement to handle autofocus
+  const originalCreateElement = document.createElement;
+  document.createElement = function(tagName: string, options?: ElementCreationOptions) {
+    const element = originalCreateElement.call(this, tagName, options);
+    
+    // For input elements, we need to handle autofocus after they're added to DOM
+    if (tagName.toLowerCase() === 'input') {
+      const originalSetAttribute = element.setAttribute;
+      element.setAttribute = function(name: string, value: string) {
+        originalSetAttribute.call(this, name, value);
+        
+        // If autofocus is set and element is in DOM, focus it
+        if (name === 'autofocus' && this.isConnected) {
+          // Use setTimeout to ensure React has finished rendering
+          setTimeout(() => {
+            (this as HTMLElement).focus();
+          }, 0);
+        }
+      };
+    }
+    
+    return element;
+  };
+  
+  // Also handle React's autoFocus prop by observing DOM mutations
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          // Check for autofocus attribute
+          if (node.hasAttribute('autofocus')) {
+            setTimeout(() => node.focus(), 0);
+          }
+          // Also check child elements
+          const autofocusElements = node.querySelectorAll('[autofocus]');
+          autofocusElements.forEach((el) => {
+            setTimeout(() => (el as HTMLElement).focus(), 0);
+          });
+        }
+      });
+    });
+  });
+  
+  // Start observing the document body for changes
+  if (document.body) {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
 }
 
 // Mock IndexedDB

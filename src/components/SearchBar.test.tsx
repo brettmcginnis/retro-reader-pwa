@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { SearchBar } from './SearchBar';
 
@@ -23,11 +23,15 @@ describe('SearchBar', () => {
     expect(input).toBeInTheDocument();
   });
 
-  it('should have autofocus on input', () => {
+  it('should have autofocus on input', async () => {
     render(<SearchBar {...defaultProps} />);
     
     const input = screen.getByPlaceholderText('Search in guide...');
-    expect(input).toHaveFocus();
+    
+    // Wait for autofocus to be applied (this happens asynchronously in our test setup)
+    await waitFor(() => {
+      expect(input).toHaveFocus();
+    });
   });
 
   it('should display search query value', () => {
