@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { Button } from './Button';
+import { SettingsPanel } from './SettingsPanel';
+import { NavigationButton } from './NavigationButton';
 import { Navigation, Settings, Search, Book, Bookmark, Library } from 'lucide-react';
 
 interface BottomNavigationBarProps {
@@ -32,178 +33,83 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
 
   return (
     <>
-      {/* Settings Panel - Slides up when visible */}
       <div className={clsx(
         'fixed bottom-16 left-0 right-0 bg-white dark:bg-retro-900',
         'border-t border-retro-200 dark:border-retro-700',
         'transform transition-transform duration-300 ease-in-out z-40',
         showSettings ? 'translate-y-0' : 'translate-y-full'
       )}>
-        <div className="p-4 space-y-4 max-w-2xl mx-auto">
-          {/* Font Size Control */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-retro-700 dark:text-retro-300">Font Size</span>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => onFontSizeChange(fontSize - 1)}
-                disabled={isLoading || fontSize <= 10}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">−</span>
-              </Button>
-              <span className="text-sm text-retro-700 dark:text-retro-300 w-12 text-center font-medium">
-                {fontSize}px
-              </span>
-              <Button
-                onClick={() => onFontSizeChange(fontSize + 1)}
-                disabled={isLoading || fontSize >= 24}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">+</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Zoom Control */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-retro-700 dark:text-retro-300">Zoom</span>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => onZoomChange(zoomLevel - 0.1)}
-                disabled={isLoading || zoomLevel <= 0.5}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">−</span>
-              </Button>
-              <span className="text-sm text-retro-700 dark:text-retro-300 w-12 text-center font-medium">
-                {Math.round(zoomLevel * 100)}%
-              </span>
-              <Button
-                onClick={() => onZoomChange(zoomLevel + 0.1)}
-                disabled={isLoading || zoomLevel >= 2}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">+</span>
-              </Button>
-              <Button
-                onClick={() => onZoomChange(1)}
-                disabled={isLoading || zoomLevel === 1}
-                variant="secondary"
-                size="sm"
-                className="px-3 h-10 ml-2"
-              >
-                Reset
-              </Button>
-            </div>
-          </div>
-        </div>
+        <SettingsPanel
+          fontSize={fontSize}
+          zoomLevel={zoomLevel}
+          onFontSizeChange={(size) => !isLoading && onFontSizeChange(size)}
+          onZoomChange={(zoom) => !isLoading && onZoomChange(zoom)}
+        />
       </div>
 
-      {/* Main Bottom Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-retro-900 border-t border-retro-200 dark:border-retro-700 z-50">
         <div className="flex items-center justify-center gap-2 sm:gap-4 h-16 max-w-2xl mx-auto px-4">
-          {/* Library Button */}
-          <Button
-            onClick={() => onViewChange('library')}
-            disabled={isLoading}
-            variant="ghost"
-            className={clsx(
-              'flex flex-col sm:flex-row items-center gap-1 p-2 h-14 min-w-[60px] sm:min-w-[80px]',
-              currentView === 'library' && 'bg-retro-100 dark:bg-retro-800'
-            )}
+          <NavigationButton
+            icon={<Library className="w-5 h-5" />}
+            label="Library"
+            isActive={currentView === 'library'}
+            isDisabled={isLoading}
             title="Go to library"
-          >
-            <Library className="w-5 h-5" />
-            <span className="text-xs sm:text-sm">Library</span>
-          </Button>
+            onClick={() => onViewChange('library')}
+          />
 
-          {/* Reader Button - Only when not in library */}
           {currentView !== 'library' && (
-            <Button
-              onClick={() => onViewChange('reader')}
-              disabled={isLoading}
-              variant="ghost"
-              className={clsx(
-                'flex flex-col sm:flex-row items-center gap-1 p-2 h-14 min-w-[60px] sm:min-w-[80px]',
-                currentView === 'reader' && 'bg-retro-100 dark:bg-retro-800'
-              )}
+            <NavigationButton
+              icon={<Book className="w-5 h-5" />}
+              label="Read"
+              isActive={currentView === 'reader'}
+              isDisabled={isLoading}
               title="Read guide"
-            >
-              <Book className="w-5 h-5" />
-              <span className="text-xs sm:text-sm">Read</span>
-            </Button>
+              onClick={() => onViewChange('reader')}
+            />
           )}
 
-          {/* Bookmarks Button - Only when not in library */}
           {currentView !== 'library' && (
-            <Button
-              onClick={() => onViewChange('bookmarks')}
-              disabled={isLoading}
-              variant="ghost"
-              className={clsx(
-                'flex flex-col sm:flex-row items-center gap-1 p-2 h-14 min-w-[60px] sm:min-w-[80px]',
-                currentView === 'bookmarks' && 'bg-retro-100 dark:bg-retro-800'
-              )}
+            <NavigationButton
+              icon={<Bookmark className="w-5 h-5" />}
+              label="Bookmarks"
+              isActive={currentView === 'bookmarks'}
+              isDisabled={isLoading}
               title="View bookmarks"
-            >
-              <Bookmark className="w-5 h-5" />
-              <span className="text-xs sm:text-sm">Bookmarks</span>
-            </Button>
+              onClick={() => onViewChange('bookmarks')}
+            />
           )}
 
-          {/* Search Toggle (in reader view only) */}
           {currentView === 'reader' && (
-            <Button
-              onClick={onToggleSearch}
-              disabled={isLoading}
-              variant="ghost"
-              className={clsx(
-                'flex flex-col sm:flex-row items-center gap-1 p-2 h-14 min-w-[60px] sm:min-w-[80px]',
-                showSearch && 'bg-retro-100 dark:bg-retro-800'
-              )}
+            <NavigationButton
+              icon={<Search className="w-5 h-5" />}
+              label="Search"
+              isActive={showSearch}
+              isDisabled={isLoading}
               title={showSearch ? 'Hide search' : 'Show search'}
-            >
-              <Search className="w-5 h-5" />
-              <span className="text-xs sm:text-sm">Search</span>
-            </Button>
+              onClick={onToggleSearch}
+            />
           )}
 
-          {/* Jump to Position (in reader view only) */}
           {currentView === 'reader' && (
-            <Button
-              onClick={onJumpToCurrentPosition}
-              disabled={isLoading}
-              variant="ghost"
-              className="flex flex-col sm:flex-row items-center gap-1 p-2 h-14 min-w-[60px] sm:min-w-[80px]"
+            <NavigationButton
+              icon={<Navigation className="w-5 h-5" />}
+              label="Position"
+              isDisabled={isLoading}
               title="Jump to saved position"
-            >
-              <Navigation className="w-5 h-5" />
-              <span className="text-xs sm:text-sm">Position</span>
-            </Button>
+              onClick={onJumpToCurrentPosition}
+            />
           )}
 
-          {/* Settings Toggle (in reader view only) */}
           {currentView === 'reader' && (
-            <Button
-              onClick={() => setShowSettings(!showSettings)}
-              variant="ghost"
-              className={clsx(
-                'flex flex-col sm:flex-row items-center gap-1 p-2 h-14 min-w-[60px] sm:min-w-[80px]',
-                showSettings && 'bg-retro-100 dark:bg-retro-800'
-              )}
+            <NavigationButton
+              icon={<Settings className="w-5 h-5" />}
+              label="Settings"
+              isActive={showSettings}
+              isDisabled={isLoading}
               title="Display settings"
-            >
-              <Settings className="w-5 h-5" />
-              <span className="text-xs sm:text-sm">Settings</span>
-            </Button>
+              onClick={() => setShowSettings(!showSettings)}
+            />
           )}
         </div>
       </div>

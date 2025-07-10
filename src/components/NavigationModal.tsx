@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
-import { Navigation, X } from 'lucide-react';
+import { OverlayBackdrop } from './OverlayBackdrop';
+import { ModalHeader } from './ModalHeader';
+import { Navigation } from 'lucide-react';
 
 interface NavigationModalProps {
   isOpen: boolean;
@@ -61,38 +63,21 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
 
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-40"
-        onClick={handleClose}
-      />
+      <OverlayBackdrop onClick={handleClose} />
 
-      {/* Modal */}
       <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white dark:bg-retro-900 
                       rounded-lg shadow-2xl z-50 max-w-sm mx-auto">
         <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-retro-900 dark:text-retro-100 flex items-center gap-2">
-              <Navigation className="w-5 h-5" />
-              Go to Line
-            </h2>
-            <Button
-              onClick={handleClose}
-              variant="ghost"
-              size="sm"
-              className="p-1"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+          <ModalHeader 
+            title="Go to Line"
+            icon={<Navigation className="w-5 h-5" />}
+            onClose={handleClose}
+          />
 
-          {/* Current Position Info */}
           <div className="text-sm text-retro-600 dark:text-retro-400 mb-4">
             Currently at line {currentLine} of {totalLines}
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="line-input" className="block text-sm font-medium text-retro-700 dark:text-retro-300 mb-1">
@@ -120,7 +105,6 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
               )}
             </div>
 
-            {/* Actions */}
             <div className="flex gap-2">
               <Button
                 type="submit"
