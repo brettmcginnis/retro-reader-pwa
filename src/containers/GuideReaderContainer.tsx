@@ -30,7 +30,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<{ line: number; content: string }[]>([]);
   
   // References
   const guideRef = useRef<string[]>([]);
@@ -143,27 +142,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Search handling
   const performSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    
-    // Clear results if query is empty
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    
-    // Search through all lines
-    const results: { line: number; content: string }[] = [];
-    const lowerQuery = query.toLowerCase();
-    
-    guideRef.current.forEach((line, index) => {
-      if (line.toLowerCase().includes(lowerQuery)) {
-        results.push({
-          line: index + 1, // Line numbers are 1-based
-          content: line
-        });
-      }
-    });
-    
-    setSearchResults(results);
   }, []);
   
   // Add bookmark
@@ -257,7 +235,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       totalLines={totalLines}
       isLoading={isLoading}
       searchQuery={searchQuery}
-      searchResults={searchResults}
       bookmarks={bookmarks}
       initialLine={hasSetInitialPosition.current ? currentLine : (progress?.line || 1)}
       fontSize={fontSize}
