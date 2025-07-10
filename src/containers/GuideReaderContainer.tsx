@@ -6,6 +6,7 @@ import { useToast } from '../contexts/useToast';
 import { useApp } from '../contexts/useApp';
 import { db } from '../services/database';
 import { GuideReaderView } from '../components/GuideReaderView';
+import { getScreenIdentifier } from '../utils/screenUtils';
 
 interface GuideReaderContainerProps {
   guide: Guide;
@@ -27,6 +28,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Font size and zoom level state - will be loaded from progress
   const [fontSize, setFontSize] = useState(14); // Default to 14px
   const [zoomLevel, setZoomLevel] = useState(1); // Default to 100%
+  const [currentScreenId, setCurrentScreenId] = useState(getScreenIdentifier());
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,13 +67,45 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     };
   }, [guide]);
   
-  // Load font size and zoom from progress
+  // Load font size and zoom from progress - check screen-specific settings first
   useEffect(() => {
     if (progress) {
-      if (progress.fontSize) setFontSize(progress.fontSize);
-      if (progress.zoomLevel) setZoomLevel(progress.zoomLevel);
+      const screenId = getScreenIdentifier();
+      setCurrentScreenId(screenId);
+      
+      // Check for screen-specific settings first
+      if (progress.screenSettings && progress.screenSettings[screenId]) {
+        const screenSettings = progress.screenSettings[screenId];
+        setFontSize(screenSettings.fontSize);
+        setZoomLevel(screenSettings.zoomLevel);
+      } else {
+        // Fall back to general settings
+        if (progress.fontSize) setFontSize(progress.fontSize);
+        if (progress.zoomLevel) setZoomLevel(progress.zoomLevel);
+      }
     }
   }, [progress]);
+  
+  // Listen for window resize to update screen ID
+  useEffect(() => {
+    const handleResize = () => {
+      const newScreenId = getScreenIdentifier();
+      if (newScreenId !== currentScreenId) {
+        setCurrentScreenId(newScreenId);
+        
+        // Load settings for the new screen if available
+        if (progress?.screenSettings && progress.screenSettings[newScreenId]) {
+          const screenSettings = progress.screenSettings[newScreenId];
+          setFontSize(screenSettings.fontSize);
+          setZoomLevel(screenSettings.zoomLevel);
+        }
+        // If no specific settings for this screen, keep current settings
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentScreenId, progress]);
   
   // Set initial position from navigation target, saved progress or current position bookmark - only once
   useEffect(() => {
@@ -127,17 +161,33 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     if (!hasInitiallyScrolled.current) return;
     
     const timer = setTimeout(() => {
+      const screenId = getScreenIdentifier();
+      const existingProgress = progress || {
+        guideId: guide.id,
+        line: currentLine,
+        percentage: 0,
+        lastRead: new Date()
+      };
+      
       saveProgress({
+        ...existingProgress,
         guideId: guide.id,
         line: currentLine,
         percentage: Math.min(100, Math.max(0, (currentLine / totalLines) * 100)),
         fontSize,
-        zoomLevel
+        zoomLevel,
+        screenSettings: {
+          ...existingProgress.screenSettings,
+          [screenId]: {
+            fontSize,
+            zoomLevel
+          }
+        }
       }).catch(err => console.error('Failed to save progress:', err));
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [currentLine, guide.id, isLoading, saveProgress, totalLines, fontSize, zoomLevel]);
+  }, [currentLine, guide.id, isLoading, saveProgress, totalLines, fontSize, zoomLevel, progress]);
   
   // Search handling
   const performSearch = useCallback((query: string) => {

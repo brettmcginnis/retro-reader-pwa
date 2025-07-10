@@ -20,6 +20,11 @@ export interface Bookmark {
   isCurrentPosition?: boolean;
 }
 
+export interface ScreenSettings {
+  fontSize: number;
+  zoomLevel: number;
+}
+
 export interface ReadingProgress {
   guideId: string;
   line: number;
@@ -27,6 +32,7 @@ export interface ReadingProgress {
   lastRead: Date;
   fontSize?: number;
   zoomLevel?: number;
+  screenSettings?: Record<string, ScreenSettings>;
 }
 
 export interface GuideCollection {
