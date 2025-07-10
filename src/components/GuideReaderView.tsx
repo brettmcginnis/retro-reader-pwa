@@ -219,6 +219,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   const handleSetBookmarkLineAsCurrentPosition = async () => {
     const success = await onSetAsCurrentPosition(bookmarkLine);
     if (success) {
+      await onRefreshBookmarks();
       setShowBookmarkModal(false);
     }
   };
