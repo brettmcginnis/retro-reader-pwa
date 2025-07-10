@@ -32,3 +32,5 @@ tasks.md
 *tsbuildinfo
 
 .vite
+
+.claude/settings.local.json

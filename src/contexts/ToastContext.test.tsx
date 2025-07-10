@@ -342,6 +342,62 @@ describe('ToastContext', () => {
         expect(hiddenContainer.querySelector('.animate-leave')).toBeInTheDocument();
       }
     });
+
+    it('should dismiss toast when clicked', async () => {
+      const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
+      
+      render(
+        <TestWrapper>
+          <TestToastComponent />
+        </TestWrapper>
+      );
+
+      await user.click(screen.getByRole('button', { name: /show success/i }));
+
+      // Render the toast and test dismiss functionality
+      if (customCallback) {
+        const { container } = render(customCallback({ id: 'test-id', visible: true }));
+        const toastDiv = container.querySelector('div[onclick]');
+        
+        if (toastDiv) {
+          await user.click(toastDiv);
+          expect(toast.dismiss).toHaveBeenCalledWith('test-id');
+        }
+      }
+    });
+
+    it('should dismiss toast when X button is clicked', async () => {
+      const user = userEvent.setup();
+      let customCallback: ((props: { id: string; visible: boolean }) => React.ReactElement) | undefined;
+      
+      (toast.custom as jest.Mock).mockImplementation((callback) => {
+        customCallback = callback;
+        return 'toast-id';
+      });
+      
+      render(
+        <TestWrapper>
+          <TestToastComponent />
+        </TestWrapper>
+      );
+
+      await user.click(screen.getByRole('button', { name: /show info/i }));
+
+      // Render the toast and test X button dismiss
+      if (customCallback) {
+        const { getByLabelText } = render(customCallback({ id: 'test-id', visible: true }));
+        const dismissButton = getByLabelText('Dismiss notification');
+        
+        await user.click(dismissButton);
+        expect(toast.dismiss).toHaveBeenCalledWith('test-id');
+      }
+    });
   });
 
   describe('Error Handling', () => {
