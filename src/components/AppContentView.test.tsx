@@ -9,17 +9,23 @@ jest.mock('./GuideLibrary', () => ({
 }));
 
 jest.mock('./GuideReader', () => ({
-  GuideReader: ({ guide }: { guide: Guide }) => (
-    <div data-testid="guide-reader">Guide Reader: {guide.title}</div>
+  GuideReader: ({ guide, currentView, onViewChange }: { guide: Guide; currentView?: string; onViewChange?: (view: string) => void }) => (
+    <div data-testid="guide-reader">
+      Guide Reader: {guide.title}
+      {currentView && <div>Current View: {currentView}</div>}
+      {onViewChange && <button onClick={() => onViewChange('bookmarks')}>Go to Bookmarks</button>}
+    </div>
   )
 }));
 
 jest.mock('./BookmarkManager', () => ({
-  BookmarkManager: ({ guide, onGotoLine }: { guide: Guide; onGotoLine: (line: number) => void }) => (
+  BookmarkManager: ({ guide, onGotoLine, currentView, onViewChange }: { guide: Guide; onGotoLine: (line: number) => void; currentView?: string; onViewChange?: (view: string) => void }) => (
     <div data-testid="bookmark-manager">
       Bookmark Manager: {guide.title}
       <button onClick={() => onGotoLine(10)}>Go to Line 10</button>
       <button onClick={() => onGotoLine(50)}>Go to Line 50</button>
+      {currentView && <div>Current View: {currentView}</div>}
+      {onViewChange && <button onClick={() => onViewChange('reader')}>Go to Reader</button>}
     </div>
   )
 }));
@@ -46,6 +52,7 @@ describe('AppContentView', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
   });
 
   describe('View Rendering', () => {
@@ -113,7 +120,7 @@ describe('AppContentView', () => {
   });
 
   describe('Navigation', () => {
-    it('should show navigation when not in library view', () => {
+    it('should pass currentView and onViewChange to GuideReader', () => {
       render(
         <AppContentView 
           {...defaultProps} 
@@ -122,60 +129,12 @@ describe('AppContentView', () => {
         />
       );
       
-      expect(screen.getByText('← Library')).toBeInTheDocument();
-      expect(screen.getByText('Bookmarks')).toBeInTheDocument();
+      expect(screen.getByText('Current View: reader')).toBeInTheDocument();
+      expect(screen.getByText('Go to Bookmarks')).toBeInTheDocument();
     });
 
-    it('should not show navigation in library view', () => {
-      render(<AppContentView {...defaultProps} />);
-      
-      expect(screen.queryByText('← Library')).not.toBeInTheDocument();
-      expect(screen.queryByText('Bookmarks')).not.toBeInTheDocument();
-    });
-
-    it('should call onBackToLibrary when Library button is clicked', async () => {
-      const user = userEvent.setup();
-      
+    it('should pass currentView and onViewChange to BookmarkManager', () => {
       render(
-        <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
-          currentGuide={mockGuide}
-        />
-      );
-      
-      await user.click(screen.getByText('← Library'));
-      expect(defaultProps.onBackToLibrary).toHaveBeenCalledTimes(1);
-    });
-
-    it('should call onViewChange when navigation buttons are clicked', async () => {
-      const user = userEvent.setup();
-      
-      render(
-        <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
-          currentGuide={mockGuide}
-        />
-      );
-      
-      await user.click(screen.getByText('Bookmarks'));
-      expect(defaultProps.onViewChange).toHaveBeenCalledWith('bookmarks');
-    });
-
-    it('should show correct navigation buttons based on current view', async () => {
-      const { rerender } = render(
-        <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
-          currentGuide={mockGuide}
-        />
-      );
-      
-      expect(screen.getByText('Bookmarks')).toBeInTheDocument();
-      expect(screen.queryByText('Read Guide')).not.toBeInTheDocument();
-      
-      rerender(
         <AppContentView 
           {...defaultProps} 
           currentView="bookmarks"
@@ -183,9 +142,25 @@ describe('AppContentView', () => {
         />
       );
       
-      expect(screen.getByText('Read Guide')).toBeInTheDocument();
-      expect(screen.queryByText('Bookmarks')).not.toBeInTheDocument();
+      expect(screen.getByText('Current View: bookmarks')).toBeInTheDocument();
+      expect(screen.getByText('Go to Reader')).toBeInTheDocument();
     });
+
+    it('should call onViewChange when navigation is triggered from child components', async () => {
+      const user = userEvent.setup();
+      
+      render(
+        <AppContentView 
+          {...defaultProps} 
+          currentView="reader"
+          currentGuide={mockGuide}
+        />
+      );
+      
+      await user.click(screen.getByText('Go to Bookmarks'));
+      expect(defaultProps.onViewChange).toHaveBeenCalledWith('bookmarks');
+    });
+
   });
 
   describe('Bookmark Navigation', () => {

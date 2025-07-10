@@ -3,6 +3,16 @@
 ## Project Overview
 Retro Reader PWA - A Progressive Web App for reading and bookmarking retro game guides with offline-first capabilities.
 
+## Workflow
+
+1. Understand the problem described in the issue
+2. Search the codebase for relevant files
+3. Ultrathink through the ask, and form a list of tasks.
+4. Address each task sequentially and ensure test and lint passes before proceeding to the next task.
+5. Print to console a descriptive commit message for the changes made
+
+Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.
+
 ## Bash Commands
 - `npm run build` Builds the project
 - `npm run lint` Validates Syntax
@@ -90,14 +100,3 @@ Based on Google TypeScript Style Guide. See `examples/` for detailed examples.
 - Follow existing test patterns for consistency
 - Mock external dependencies appropriately
 - Ensure all async operations are properly handled in tests
-
-
-## Workflow
-
-1. Understand the problem described in the issue
-2. Search the codebase for relevant files
-3. Ultrathink through the ask, and form a list of tasks. Write them to `tasks.md`.
-3. Read `tasks.md` and address them one at a time. Ensure test and lint passes before proceeding
-4. Print to console a descriptive commit message for the changes made
-
-Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.

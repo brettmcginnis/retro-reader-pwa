@@ -1,12 +1,11 @@
 import React from 'react';
-import { Book, Bookmark, Download, Trash2, Calendar, HardDrive } from 'lucide-react';
+import { Book, Download, Trash2, Calendar, HardDrive } from 'lucide-react';
 import { Guide } from '../types';
 import { Button } from './Button';
 
 interface GuideCardProps {
   guide: Guide;
   onRead: () => void;
-  onBookmarks: () => void;
   onExport: () => void;
   onDelete: () => void;
   formatFileSize: (bytes: number) => string;
@@ -16,7 +15,6 @@ interface GuideCardProps {
 const GuideCardComponent: React.FC<GuideCardProps> = ({ 
   guide, 
   onRead, 
-  onBookmarks, 
   onExport, 
   onDelete,
   formatFileSize,
@@ -52,15 +50,6 @@ const GuideCardComponent: React.FC<GuideCardProps> = ({
         >
           <Book className="w-4 h-4" />
           Read
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onBookmarks}
-          className="flex items-center gap-1"
-        >
-          <Bookmark className="w-4 h-4" />
-          Bookmarks
         </Button>
         <Button
           variant="ghost"

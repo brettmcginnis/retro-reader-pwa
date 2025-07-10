@@ -108,10 +108,6 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
     window.history.pushState({ guideId: guide.id }, '', `/retro-reader-pwa/guide/${guide.id}`);
   };
 
-  const openBookmarks = (guide: Guide) => {
-    setCurrentGuideId(guide.id);
-    setCurrentView('bookmarks');
-  };
 
   const handleCreateGuide = async (guide: Omit<Guide, 'id' | 'dateAdded' | 'dateModified'>) => {
     try {
@@ -139,7 +135,6 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
       onExportAll={handleExportAll}
       onFileSelect={handleFileSelect}
       onOpenGuide={openGuide}
-      onOpenBookmarks={openBookmarks}
       onCreateGuide={handleCreateGuide}
     />
   );
