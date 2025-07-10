@@ -33,15 +33,13 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
   onZoomChange
 }) => {
   const [showSettings, setShowSettings] = useState(false);
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(localSearchQuery);
+    // Prevent form submission since we're handling search on every keystroke
   };
 
   const handleSearchClear = () => {
-    setLocalSearchQuery('');
     onSearch('');
   };
 
@@ -159,8 +157,8 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
                 <div className="flex-1 relative">
                   <input
                     type="text"
-                    value={localSearchQuery}
-                    onChange={(e) => setLocalSearchQuery(e.target.value)}
+                    value={searchQuery}
+                    onChange={(e) => onSearch(e.target.value)}
                     placeholder="Search in guide..."
                     className="w-full pl-3 pr-8 py-1.5 text-sm bg-retro-50 dark:bg-retro-800 
                              border border-retro-200 dark:border-retro-700 rounded-lg
@@ -168,7 +166,7 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
                              text-retro-900 dark:text-retro-100 placeholder-retro-500 dark:placeholder-retro-400"
                     autoFocus
                   />
-                  {localSearchQuery && (
+                  {searchQuery && (
                     <button
                       type="button"
                       onClick={handleSearchClear}
