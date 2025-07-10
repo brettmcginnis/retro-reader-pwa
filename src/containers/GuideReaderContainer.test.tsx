@@ -7,8 +7,6 @@ const mockSaveProgress = jest.fn().mockResolvedValue(undefined);
 const mockAddBookmark = jest.fn();
 const mockShowToast = jest.fn();
 const mockSetNavigationTargetLine = jest.fn();
-const mockGetCurrentPositionBookmark = jest.fn();
-const mockSaveCurrentPositionBookmark = jest.fn();
 
 const mockUseProgress = jest.fn(() => ({
   progress: null,
@@ -47,9 +45,12 @@ jest.mock('../contexts/useApp', () => ({
   useApp: mockUseApp
 }));
 
+const mockGetCurrentPositionBookmark = jest.fn();
+const mockSaveCurrentPositionBookmark = jest.fn();
+
 const mockDb = {
-  getCurrentPositionBookmark: jest.fn(),
-  saveCurrentPositionBookmark: jest.fn()
+  getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
+  saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
 };
 
 jest.mock('../services/database', () => ({
@@ -86,8 +87,17 @@ jest.mock('../components/GuideReaderView', () => ({
     initialLine,
     currentLine, 
     onLineChange, 
-    onInitialScroll 
+    onInitialScroll,
+    fontSize,
+    zoomLevel,
+    onFontSizeChange,
+    onZoomChange,
+    onAddBookmark,
+    onSetAsCurrentPosition,
+    onJumpToCurrentPosition
   }: MockGuideReaderViewProps) => {
+    const [jumpedToLine, setJumpedToLine] = React.useState<number | null>(null);
+    
     React.useEffect(() => {
       // Simulate initial scroll
       if (onInitialScroll) {
@@ -98,11 +108,32 @@ jest.mock('../components/GuideReaderView', () => ({
     return (
       <div data-testid="guide-reader-view">
         <div data-testid="initial-line">{initialLine}</div>
+        <div data-testid="font-size">{fontSize}</div>
+        <div data-testid="zoom-level">{zoomLevel}</div>
         <div data-testid="current-line">{currentLine || 1}</div>
+        <div data-testid="jumped-to-line">{jumpedToLine || ''}</div>
         <button onClick={() => {
           // Simulate line change
           onLineChange(50);
         }}>Scroll to Line 50</button>
+        <button onClick={() => onFontSizeChange(16)}>Change Font Size</button>
+        <button onClick={() => onFontSizeChange(30)}>Max Font Size</button>
+        <button onClick={() => onFontSizeChange(5)}>Min Font Size</button>
+        <button onClick={() => onZoomChange(1.5)}>Change Zoom</button>
+        <button onClick={() => onZoomChange(3)}>Max Zoom</button>
+        <button onClick={() => onZoomChange(0.3)}>Min Zoom</button>
+        <button onClick={async () => {
+          await onAddBookmark(25, 'Test Bookmark', 'Test Note');
+        }}>Add Bookmark</button>
+        <button onClick={async () => {
+          await onSetAsCurrentPosition(30);
+        }}>Set Current Position</button>
+        <button onClick={async () => {
+          const line = await onJumpToCurrentPosition();
+          if (line !== null) {
+            setJumpedToLine(line);
+          }
+        }}>Jump to Current Position</button>
       </div>
     );
   }
@@ -394,6 +425,341 @@ describe('GuideReaderContainer', () => {
 
       // Should not trigger unnecessary reloads
       expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+    });
+  });
+
+  describe('Window Resize Handling', () => {
+    it('should reapply screen-specific settings when window is resized', async () => {
+      // Set up progress with screen-specific settings
+      mockUseProgress.mockReturnValue({
+        progress: {
+          guideId: 'test-guide-1',
+          line: 50,
+          percentage: 50,
+          fontSize: 16,
+          zoomLevel: 1.2,
+          screenSettings: {
+            screen_1000: {
+              fontSize: 14,
+              zoomLevel: 1
+            },
+            screen_1200: {
+              fontSize: 18,
+              zoomLevel: 1.5
+            }
+          },
+          lastRead: new Date()
+        },
+        saveProgress: mockSaveProgress,
+        loading: false,
+        error: null
+      });
+
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      // Initial settings should be from screen_1000 (default mock window width)
+      expect(screen.getByTestId('font-size')).toHaveTextContent('14');
+      expect(screen.getByTestId('zoom-level')).toHaveTextContent('1');
+
+      // Simulate window resize to 1200px width
+      act(() => {
+        Object.defineProperty(window, 'innerWidth', {
+          writable: true,
+          configurable: true,
+          value: 1200
+        });
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      // Should now use screen_1200 settings
+      await waitFor(() => {
+        expect(screen.getByTestId('font-size')).toHaveTextContent('18');
+        expect(screen.getByTestId('zoom-level')).toHaveTextContent('1.5');
+      });
+    });
+
+    it('should fall back to general settings when no screen-specific settings exist after resize', async () => {
+      mockUseProgress.mockReturnValue({
+        progress: {
+          guideId: 'test-guide-1',
+          line: 50,
+          percentage: 50,
+          fontSize: 16,
+          zoomLevel: 1.2,
+          screenSettings: {
+            screen_1000: {
+              fontSize: 14,
+              zoomLevel: 1
+            }
+          },
+          lastRead: new Date()
+        },
+        saveProgress: mockSaveProgress,
+        loading: false,
+        error: null
+      });
+
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      // Initial settings from screen_1000
+      expect(screen.getByTestId('font-size')).toHaveTextContent('14');
+      expect(screen.getByTestId('zoom-level')).toHaveTextContent('1');
+
+      // Simulate resize to a width with no specific settings
+      act(() => {
+        Object.defineProperty(window, 'innerWidth', {
+          writable: true,
+          configurable: true,
+          value: 800
+        });
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      // Should fall back to general settings
+      await waitFor(() => {
+        expect(screen.getByTestId('font-size')).toHaveTextContent('16');
+        expect(screen.getByTestId('zoom-level')).toHaveTextContent('1.2');
+      });
+    });
+
+    it('should handle resize when no progress exists', async () => {
+      mockUseProgress.mockReturnValue({
+        progress: null,
+        saveProgress: mockSaveProgress,
+        loading: false,
+        error: null
+      });
+
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      // Should have default settings
+      expect(screen.getByTestId('font-size')).toHaveTextContent('14');
+      expect(screen.getByTestId('zoom-level')).toHaveTextContent('1');
+
+      // Simulate resize
+      act(() => {
+        Object.defineProperty(window, 'innerWidth', {
+          writable: true,
+          configurable: true,
+          value: 800
+        });
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      // Should keep default settings
+      await waitFor(() => {
+        expect(screen.getByTestId('font-size')).toHaveTextContent('14');
+        expect(screen.getByTestId('zoom-level')).toHaveTextContent('1');
+      });
+    });
+  });
+
+  describe('Font and Zoom Controls', () => {
+    it('should handle font size changes with clamping', async () => {
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const fontSizeButton = screen.getByText('Change Font Size');
+      
+      // Test normal change
+      fontSizeButton.click();
+      await waitFor(() => {
+        expect(screen.getByTestId('font-size')).toHaveTextContent('16');
+      });
+
+      // Test maximum clamping (> 24)
+      const maxFontButton = screen.getByText('Max Font Size');
+      maxFontButton.click();
+      await waitFor(() => {
+        expect(screen.getByTestId('font-size')).toHaveTextContent('24');
+      });
+
+      // Test minimum clamping (< 10)
+      const minFontButton = screen.getByText('Min Font Size');
+      minFontButton.click();
+      await waitFor(() => {
+        expect(screen.getByTestId('font-size')).toHaveTextContent('10');
+      });
+    });
+
+    it('should handle zoom level changes with clamping', async () => {
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const zoomButton = screen.getByText('Change Zoom');
+      
+      // Test normal change
+      zoomButton.click();
+      await waitFor(() => {
+        expect(screen.getByTestId('zoom-level')).toHaveTextContent('1.5');
+      });
+
+      // Test maximum clamping (> 2)
+      const maxZoomButton = screen.getByText('Max Zoom');
+      maxZoomButton.click();
+      await waitFor(() => {
+        expect(screen.getByTestId('zoom-level')).toHaveTextContent('2');
+      });
+
+      // Test minimum clamping (< 0.5)
+      const minZoomButton = screen.getByText('Min Zoom');
+      minZoomButton.click();
+      await waitFor(() => {
+        expect(screen.getByTestId('zoom-level')).toHaveTextContent('0.5');
+      });
+    });
+  });
+
+  describe('Bookmark Operations', () => {
+    it('should handle adding bookmarks successfully', async () => {
+      mockAddBookmark.mockResolvedValue(true);
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const addBookmarkButton = screen.getByText('Add Bookmark');
+      addBookmarkButton.click();
+
+      await waitFor(() => {
+        expect(mockAddBookmark).toHaveBeenCalledWith({
+          guideId: 'test-guide-1',
+          line: 25,
+          title: 'Test Bookmark',
+          note: 'Test Note'
+        });
+        expect(mockShowToast).toHaveBeenCalledWith('success', 'Bookmark added!', "Bookmark 'Test Bookmark' created at line 25");
+      });
+    });
+
+    it('should handle bookmark add errors', async () => {
+      mockAddBookmark.mockRejectedValue(new Error('Failed to save'));
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const addBookmarkButton = screen.getByText('Add Bookmark');
+      addBookmarkButton.click();
+
+      await waitFor(() => {
+        expect(mockShowToast).toHaveBeenCalledWith('error', 'Failed to add bookmark', 'Failed to save');
+      });
+    });
+
+    it('should handle setting current position successfully', async () => {
+      mockSaveCurrentPositionBookmark.mockResolvedValue(true);
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const setPositionButton = screen.getByText('Set Current Position');
+      setPositionButton.click();
+
+      await waitFor(() => {
+        expect(mockDb.saveCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1', 30);
+      });
+    });
+
+    it('should handle current position errors', async () => {
+      mockSaveCurrentPositionBookmark.mockRejectedValue(new Error('DB Error'));
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const setPositionButton = screen.getByText('Set Current Position');
+      setPositionButton.click();
+
+      await waitFor(() => {
+        expect(mockShowToast).toHaveBeenCalledWith('error', 'Failed to set current position', 'DB Error');
+      });
+    });
+
+    it('should handle jumping to current position', async () => {
+      mockGetCurrentPositionBookmark.mockResolvedValue({
+        id: 'current-pos',
+        guideId: 'test-guide-1',
+        line: 75,
+        title: 'Current Position',
+        dateCreated: new Date(),
+        isCurrentPosition: true
+      });
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const jumpButton = screen.getByText('Jump to Current Position');
+      jumpButton.click();
+
+      await waitFor(() => {
+        expect(mockDb.getCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1');
+        expect(screen.getByTestId('jumped-to-line')).toHaveTextContent('75');
+      });
+    });
+
+    it('should show info toast when no current position exists', async () => {
+      mockGetCurrentPositionBookmark.mockResolvedValue(null);
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const jumpButton = screen.getByText('Jump to Current Position');
+      jumpButton.click();
+
+      await waitFor(() => {
+        expect(mockShowToast).toHaveBeenCalledWith('info', 'No current position saved', 'Tap any line to set your current reading position');
+      });
+    });
+
+    it('should handle jump to position errors', async () => {
+      mockGetCurrentPositionBookmark.mockRejectedValue(new Error('DB Read Error'));
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
+      });
+
+      const jumpButton = screen.getByText('Jump to Current Position');
+      jumpButton.click();
+
+      await waitFor(() => {
+        expect(mockShowToast).toHaveBeenCalledWith('error', 'Failed to jump to position', 'DB Read Error');
+      });
     });
   });
 
