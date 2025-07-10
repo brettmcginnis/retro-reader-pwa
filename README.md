@@ -2,6 +2,8 @@
 
 A Progressive Web App for reading and bookmarking retro game guides, optimized for monospace text content.
 
+Check it out [here](https://brettmcginnis.github.io/retro-reader-pwa/)
+
 ## Features
 
 - **Offline-First**: Download and store guides locally for offline reading
