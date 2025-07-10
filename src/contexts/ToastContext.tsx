@@ -17,9 +17,12 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const showToast = (type: ToastType, title: string, message?: string, duration?: number): string => {
     const toastId = toast.custom(
       (t) => (
-        <div className={`${
-          t.visible ? 'animate-enter' : 'animate-leave'
-        } max-w-md w-full bg-white dark:bg-retro-900 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-20`}>
+        <div 
+          className={`${
+            t.visible ? 'animate-enter' : 'animate-leave pointer-events-none'
+          } max-w-md w-full bg-white dark:bg-retro-900 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-20 cursor-pointer`}
+          onClick={() => toast.dismiss(t.id)}
+        >
           <div className="flex-1 w-0 p-4">
             <div className="flex items-start space-x-3">
               {type === 'success' && <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />}
@@ -31,6 +34,18 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
                 {message && <p className="text-sm text-retro-600 dark:text-retro-400 mt-1">{message}</p>}
               </div>
             </div>
+          </div>
+          <div className="flex border-l border-retro-200 dark:border-retro-700">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toast.dismiss(t.id);
+              }}
+              className="w-full p-4 flex items-center justify-center hover:bg-retro-50 dark:hover:bg-retro-800 rounded-r-lg transition-colors duration-150"
+              aria-label="Dismiss notification"
+            >
+              <X className="w-5 h-5 text-retro-400 dark:text-retro-500" />
+            </button>
           </div>
         </div>
       ),
