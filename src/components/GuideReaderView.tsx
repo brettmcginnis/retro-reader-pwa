@@ -10,6 +10,7 @@ import { NavigationModal } from './NavigationModal';
 import { BookmarksOverlay } from './BookmarksOverlay';
 import { BookmarkModal } from './BookmarkModal';
 import { FloatingProgressIndicator } from './FloatingProgressIndicator';
+import { GuideSearchBar } from './GuideSearchBar';
 import { useToast } from '../contexts/useToast';
 
 interface GuideReaderViewProps {
@@ -68,6 +69,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   onRefreshBookmarks
 }) => {
   const [showSearch, setShowSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<{ line: number; content: string }[]>([]);
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [bookmarkLine, setBookmarkLine] = useState(1);
   const [bookmarkTitle, setBookmarkTitle] = useState('');
@@ -228,6 +230,28 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     updateVisibleRange();
   }, [fontSize, zoomLevel, updateVisibleRange]);
 
+  // Compute search results when search query changes
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResults([]);
+      return;
+    }
+
+    const results: { line: number; content: string }[] = [];
+    const query = searchQuery.toLowerCase();
+    
+    lines.forEach((line, index) => {
+      if (line.toLowerCase().includes(query)) {
+        results.push({
+          line: index + 1,
+          content: line
+        });
+      }
+    });
+    
+    setSearchResults(results);
+  }, [searchQuery, lines]);
+
   // Initial scroll to saved position
   useEffect(() => {
     if (!hasInitiallyScrolled.current && initialLine > 1 && totalLines > 0) {
@@ -268,6 +292,21 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onFontSizeChange={onFontSizeChange}
         onZoomChange={onZoomChange}
       />
+
+      {/* Search Bar */}
+      {showSearch && (
+        <div className="px-4 py-2 bg-retro-50 dark:bg-retro-900 border-b border-retro-200 dark:border-retro-700">
+          <GuideSearchBar
+            searchQuery={searchQuery}
+            searchResults={searchResults}
+            onSearch={onSearch}
+            onJumpToResult={(line) => {
+              scrollToLine(line);
+              setShowSearch(false);
+            }}
+          />
+        </div>
+      )}
 
       {/* Navigation controls for testing - contains only the input, not the line info */}
       <div className="sr-only" data-testid="test-navigation-controls">
