@@ -10,11 +10,6 @@ interface UrlImportProps {
 export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
   const [url, setUrl] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onFetch(url);
-    setUrl('');
-  };
 
   const handleButtonClick = () => {
     if (!url.trim()) return;
@@ -23,12 +18,6 @@ export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
     onFetch(currentUrl);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSubmit(e as unknown as React.FormEvent);
-    }
-  };
 
   return (
     <>
@@ -37,7 +26,6 @@ export const UrlImport: React.FC<UrlImportProps> = ({ onFetch, loading }) => {
           type="url" 
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          onKeyPress={handleKeyPress}
           placeholder="Enter guide URL (direct text file)..." 
           className="flex-1 px-3 py-2 border border-retro-300 dark:border-retro-600 rounded-md shadow-sm text-retro-900 dark:text-retro-100 bg-white dark:bg-retro-800 placeholder-retro-400 dark:placeholder-retro-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={loading}

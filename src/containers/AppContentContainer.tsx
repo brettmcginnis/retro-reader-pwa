@@ -42,18 +42,6 @@ export const AppContentContainer: React.FC = () => {
     loadGuide();
   }, [currentGuideId, getGuide, setCurrentGuideId, setCurrentView]);
 
-  // Handle escape key to go back to library
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && currentView !== 'library') {
-        setCurrentView('library');
-        setCurrentGuideId(null);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [currentView, setCurrentView, setCurrentGuideId]);
 
   // Setup service worker
   useEffect(() => {

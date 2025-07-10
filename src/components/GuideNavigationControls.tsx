@@ -46,26 +46,6 @@ export const GuideNavigationControls: React.FC<GuideNavigationControlsProps> = (
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowUp':
-        e.preventDefault();
-        onLineChange(Math.max(MIN_LINE, currentLine - 1));
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        onLineChange(Math.min(totalLines, currentLine + 1));
-        break;
-      case 'PageUp':
-        e.preventDefault();
-        onLineChange(Math.max(MIN_LINE, currentLine - 10));
-        break;
-      case 'PageDown':
-        e.preventDefault();
-        onLineChange(Math.min(totalLines, currentLine + 10));
-        break;
-    }
-  };
 
   return (
     <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
@@ -85,7 +65,6 @@ export const GuideNavigationControls: React.FC<GuideNavigationControlsProps> = (
           max={totalLines}
           value={currentLine}
           onChange={handleLineInputChange}
-          onKeyDown={handleKeyDown}
           disabled={isLoading}
           className={clsx(
             'w-20 px-2 py-1 text-sm',
