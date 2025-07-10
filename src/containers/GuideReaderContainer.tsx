@@ -28,7 +28,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Font size and zoom level state - will be loaded from progress
   const [fontSize, setFontSize] = useState(14); // Default to 14px
   const [zoomLevel, setZoomLevel] = useState(1); // Default to 100%
-  const [currentScreenId, setCurrentScreenId] = useState(getScreenIdentifier());
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,7 +70,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   useEffect(() => {
     if (progress) {
       const screenId = getScreenIdentifier();
-      setCurrentScreenId(screenId);
       
       // Check for screen-specific settings first
       if (progress.screenSettings && progress.screenSettings[screenId]) {
@@ -86,26 +84,29 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     }
   }, [progress]);
   
-  // Listen for window resize to update screen ID
+  // Listen for window resize to update screen ID and reapply settings
   useEffect(() => {
     const handleResize = () => {
       const newScreenId = getScreenIdentifier();
-      if (newScreenId !== currentScreenId) {
-        setCurrentScreenId(newScreenId);
-        
-        // Load settings for the new screen if available
-        if (progress?.screenSettings && progress.screenSettings[newScreenId]) {
+      
+      // Always reapply settings on resize
+      if (progress) {
+        // Check for screen-specific settings first
+        if (progress.screenSettings && progress.screenSettings[newScreenId]) {
           const screenSettings = progress.screenSettings[newScreenId];
           setFontSize(screenSettings.fontSize);
           setZoomLevel(screenSettings.zoomLevel);
+        } else {
+          // Fall back to general settings if no screen-specific settings exist
+          if (progress.fontSize) setFontSize(progress.fontSize);
+          if (progress.zoomLevel) setZoomLevel(progress.zoomLevel);
         }
-        // If no specific settings for this screen, keep current settings
       }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentScreenId, progress]);
+  }, [progress]);
   
   // Set initial position from navigation target, saved progress or current position bookmark - only once
   useEffect(() => {
