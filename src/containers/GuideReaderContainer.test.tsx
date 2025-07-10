@@ -132,6 +132,13 @@ describe('GuideReaderContainer', () => {
     // Mock console.error to suppress expected errors in tests
     console.error = jest.fn();
     
+    // Mock window.innerWidth for consistent screen identifier
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 1000
+    });
+    
     // Reset mock implementations to defaults
     mockUseApp.mockReturnValue({
       navigationTargetLine: null,
@@ -324,12 +331,18 @@ describe('GuideReaderContainer', () => {
 
       // Check the last call
       const lastCall = mockSaveProgress.mock.calls[mockSaveProgress.mock.calls.length - 1][0];
-      expect(lastCall).toEqual({
+      expect(lastCall).toMatchObject({
         guideId: 'test-guide-1',
         line: 50,
         percentage: 50,
         fontSize: 14,
-        zoomLevel: 1
+        zoomLevel: 1,
+        screenSettings: {
+          screen_1000: {
+            fontSize: 14,
+            zoomLevel: 1
+          }
+        }
       });
     });
 
