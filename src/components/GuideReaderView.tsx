@@ -277,7 +277,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
 
   return (
     <div className="flex flex-col h-screen bg-retro-50 dark:bg-retro-950">
-      {/* Top Navigation */}
       <TopNavigationBar
         guideTitle={guide.title}
         currentLine={currentLine}
@@ -398,7 +397,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onClose={() => setShowBookmarkModal(false)}
       />
 
-      {/* Navigation Modal */}
       <NavigationModal
         isOpen={showNavigationModal}
         currentLine={currentLine}
@@ -408,7 +406,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onJumpToCurrentPosition={onJumpToCurrentPosition}
       />
 
-      {/* Bookmarks Overlay */}
       <BookmarksOverlay
         isOpen={showBookmarksOverlay}
         guide={guide}
@@ -422,7 +419,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onDeleteBookmark={handleDeleteBookmark}
       />
 
-      {/* Simple Bottom Navigation */}
       <SimpleBottomNavigation
         onNavigate={() => setShowNavigationModal(true)}
         onBookmarks={async () => {

@@ -196,7 +196,6 @@ export const BookmarkManagerView: React.FC<BookmarkManagerViewProps> = ({
         </div>
       </div>
 
-      {/* Bottom Navigation Bar */}
       <BottomNavigationBar
         isLoading={false}
         fontSize={14}

@@ -45,6 +45,41 @@ describe('ZoomControl', () => {
     expect(screen.getByText('100%')).toBeInTheDocument();
   });
 
+  it('should display current zoom level as percentage', () => {
+    render(<ZoomControl {...defaultProps} zoomLevel={1.5} />);
+    
+    expect(screen.getByText('150%')).toBeInTheDocument();
+  });
+
+  it('should round zoom percentage to nearest integer', () => {
+    render(<ZoomControl {...defaultProps} zoomLevel={1.256} />);
+    
+    expect(screen.getByText('126%')).toBeInTheDocument();
+  });
+
+  it('should render decrease button', () => {
+    render(<ZoomControl {...defaultProps} />);
+    
+    const decreaseButton = screen.getAllByRole('button')[0];
+    expect(decreaseButton).toBeInTheDocument();
+    expect(screen.getByText('−')).toBeInTheDocument();
+  });
+
+  it('should render increase button', () => {
+    render(<ZoomControl {...defaultProps} />);
+    
+    const increaseButton = screen.getAllByRole('button')[1];
+    expect(increaseButton).toBeInTheDocument();
+    expect(screen.getByText('+')).toBeInTheDocument();
+  });
+
+  it('should render reset button', () => {
+    render(<ZoomControl {...defaultProps} zoomLevel={1.5} />);
+    
+    const resetButton = screen.getByText('Reset');
+    expect(resetButton).toBeInTheDocument();
+  });
+
   it('should call onZoomChange with decreased value when minus button is clicked', () => {
     render(<ZoomControl {...defaultProps} />);
     
@@ -140,12 +175,5 @@ describe('ZoomControl', () => {
   it('should round zoom percentage correctly', () => {
     render(<ZoomControl {...defaultProps} zoomLevel={1.456} />);
     expect(screen.getByText('146%')).toBeInTheDocument();
-  });
-
-  it('should render minus and plus symbols in buttons', () => {
-    render(<ZoomControl {...defaultProps} />);
-    
-    expect(screen.getByText('−')).toBeInTheDocument();
-    expect(screen.getByText('+')).toBeInTheDocument();
   });
 });

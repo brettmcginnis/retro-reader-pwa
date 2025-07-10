@@ -81,7 +81,16 @@ Based on Google TypeScript Style Guide. See `examples/` for detailed examples.
 - JSDoc for public API
 - `//` for implementation
 - Write useful comments
+- Avoid redundant JSX comments for already-extracted components
+- Extract reusable UI sections into dedicated components instead of using comments
 - See: `examples/comments-jsdoc.md`
+
+#### Component Extraction
+- Extract reusable UI sections into dedicated components
+- Avoid inline JSX comments that describe UI sections (e.g., `{/* Header */}`, `{/* Navigation Button */}`)
+- Create small, focused components for better reusability
+- Write comprehensive tests for all extracted components
+- Use descriptive component names that reflect their purpose
 
 ### Forbidden
 - `eval()` and `Function()`

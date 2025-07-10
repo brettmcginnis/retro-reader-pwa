@@ -45,6 +45,22 @@ describe('FontSizeControl', () => {
     expect(screen.getByText('16px')).toBeInTheDocument();
   });
 
+  it('should render decrease button', () => {
+    render(<FontSizeControl {...defaultProps} />);
+    
+    const decreaseButton = screen.getAllByRole('button')[0];
+    expect(decreaseButton).toBeInTheDocument();
+    expect(screen.getByText('−')).toBeInTheDocument();
+  });
+
+  it('should render increase button', () => {
+    render(<FontSizeControl {...defaultProps} />);
+    
+    const increaseButton = screen.getAllByRole('button')[1];
+    expect(increaseButton).toBeInTheDocument();
+    expect(screen.getByText('+')).toBeInTheDocument();
+  });
+
   it('should call onFontSizeChange with decreased value when minus button is clicked', () => {
     render(<FontSizeControl {...defaultProps} />);
     
@@ -102,12 +118,5 @@ describe('FontSizeControl', () => {
     
     expect(decreaseButton).not.toBeDisabled();
     expect(increaseButton).not.toBeDisabled();
-  });
-
-  it('should render minus and plus symbols in buttons', () => {
-    render(<FontSizeControl {...defaultProps} />);
-    
-    expect(screen.getByText('−')).toBeInTheDocument();
-    expect(screen.getByText('+')).toBeInTheDocument();
   });
 });
