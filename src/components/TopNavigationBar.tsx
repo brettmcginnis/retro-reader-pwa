@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import { Button } from './Button';
 import { ChevronLeft, Settings, Search, X } from 'lucide-react';
+import { FontSizeControl } from './FontSizeControl';
+import { ZoomControl } from './ZoomControl';
 
 interface TopNavigationBarProps {
   guideTitle: string;
@@ -54,70 +56,14 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
         showSettings ? 'translate-y-0' : '-translate-y-full'
       )}>
         <div className="p-4 space-y-4 max-w-2xl mx-auto">
-          {/* Font Size Control */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-retro-700 dark:text-retro-300">Font Size</span>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => onFontSizeChange(fontSize - 1)}
-                disabled={fontSize <= 10}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">−</span>
-              </Button>
-              <span className="text-sm text-retro-700 dark:text-retro-300 w-12 text-center font-medium">
-                {fontSize}px
-              </span>
-              <Button
-                onClick={() => onFontSizeChange(fontSize + 1)}
-                disabled={fontSize >= 24}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">+</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Zoom Control */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-retro-700 dark:text-retro-300">Zoom</span>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => onZoomChange(zoomLevel - 0.1)}
-                disabled={zoomLevel <= 0.5}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">−</span>
-              </Button>
-              <span className="text-sm text-retro-700 dark:text-retro-300 w-12 text-center font-medium">
-                {Math.round(zoomLevel * 100)}%
-              </span>
-              <Button
-                onClick={() => onZoomChange(zoomLevel + 0.1)}
-                disabled={zoomLevel >= 2}
-                variant="secondary"
-                size="sm"
-                className="w-10 h-10 p-0 flex items-center justify-center"
-              >
-                <span className="text-lg">+</span>
-              </Button>
-              <Button
-                onClick={() => onZoomChange(1)}
-                disabled={zoomLevel === 1}
-                variant="secondary"
-                size="sm"
-                className="px-3 h-10 ml-2"
-              >
-                Reset
-              </Button>
-            </div>
-          </div>
+          <FontSizeControl
+            fontSize={fontSize}
+            onFontSizeChange={onFontSizeChange}
+          />
+          <ZoomControl
+            zoomLevel={zoomLevel}
+            onZoomChange={onZoomChange}
+          />
         </div>
       </div>
 
