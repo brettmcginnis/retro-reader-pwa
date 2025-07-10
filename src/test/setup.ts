@@ -31,7 +31,9 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
   Object.defineProperty(window.HTMLElement.prototype, 'focus', {
     value: function(this: HTMLElement) {
       // Update the currently focused element
-      currentFocusedElement = this;
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const element = this;
+      currentFocusedElement = element;
       
       // Dispatch focus events
       const focusEvent = new FocusEvent('focus', {
@@ -39,7 +41,7 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
         cancelable: true,
         view: window
       });
-      this.dispatchEvent(focusEvent);
+      element.dispatchEvent(focusEvent);
     },
     writable: true,
     configurable: true
@@ -53,7 +55,9 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
   
   Object.defineProperty(window.HTMLElement.prototype, 'blur', {
     value: function(this: HTMLElement) {
-      if (currentFocusedElement === this) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const element = this;
+      if (currentFocusedElement === element) {
         currentFocusedElement = null;
       }
       
@@ -62,7 +66,7 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
         cancelable: true,
         view: window
       });
-      this.dispatchEvent(blurEvent);
+      element.dispatchEvent(blurEvent);
     },
     writable: true,
     configurable: true
@@ -87,13 +91,15 @@ if (typeof window !== 'undefined') {
     if (tagName.toLowerCase() === 'input') {
       const originalSetAttribute = element.setAttribute;
       element.setAttribute = function(name: string, value: string) {
-        originalSetAttribute.call(this, name, value);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const el = this;
+        originalSetAttribute.call(el, name, value);
         
         // If autofocus is set and element is in DOM, focus it
-        if (name === 'autofocus' && this.isConnected) {
+        if (name === 'autofocus' && el.isConnected) {
           // Use setTimeout to ensure React has finished rendering
           setTimeout(() => {
-            (this as HTMLElement).focus();
+            (el as HTMLElement).focus();
           }, 0);
         }
       };
