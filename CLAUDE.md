@@ -5,13 +5,19 @@ Retro Reader PWA - A Progressive Web App for reading and bookmarking retro game 
 
 ## Workflow
 
+1. Using gh cli, retrieve the and read the issue
 1. Understand the problem described in the issue
 2. Search the codebase for relevant files
 3. Ultrathink through the ask, and form a list of tasks.
 4. Address each task sequentially and ensure test and lint passes before proceeding to the next task.
-5. Print to console a descriptive commit message for the changes made
+5. Using git:
+    1. Checkout an appropriate branch
+    2. Commit the change with an appropriate commit message. Do not include claude as a co-author.
+    3. Push the changes
+6. Create a Pull request
 
 Remember to use the GitHub CLI (`gh`) for all GitHub-related tasks.
+Remember to use the git CLI (`git`) for all git-related tasks.
 
 ## Bash Commands
 - `npm run build` Builds the project
