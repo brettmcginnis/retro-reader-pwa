@@ -103,6 +103,12 @@ describe('GuideReader Tests', () => {
     
     // Mock scrollTo to avoid errors
     Element.prototype.scrollTo = jest.fn();
+    
+    // Mock requestAnimationFrame for tests
+    global.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      setTimeout(() => callback(0), 0);
+      return 0;
+    };
   });
 
   afterEach(() => {
@@ -612,8 +618,9 @@ describe('GuideReader Tests', () => {
       });
 
       // Allow time for initial scroll to navigation target
+      // Need to account for 50ms timeout + 2 RAF calls (which use setTimeout in our mock)
       await act(async () => {
-        jest.advanceTimersByTime(300);
+        jest.runAllTimers();
       });
 
       // Check that navigation input shows the target line
@@ -675,8 +682,9 @@ describe('GuideReader Tests', () => {
       );
 
       // Allow time for scroll
+      // Need to account for 50ms timeout + 2 RAF calls (which use setTimeout in our mock)
       await act(async () => {
-        jest.advanceTimersByTime(300);
+        jest.runAllTimers();
       });
 
       // Should now show line 50
@@ -725,8 +733,9 @@ describe('GuideReader Tests', () => {
       });
 
       // Allow time for initial scroll
+      // Need to account for 50ms timeout + 2 RAF calls (which use setTimeout in our mock)
       await act(async () => {
-        jest.advanceTimersByTime(300);
+        jest.runAllTimers();
       });
 
       // Should use navigation target (25) instead of current position (80)
