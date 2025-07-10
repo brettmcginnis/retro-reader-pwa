@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-export interface AppContextType {
+interface AppContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   currentView: 'library' | 'reader' | 'bookmarks';
