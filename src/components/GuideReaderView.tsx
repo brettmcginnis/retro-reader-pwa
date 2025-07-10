@@ -53,12 +53,12 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   fontSize,
   zoomLevel,
   currentView: _currentView,
-  onLineChange: _onLineChange,
+  onLineChange,
   onSearch,
   onAddBookmark,
   onSetAsCurrentPosition,
   onJumpToCurrentPosition,
-  onScrollingStateChange: _onScrollingStateChange,
+  onScrollingStateChange,
   onInitialScroll,
   onFontSizeChange,
   onZoomChange,
@@ -113,17 +113,33 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
       return prev;
     });
 
+    // Calculate current line based on scroll position
+    // Use the middle of the viewport to determine the current line
+    const viewportMiddle = scrollTop + (clientHeight / 2);
+    const newCurrentLine = Math.max(1, Math.min(totalLines, Math.floor(viewportMiddle / lineHeight) + 1));
+    
+    // Update current line if it has changed
+    if (newCurrentLine !== currentLine) {
+      onLineChange(newCurrentLine);
+      onScrollingStateChange(true);
+    }
+
     // Show floating progress on mobile when scrolling
     if (window.innerWidth < 640) {
       setShowFloatingProgress(true);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        setShowFloatingProgress(false);
-      }, 1500);
     }
-  }, [isLoading, totalLines, zoomLevel]);
+    
+    // Clear existing timeout regardless of screen size
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Set timeout to hide progress and reset scrolling state
+    scrollTimeoutRef.current = setTimeout(() => {
+      setShowFloatingProgress(false);
+      onScrollingStateChange(false);
+    }, 1500);
+  }, [isLoading, totalLines, zoomLevel, currentLine, onLineChange, onScrollingStateChange]);
 
   // Scroll to a specific line
   const scrollToLine = useCallback((line: number, behavior: ScrollBehavior = 'smooth') => {
@@ -134,7 +150,10 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
       top: targetScrollTop,
       behavior
     });
-  }, [zoomLevel]);
+    
+    // Update current line immediately when programmatically scrolling
+    onLineChange(line);
+  }, [zoomLevel, onLineChange]);
 
   // Double tap handler
   const handleLineClick = useCallback((lineNumber: number) => {
