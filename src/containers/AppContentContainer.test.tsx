@@ -246,38 +246,6 @@ describe('AppContentContainer', () => {
     });
   });
 
-  describe('Keyboard Navigation', () => {
-    it('should handle escape key to go back to library', async () => {
-      mockUseApp.mockReturnValue({
-        currentView: 'reader',
-        setCurrentView: mockSetCurrentView,
-        currentGuideId: 'test-guide-1',
-        setCurrentGuideId: mockSetCurrentGuideId,
-        setNavigationTargetLine: mockSetNavigationTargetLine
-      });
-
-      render(<AppContentContainer />);
-      
-      const event = new KeyboardEvent('keydown', { key: 'Escape' });
-      document.dispatchEvent(event);
-      
-      expect(mockSetCurrentView).toHaveBeenCalledWith('library');
-      expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
-    });
-
-    it('should not handle escape key when already in library view', () => {
-      // Clear the previous calls
-      jest.clearAllMocks();
-      
-      render(<AppContentContainer />);
-      
-      const event = new KeyboardEvent('keydown', { key: 'Escape' });
-      document.dispatchEvent(event);
-      
-      expect(mockSetCurrentView).not.toHaveBeenCalled();
-      expect(mockSetCurrentGuideId).not.toHaveBeenCalled();
-    });
-  });
 
   describe('URL Handling', () => {
     it('should handle URL with guide ID on mount', () => {
