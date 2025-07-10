@@ -165,7 +165,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const handleSetAsCurrentPosition = useCallback(async (line: number) => {
     try {
       await db.saveCurrentPositionBookmark(guide.id, line);
-      showToast('success', 'Current position set!', `Line ${line} is now your current reading position`);
       return true;
     } catch (error) {
       showToast('error', 'Failed to set current position', error instanceof Error ? error.message : 'Unknown error');
