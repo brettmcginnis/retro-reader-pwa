@@ -599,37 +599,33 @@ describe('GuideReader Tests', () => {
         </TestWrapper>
       );
 
-      // Wait for component to mount and process navigation
+      // Wait for component to mount
       await waitFor(() => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
-      // Wait for the navigation target to be processed
-      await waitFor(() => {
-        expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
-      });
-
-      // Allow time for state updates and scroll
-      await act(async () => {
-        jest.runAllTimers();
-      });
-
+      // The navigation target should be processed in the first render cycle
+      // Since we're providing navigationTargetLine: 75, the container should:
+      // 1. Set currentLine to 75
+      // 2. Clear navigationTargetLine
+      // 3. Pass currentLine to the view
+      
       // Wait for navigation target to be cleared
       await waitFor(() => {
         expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
-      }, { timeout: 3000 });
+      });
 
-      // Check that navigation input shows the target line
-      const goToLineInput = screen.getByRole('spinbutton') as HTMLInputElement;
+      // At this point, currentLine should be 75
+      // Get the input and check its value
+      const goToLineInput = screen.getByRole('spinbutton');
       
-      // Skip this assertion if it continues to fail in CI
-      // The functionality works correctly in practice but the test environment
-      // has issues with async state propagation between parent and child components
-      if (process.env.CI !== 'true') {
-        await waitFor(() => {
-          expect(goToLineInput.value).toBe('75');
-        }, { timeout: 5000 });
-      }
+      // Wait for the state update to propagate and re-render
+      await waitFor(() => {
+        expect(goToLineInput).toHaveValue(75);
+      }, { 
+        timeout: 2000,
+        interval: 100 
+      });
     });
 
     it('should handle navigation target after component is already loaded', async () => {
@@ -689,25 +685,13 @@ describe('GuideReader Tests', () => {
         expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
       });
 
-      // Allow time for state updates and scroll
-      await act(async () => {
-        jest.runAllTimers();
-      });
-
-      // Wait for navigation to be processed
+      // Wait for state update to propagate
       await waitFor(() => {
-        expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
-      }, { timeout: 3000 });
-
-      // Should now show line 50
-      // Skip this assertion if it continues to fail in CI
-      // The functionality works correctly in practice but the test environment
-      // has issues with async state propagation between parent and child components
-      if (process.env.CI !== 'true') {
-        await waitFor(() => {
-          expect(goToLineInput.value).toBe('50');
-        }, { timeout: 5000 });
-      }
+        expect(goToLineInput).toHaveValue(50);
+      }, { 
+        timeout: 2000,
+        interval: 100 
+      });
     });
 
     it('should prioritize navigation target over current position bookmark', async () => {
@@ -750,27 +734,16 @@ describe('GuideReader Tests', () => {
         expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
       });
 
-      // Allow time for state updates and scroll
-      await act(async () => {
-        jest.runAllTimers();
-      });
-
-      // Wait for navigation target to be processed
-      await waitFor(() => {
-        expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
-      }, { timeout: 3000 });
-
       // Should use navigation target (25) instead of current position (80)
       const goToLineInput = screen.getByRole('spinbutton') as HTMLInputElement;
       
-      // Skip this assertion if it continues to fail in CI
-      // The functionality works correctly in practice but the test environment
-      // has issues with async state propagation between parent and child components
-      if (process.env.CI !== 'true') {
-        await waitFor(() => {
-          expect(goToLineInput.value).toBe('25');
-        }, { timeout: 5000 });
-      }
+      // Wait for state update to propagate
+      await waitFor(() => {
+        expect(goToLineInput).toHaveValue(25);
+      }, { 
+        timeout: 2000,
+        interval: 100 
+      });
     });
   });
 });
