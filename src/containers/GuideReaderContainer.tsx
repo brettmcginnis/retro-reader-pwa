@@ -178,7 +178,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     try {
       const currentPosBookmark = await db.getCurrentPositionBookmark(guide.id);
       if (currentPosBookmark) {
-        showToast('success', 'Jumped to current position', `Line ${currentPosBookmark.line}`);
         return currentPosBookmark.line;
       } else {
         showToast('info', 'No current position saved', 'Tap any line to set your current reading position');
