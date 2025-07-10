@@ -98,7 +98,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     
     const container = containerRef.current;
     const { scrollTop, clientHeight } = container;
-    const lineHeight = lineHeightRef.current;
+    const lineHeight = lineHeightRef.current * zoomLevel;
     
     const startIndex = Math.max(0, Math.floor(scrollTop / lineHeight) - OVERSCAN_COUNT * 10);
     const endIndex = Math.min(totalLines, Math.ceil((scrollTop + clientHeight) / lineHeight) + OVERSCAN_COUNT * 10);
@@ -120,18 +120,18 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         setShowFloatingProgress(false);
       }, 1500);
     }
-  }, [isLoading, totalLines]);
+  }, [isLoading, totalLines, zoomLevel]);
 
   // Scroll to a specific line
   const scrollToLine = useCallback((line: number, behavior: ScrollBehavior = 'smooth') => {
     if (!containerRef.current || !lineHeightRef.current) return;
     
-    const targetScrollTop = (line - 1) * lineHeightRef.current;
+    const targetScrollTop = (line - 1) * lineHeightRef.current * zoomLevel;
     containerRef.current.scrollTo({
       top: targetScrollTop,
       behavior
     });
-  }, []);
+  }, [zoomLevel]);
 
   // Long press handlers
   const handleLongPressStart = useCallback((lineNumber: number) => {
@@ -221,12 +221,12 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     }
   };
 
-  // Update line height when font size changes
+  // Update line height when font size or zoom changes
   useEffect(() => {
     lineHeightRef.current = Math.ceil(fontSize * 1.5);
     // Trigger a recalculation of visible range
     updateVisibleRange();
-  }, [fontSize, updateVisibleRange]);
+  }, [fontSize, zoomLevel, updateVisibleRange]);
 
   // Initial scroll to saved position
   useEffect(() => {
@@ -309,13 +309,12 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         }}
       >
         <div 
-          className="relative origin-top-left" 
+          className="relative" 
           ref={contentRef} 
           style={{ 
-            height: totalHeight * zoomLevel,
-            transform: `scale(${zoomLevel})`,
-            width: `${100 / zoomLevel}%`,
-            willChange: 'transform'
+            height: totalHeight,
+            zoom: zoomLevel,
+            willChange: 'zoom'
           }}
         >
           <div style={{ 
