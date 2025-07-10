@@ -112,6 +112,15 @@ describe('GuideReader Tests', () => {
       theme: 'light',
       toggleTheme: jest.fn()
     });
+    
+    // Mock scrollTo to avoid errors
+    Element.prototype.scrollTo = jest.fn();
+    
+    // Mock requestAnimationFrame for tests
+    global.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      setTimeout(() => callback(0), 0);
+      return 0;
+    };
   });
 
   afterEach(() => {
@@ -595,7 +604,8 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
-      // Run all timers to process the initial scroll
+      // Allow time for initial scroll to navigation target
+      // Need to account for 50ms timeout + 2 RAF calls (which use setTimeout in our mock)
       await act(async () => {
         jest.runAllTimers();
       });
@@ -664,15 +674,16 @@ describe('GuideReader Tests', () => {
         </TestWrapper>
       );
 
+      // Allow time for scroll
+      // Need to account for 50ms timeout + 2 RAF calls (which use setTimeout in our mock)
+      await act(async () => {
+        jest.runAllTimers();
+      });
+
       // Wait for navigation to be processed
       await waitFor(() => {
         expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
       }, { timeout: 3000 });
-
-      // Run timers to process navigation
-      await act(async () => {
-        jest.runAllTimers();
-      });
 
       // Wait for state update to propagate
       await waitFor(() => {
@@ -718,7 +729,8 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
-      // Run all timers
+      // Allow time for initial scroll
+      // Need to account for 50ms timeout + 2 RAF calls (which use setTimeout in our mock)
       await act(async () => {
         jest.runAllTimers();
       });
