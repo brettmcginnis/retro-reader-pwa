@@ -9,11 +9,13 @@ import { GuideReaderView } from '../components/GuideReaderView';
 
 interface GuideReaderContainerProps {
   guide: Guide;
+  currentView?: 'library' | 'reader' | 'bookmarks';
+  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
 }
 
-export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide }) => {
+export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide, currentView, onViewChange }) => {
   const { progress, saveProgress } = useProgress(guide.id);
-  const { addBookmark, bookmarks } = useBookmarks(guide.id);
+  const { addBookmark, bookmarks, deleteBookmark, updateBookmark, refresh: refreshBookmarks } = useBookmarks(guide.id);
   const { showToast } = useToast();
   const { navigationTargetLine, setNavigationTargetLine } = useApp();
   
@@ -28,7 +30,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<{ line: number; content: string }[]>([]);
   
   // References
   const guideRef = useRef<string[]>([]);
@@ -141,33 +142,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Search handling
   const performSearch = useCallback((query: string) => {
     setSearchQuery(query);
-    
-    if (query.length < 3 || isLoading) {
-      setSearchResults([]);
-      return;
-    }
-    
-    // Simple search implementation
-    const results: { line: number; content: string }[] = [];
-    const searchTerm = query.toLowerCase();
-    
-    // Limit search to 10,000 lines for better performance
-    const searchLimit = Math.min(guideRef.current.length, 10000);
-    
-    for (let i = 0; i < searchLimit; i++) {
-      if (guideRef.current[i].toLowerCase().includes(searchTerm)) {
-        results.push({
-          line: i + 1,
-          content: guideRef.current[i]
-        });
-        
-        // Limit to 20 results
-        if (results.length >= 20) break;
-      }
-    }
-    
-    setSearchResults(results);
-  }, [isLoading]);
+  }, []);
   
   // Add bookmark
   const handleAddBookmark = useCallback(async (line: number, title: string, note?: string) => {
@@ -262,11 +237,11 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       totalLines={totalLines}
       isLoading={isLoading}
       searchQuery={searchQuery}
-      searchResults={searchResults}
       bookmarks={bookmarks}
       initialLine={hasSetInitialPosition.current ? currentLine : (progress?.line || 1)}
       fontSize={fontSize}
       zoomLevel={zoomLevel}
+      currentView={currentView}
       onLineChange={handleLineChange}
       onSearch={performSearch}
       onAddBookmark={handleAddBookmark}
@@ -276,6 +251,11 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onInitialScroll={handleInitialScroll}
       onFontSizeChange={handleFontSizeChange}
       onZoomChange={handleZoomChange}
+      onBackToLibrary={() => onViewChange?.('library')}
+      onViewChange={onViewChange}
+      onDeleteBookmark={deleteBookmark}
+      onUpdateBookmark={updateBookmark}
+      onRefreshBookmarks={refreshBookmarks}
     />
   );
 };

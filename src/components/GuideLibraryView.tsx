@@ -19,7 +19,6 @@ interface GuideLibraryViewProps {
   onExportAll: () => void;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenGuide: (guide: Guide) => void;
-  onOpenBookmarks: (guide: Guide) => void;
   onCreateGuide: (guide: Omit<Guide, 'id' | 'dateAdded' | 'dateModified'>) => Promise<Guide>;
 }
 
@@ -35,7 +34,6 @@ export const GuideLibraryView: React.FC<GuideLibraryViewProps> = ({
   onExportAll,
   onFileSelect,
   onOpenGuide,
-  onOpenBookmarks,
   onCreateGuide
 }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'paste' | 'upload'>('url');
@@ -185,7 +183,6 @@ export const GuideLibraryView: React.FC<GuideLibraryViewProps> = ({
                   key={guide.id}
                   guide={guide}
                   onRead={() => onOpenGuide(guide)}
-                  onBookmarks={() => onOpenBookmarks(guide)}
                   onExport={() => onExportGuide(guide.id)}
                   onDelete={() => onDeleteGuide(guide)}
                   formatFileSize={formatFileSize}

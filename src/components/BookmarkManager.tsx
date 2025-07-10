@@ -5,8 +5,10 @@ import { BookmarkManagerContainer } from '../containers/BookmarkManagerContainer
 interface BookmarkManagerProps {
   guide: Guide;
   onGotoLine: (line: number) => void;
+  currentView?: 'library' | 'reader' | 'bookmarks';
+  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
 }
 
-export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoLine }) => {
-  return <BookmarkManagerContainer guide={guide} onGotoLine={onGotoLine} />;
+export const BookmarkManager: React.FC<BookmarkManagerProps> = ({ guide, onGotoLine, currentView, onViewChange }) => {
+  return <BookmarkManagerContainer guide={guide} onGotoLine={onGotoLine} currentView={currentView} onViewChange={onViewChange} />;
 };

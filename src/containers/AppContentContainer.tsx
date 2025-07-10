@@ -104,7 +104,6 @@ export const AppContentContainer: React.FC = () => {
   };
 
   const handleNavigateToLine = (line: number) => {
-    // Set the target line in context and switch to reader view
     setNavigationTargetLine(line);
     setCurrentView('reader');
   };

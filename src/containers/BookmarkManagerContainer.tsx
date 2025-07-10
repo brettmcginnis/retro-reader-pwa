@@ -7,9 +7,11 @@ import { BookmarkManagerView } from '../components/BookmarkManagerView';
 interface BookmarkManagerContainerProps {
   guide: Guide;
   onGotoLine: (line: number) => void;
+  currentView?: 'library' | 'reader' | 'bookmarks';
+  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
 }
 
-export const BookmarkManagerContainer: React.FC<BookmarkManagerContainerProps> = ({ guide, onGotoLine }) => {
+export const BookmarkManagerContainer: React.FC<BookmarkManagerContainerProps> = ({ guide, onGotoLine, currentView, onViewChange }) => {
   const { bookmarks, addBookmark, deleteBookmark, updateBookmark } = useBookmarks(guide.id);
   const { showToast, showConfirmation } = useToast();
 
@@ -114,12 +116,14 @@ export const BookmarkManagerContainer: React.FC<BookmarkManagerContainerProps> =
       currentPositionBookmark={currentPositionBookmark}
       sortedBookmarks={sortedBookmarks}
       lineCount={getLineCount()}
+      currentView={currentView}
       onGotoLine={onGotoLine}
       onAddBookmark={handleAddBookmark}
       onUpdateBookmark={handleUpdateBookmark}
       onDeleteBookmark={handleDeleteBookmark}
       onExportBookmarks={handleExportBookmarks}
       onClearAll={handleClearAll}
+      onViewChange={onViewChange}
     />
   );
 };

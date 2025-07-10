@@ -3,6 +3,7 @@ import { Bookmark, Guide } from '../types';
 import { AddBookmarkModal } from './AddBookmarkModal';
 import { EditBookmarkModal } from './EditBookmarkModal';
 import { Button } from './Button';
+import { BottomNavigationBar } from './BottomNavigationBar';
 import { Bookmark as BookmarkIcon, MapPin, Calendar, Edit2, Trash2, Download, AlertCircle } from 'lucide-react';
 
 interface BookmarkManagerViewProps {
@@ -10,12 +11,14 @@ interface BookmarkManagerViewProps {
   currentPositionBookmark: Bookmark | undefined;
   sortedBookmarks: Bookmark[];
   lineCount: number;
+  currentView?: 'library' | 'reader' | 'bookmarks';
   onGotoLine: (line: number) => void;
   onAddBookmark: (bookmark: Omit<Bookmark, 'id' | 'dateCreated'>) => Promise<Bookmark>;
   onUpdateBookmark: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   onDeleteBookmark: (bookmarkId: string) => void;
   onExportBookmarks: () => void;
   onClearAll: () => void;
+  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
 }
 
 export const BookmarkManagerView: React.FC<BookmarkManagerViewProps> = ({
@@ -23,12 +26,14 @@ export const BookmarkManagerView: React.FC<BookmarkManagerViewProps> = ({
   currentPositionBookmark,
   sortedBookmarks,
   lineCount,
+  currentView = 'bookmarks',
   onGotoLine,
   onAddBookmark,
   onUpdateBookmark,
   onDeleteBookmark,
   onExportBookmarks,
-  onClearAll
+  onClearAll,
+  onViewChange
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
@@ -43,8 +48,11 @@ export const BookmarkManagerView: React.FC<BookmarkManagerViewProps> = ({
     }).format(date);
   };
 
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="flex flex-col h-screen bg-retro-50 dark:bg-retro-950">
+      <div className="flex-1 overflow-auto pb-16">
+        <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-retro-900 dark:text-retro-100">
           Bookmarks for {guide.title}
@@ -185,6 +193,22 @@ export const BookmarkManagerView: React.FC<BookmarkManagerViewProps> = ({
           onClose={() => setEditingBookmark(null)}
         />
       )}
+        </div>
+      </div>
+
+      {/* Bottom Navigation Bar */}
+      <BottomNavigationBar
+        isLoading={false}
+        fontSize={14}
+        zoomLevel={1}
+        showSearch={false}
+        currentView={currentView}
+        onJumpToCurrentPosition={() => {}}
+        onFontSizeChange={() => {}}
+        onZoomChange={() => {}}
+        onToggleSearch={() => {}}
+        onViewChange={onViewChange || (() => {})}
+      />
     </div>
   );
 };
