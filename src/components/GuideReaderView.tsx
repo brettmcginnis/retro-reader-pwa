@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import { Guide, Bookmark } from '../types';
-import { LINE_HEIGHT, LONGPRESS_DELAY, BOOKMARK_VIBRATION_DURATION, OVERSCAN_COUNT } from '../constants';
+import { LINE_HEIGHT, DOUBLE_TAP_DELAY, BOOKMARK_VIBRATION_DURATION, OVERSCAN_COUNT } from '../constants';
 
 import { GuideLineRenderer } from './GuideLineRenderer';
 import { TopNavigationBar } from './TopNavigationBar';
@@ -82,7 +82,8 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const lineHeightRef = useRef(LINE_HEIGHT);
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTapTimeRef = useRef<number>(0);
+  const lastTapLineRef = useRef<number>(0);
   const hasInitiallyScrolled = useRef(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
@@ -135,9 +136,13 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     });
   }, [zoomLevel]);
 
-  // Long press handlers
-  const handleLongPressStart = useCallback((lineNumber: number) => {
-    longPressTimerRef.current = setTimeout(() => {
+  // Double tap handler
+  const handleLineClick = useCallback((lineNumber: number) => {
+    const currentTime = Date.now();
+    const timeSinceLastTap = currentTime - lastTapTimeRef.current;
+    
+    if (lastTapLineRef.current === lineNumber && timeSinceLastTap < DOUBLE_TAP_DELAY) {
+      // Double tap detected
       if ('vibrate' in navigator) {
         navigator.vibrate(BOOKMARK_VIBRATION_DURATION);
       }
@@ -147,15 +152,16 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
       setBookmarkTitle(lineContent);
       setBookmarkNote('');
       setShowBookmarkModal(true);
-    }, LONGPRESS_DELAY);
-  }, [lines]);
-
-  const handleLongPressEnd = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
+      
+      // Reset to prevent triple tap
+      lastTapTimeRef.current = 0;
+      lastTapLineRef.current = 0;
+    } else {
+      // First tap
+      lastTapTimeRef.current = currentTime;
+      lastTapLineRef.current = lineNumber;
     }
-  }, []);
+  }, [lines]);
 
   // Bookmark modal handlers
   const handleSaveBookmark = async () => {
@@ -373,11 +379,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
                   lineHeight={lineHeightRef.current}
                   fontSize={fontSize}
                   searchQuery={searchQuery}
-                  onMouseDown={handleLongPressStart}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
-                  onTouchStart={handleLongPressStart}
-                  onTouchEnd={handleLongPressEnd}
+                  onClick={handleLineClick}
                 />
               );
             })}

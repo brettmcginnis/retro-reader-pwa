@@ -173,8 +173,8 @@ describe('GuideReader Tests', () => {
     });
   });
 
-  describe('Tap and Hold Bookmark Feature', () => {
-    it('should show bookmark modal on long press', async () => {
+  describe('Double Tap Bookmark Feature', () => {
+    it('should show bookmark modal on double tap', async () => {
       render(
         <TestWrapper>
           <GuideReader guide={mockGuide} />
@@ -193,13 +193,9 @@ describe('GuideReader Tests', () => {
       // Find line 2 element by test id
       const lineElement = screen.getByTestId('line-2');
 
-      // Simulate mousedown
-      fireEvent.mouseDown(lineElement);
-
-      // Fast-forward timer to trigger long press (500ms + buffer)
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      // Simulate double tap
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       // Wait for the modal to appear - check for the specific title
       await waitFor(() => {
@@ -233,11 +229,9 @@ describe('GuideReader Tests', () => {
       // Find line 2 element
       const lineElement = screen.getByTestId('line-2');
 
-      // Simulate long press
-      fireEvent.mouseDown(lineElement);
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      // Simulate double tap
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       await waitFor(() => {
         // Check for the bookmark modal text to be displayed
@@ -279,13 +273,11 @@ describe('GuideReader Tests', () => {
         expect(screen.getByTestId('line-2')).toBeInTheDocument();
       });
 
-      // Find and long press line 2
+      // Find and double tap line 2
       const lineElement = screen.getByTestId('line-2');
 
-      fireEvent.mouseDown(lineElement);
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       await waitFor(() => {
         // Check for the bookmark modal text to be displayed
@@ -363,12 +355,10 @@ describe('GuideReader Tests', () => {
         expect(screen.getByTestId('line-2')).toBeInTheDocument();
       });
 
-      // Long press to create bookmark
+      // Double tap to create bookmark
       const lineElement = screen.getByTestId('line-2');
-      fireEvent.mouseDown(lineElement);
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       await waitFor(() => {
         expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
@@ -401,7 +391,7 @@ describe('GuideReader Tests', () => {
       });
     });
 
-    it('should cancel long press when mouse leaves', async () => {
+    it('should not trigger bookmark modal on single tap', async () => {
       render(
         <TestWrapper>
           <GuideReader guide={mockGuide} />
@@ -420,18 +410,10 @@ describe('GuideReader Tests', () => {
       // Find line 2 element
       const lineElement = screen.getByTestId('line-2');
 
-      // Start long press
-      fireEvent.mouseDown(lineElement);
+      // Single tap only
+      fireEvent.click(lineElement);
 
-      // Fast-forward timer partially
-      act(() => {
-        jest.advanceTimersByTime(300);
-      });
-
-      // Mouse leaves before long press completes
-      fireEvent.mouseLeave(lineElement);
-
-      // Fast-forward rest of timer
+      // Wait a bit to ensure no modal appears
       act(() => {
         jest.advanceTimersByTime(400);
       });
@@ -459,13 +441,9 @@ describe('GuideReader Tests', () => {
       // Find line 2 element
       const lineElement = screen.getByTestId('line-2');
 
-      // Simulate touch start
-      fireEvent.touchStart(lineElement);
-
-      // Fast-forward timer to trigger long press
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      // Simulate double tap (touch)
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       await waitFor(() => {
         // Check for the bookmark modal text to be displayed
@@ -563,12 +541,10 @@ describe('GuideReader Tests', () => {
         expect(screen.getByTestId('line-2')).toBeInTheDocument();
       });
 
-      // Simulate long press on line 2
+      // Simulate double tap on line 2
       const lineElement = screen.getByTestId('line-2');
-      fireEvent.mouseDown(lineElement);
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       await waitFor(() => {
         expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();
@@ -595,12 +571,10 @@ describe('GuideReader Tests', () => {
         expect(screen.getByTestId('line-2')).toBeInTheDocument();
       });
 
-      // Open bookmark modal
+      // Open bookmark modal with double tap
       const lineElement = screen.getByTestId('line-2');
-      fireEvent.mouseDown(lineElement);
-      act(() => {
-        jest.advanceTimersByTime(600);
-      });
+      fireEvent.click(lineElement);
+      fireEvent.click(lineElement);
 
       await waitFor(() => {
         expect(screen.getByText('Add Bookmark at Line 2')).toBeInTheDocument();

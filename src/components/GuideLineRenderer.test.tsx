@@ -10,12 +10,9 @@ describe('GuideLineRenderer', () => {
     isBookmarked: false,
     isCurrentPosition: false,
     lineHeight: 24,
+    fontSize: 16,
     searchQuery: '',
-    onMouseDown: jest.fn(),
-    onMouseUp: jest.fn(),
-    onMouseLeave: jest.fn(),
-    onTouchStart: jest.fn(),
-    onTouchEnd: jest.fn()
+    onClick: jest.fn()
   };
 
   beforeEach(() => {
@@ -59,50 +56,32 @@ describe('GuideLineRenderer', () => {
     expect(marks[0].tagName).toBe('MARK');
   });
 
-  it('should handle mouse events', async () => {
+  it('should handle click events', async () => {
     const user = userEvent.setup();
     render(<GuideLineRenderer {...defaultProps} />);
     
     const lineElement = screen.getByTestId('line-42');
     
-    await user.pointer({ keys: '[MouseLeft>]', target: lineElement });
-    expect(defaultProps.onMouseDown).toHaveBeenCalledWith(42);
-    
-    await user.pointer({ keys: '[/MouseLeft]', target: lineElement });
-    expect(defaultProps.onMouseUp).toHaveBeenCalled();
-    
-    await user.unhover(lineElement);
-    expect(defaultProps.onMouseLeave).toHaveBeenCalled();
+    await user.click(lineElement);
+    expect(defaultProps.onClick).toHaveBeenCalledWith(42);
   });
 
-  it('should handle touch events', async () => {
+  it('should handle touch click events', async () => {
+    const user = userEvent.setup();
     render(<GuideLineRenderer {...defaultProps} />);
     
     const lineElement = screen.getByTestId('line-42');
     
-    // Simulate touch start
-    const touchStartEvent = new TouchEvent('touchstart', {
-      bubbles: true,
-      cancelable: true,
-      touches: [{ clientX: 0, clientY: 0 } as Touch]
-    });
-    lineElement.dispatchEvent(touchStartEvent);
-    expect(defaultProps.onTouchStart).toHaveBeenCalledWith(42);
-    
-    // Simulate touch end
-    const touchEndEvent = new TouchEvent('touchend', {
-      bubbles: true,
-      cancelable: true
-    });
-    lineElement.dispatchEvent(touchEndEvent);
-    expect(defaultProps.onTouchEnd).toHaveBeenCalled();
+    // Click events work for both mouse and touch in modern browsers
+    await user.click(lineElement);
+    expect(defaultProps.onClick).toHaveBeenCalledWith(42);
   });
 
-  it('should set correct line height', () => {
-    render(<GuideLineRenderer {...defaultProps} lineHeight={32} />);
+  it('should set correct line height and font size', () => {
+    render(<GuideLineRenderer {...defaultProps} lineHeight={32} fontSize={18} />);
     
     const lineElement = screen.getByTestId('line-42');
-    expect(lineElement).toHaveStyle({ height: '32px' });
+    expect(lineElement).toHaveStyle({ height: '32px', fontSize: '18px' });
   });
 
   it('should handle empty line content', () => {
