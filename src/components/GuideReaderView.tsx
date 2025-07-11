@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import { Guide, Bookmark } from '../types';
-import { LINE_HEIGHT, DOUBLE_TAP_DELAY, BOOKMARK_VIBRATION_DURATION, OVERSCAN_COUNT } from '../constants';
 import { generateId } from '../utils/common';
+
+// UI Constants
+const LINE_HEIGHT = 21;
+
+// Timing Constants (in milliseconds)
+const DOUBLE_TAP_DELAY = 300;
+const BOOKMARK_VIBRATION_DURATION = 50;
+
+// Virtualization Constants
+const OVERSCAN_COUNT = 10;
 
 import { GuideLineRenderer } from './GuideLineRenderer';
 import { TopNavigationBar } from './TopNavigationBar';

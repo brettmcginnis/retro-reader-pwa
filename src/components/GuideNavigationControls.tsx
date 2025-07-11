@@ -2,7 +2,9 @@ import React from 'react';
 import clsx from 'clsx';
 import { Button } from './Button';
 import { MapPin, Navigation, Minus, Plus, ZoomIn, ZoomOut } from 'lucide-react';
-import { MIN_LINE } from '../constants';
+
+// UI Constants
+const MIN_LINE = 1;
 
 interface GuideNavigationControlsProps {
   currentLine: number;
