@@ -36,13 +36,13 @@ jest.mock('../contexts/useToast', () => ({
   })
 }));
 
-const mockUseApp = jest.fn(() => ({
+const mockUseAppStore = jest.fn(() => ({
   navigationTargetLine: null,
   setNavigationTargetLine: mockSetNavigationTargetLine
 }));
 
-jest.mock('../contexts/useApp', () => ({
-  useApp: mockUseApp
+jest.mock('../stores/useAppStore', () => ({
+  useAppStore: mockUseAppStore
 }));
 
 const mockGetCurrentPositionBookmark = jest.fn();
@@ -171,7 +171,7 @@ describe('GuideReaderContainer', () => {
     });
     
     // Reset mock implementations to defaults
-    mockUseApp.mockReturnValue({
+    mockUseAppStore.mockReturnValue({
       navigationTargetLine: null,
       setNavigationTargetLine: mockSetNavigationTargetLine
     });
@@ -197,7 +197,7 @@ describe('GuideReaderContainer', () => {
   describe('Navigation Target Line', () => {
     it('should use navigation target line as initial position when available', async () => {
       // Set navigation target
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: 42,
         setNavigationTargetLine: mockSetNavigationTargetLine
       });
@@ -214,7 +214,7 @@ describe('GuideReaderContainer', () => {
 
     it('should prioritize navigation target over current position bookmark', async () => {
       // Set both navigation target and current position bookmark
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: 25,
         setNavigationTargetLine: mockSetNavigationTargetLine
       });
@@ -245,7 +245,7 @@ describe('GuideReaderContainer', () => {
       });
 
       // Update navigation target
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: 60,
         setNavigationTargetLine: mockSetNavigationTargetLine
       });

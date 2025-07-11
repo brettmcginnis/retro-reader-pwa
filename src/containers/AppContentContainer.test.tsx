@@ -7,19 +7,19 @@ const mockSetCurrentView = jest.fn();
 const mockSetCurrentGuideId = jest.fn();
 const mockGetGuide = jest.fn();
 
-const mockUseApp = jest.fn(() => ({
+const mockUseAppStore = jest.fn(() => ({
   currentView: 'library',
   setCurrentView: mockSetCurrentView,
   currentGuideId: null,
   setCurrentGuideId: mockSetCurrentGuideId
 }));
 
-jest.mock('../contexts/useApp', () => ({
-  useApp: mockUseApp
+jest.mock('../stores/useAppStore', () => ({
+  useAppStore: mockUseAppStore
 }));
 
-jest.mock('../hooks/useGuides', () => ({
-  useGuides: () => ({
+jest.mock('../stores/useGuideStore', () => ({
+  useGuideStore: () => ({
     getGuide: mockGetGuide
   })
 }));
@@ -95,7 +95,7 @@ describe('AppContentContainer', () => {
     console.error = jest.fn();
     
     // Reset mock to default state
-    mockUseApp.mockReturnValue({
+    mockUseAppStore.mockReturnValue({
       currentView: 'library',
       setCurrentView: mockSetCurrentView,
       currentGuideId: null,
@@ -119,7 +119,7 @@ describe('AppContentContainer', () => {
       expect(screen.getByTestId('is-loading')).toHaveTextContent('false');
 
       // Update the mock to simulate currentGuideId change
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         currentView: 'reader',
         setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',
@@ -145,7 +145,7 @@ describe('AppContentContainer', () => {
       // Don't spy on console.error since we already mocked it
       mockGetGuide.mockRejectedValueOnce(new Error('Failed to load'));
 
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         currentView: 'reader',
         setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',
@@ -174,7 +174,7 @@ describe('AppContentContainer', () => {
       // Don't spy on console.error since we already mocked it
       mockGetGuide.mockResolvedValueOnce(null);
 
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         currentView: 'reader',
         setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',

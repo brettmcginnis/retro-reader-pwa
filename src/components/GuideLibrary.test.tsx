@@ -3,7 +3,6 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GuideLibrary } from './GuideLibrary';
 import { ToastProvider } from '../contexts/ToastContext';
-import { AppProvider } from '../contexts/AppContext';
 import toast from 'react-hot-toast';
 import { Guide } from '../types';
 
@@ -34,8 +33,8 @@ const mockUseGuides = {
   getGuide: jest.fn()
 };
 
-jest.mock('../hooks/useGuides', () => ({
-  useGuides: () => mockUseGuides
+jest.mock('../stores/useGuideStore', () => ({
+  useGuideStore: () => mockUseGuides
 }));
 
 const mockCreateObjectURL = jest.fn();
@@ -63,11 +62,9 @@ jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
 });
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <AppProvider>
-    <ToastProvider>
-      {children}
-    </ToastProvider>
-  </AppProvider>
+  <ToastProvider>
+    {children}
+  </ToastProvider>
 );
 
 describe('GuideLibrary Import/Export Tests', () => {

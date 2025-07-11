@@ -27,12 +27,29 @@ const mockUseBookmarks = {
   refresh: mockRefresh
 };
 
-jest.mock('../hooks/useProgress', () => ({
-  useProgress: () => mockUseProgress
+jest.mock('../stores/useProgressStore', () => ({
+  useProgressStore: () => ({
+    progress: mockUseProgress.progress,
+    saveProgress: mockUseProgress.saveProgress,
+    loadProgress: jest.fn(),
+    getProgress: () => mockUseProgress.progress,
+    loading: mockUseProgress.loading,
+    error: mockUseProgress.error
+  })
 }));
 
-jest.mock('../hooks/useBookmarks', () => ({
-  useBookmarks: () => mockUseBookmarks
+jest.mock('../stores/useBookmarkStore', () => ({
+  useBookmarkStore: () => ({
+    bookmarks: mockUseBookmarks.bookmarks,
+    addBookmark: mockUseBookmarks.addBookmark,
+    deleteBookmark: mockUseBookmarks.deleteBookmark,
+    updateBookmark: mockUseBookmarks.updateBookmark,
+    loading: mockUseBookmarks.loading,
+    error: mockUseBookmarks.error,
+    refresh: mockUseBookmarks.refresh,
+    loadBookmarks: jest.fn(),
+    setCurrentGuideId: jest.fn()
+  })
 }));
 
 const mockDb = {
@@ -45,7 +62,7 @@ jest.mock('../services/database', () => ({
   db: mockDb
 }));
 
-const mockUseApp = jest.fn(() => ({
+const mockUseAppStore = jest.fn(() => ({
   navigationTargetLine: null,
   setNavigationTargetLine: jest.fn(),
   currentView: 'reader',
@@ -56,8 +73,8 @@ const mockUseApp = jest.fn(() => ({
   toggleTheme: jest.fn()
 }));
 
-jest.mock('../contexts/useApp', () => ({
-  useApp: () => mockUseApp()
+jest.mock('../stores/useAppStore', () => ({
+  useAppStore: () => mockUseAppStore()
 }));
 
 // Import after mocks are set up
@@ -102,7 +119,7 @@ describe('GuideReader Tests', () => {
     mockDb.getCurrentPositionBookmark.mockClear().mockResolvedValue(null);
     
     // Reset mockUseApp to default
-    mockUseApp.mockReturnValue({
+    mockUseAppStore.mockReturnValue({
       navigationTargetLine: null,
       setNavigationTargetLine: jest.fn(),
       currentView: 'reader',
@@ -633,7 +650,7 @@ describe('GuideReader Tests', () => {
       
       // Setup navigation target in context  
       const mockSetNavigationTargetLine = jest.fn();
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: 75,
         setNavigationTargetLine: mockSetNavigationTargetLine,
         currentView: 'reader',
@@ -669,7 +686,7 @@ describe('GuideReader Tests', () => {
       const mockSetNavigationTargetLine = jest.fn();
       
       // Start without navigation target
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: null,
         setNavigationTargetLine: mockSetNavigationTargetLine,
         currentView: 'reader',
@@ -694,7 +711,7 @@ describe('GuideReader Tests', () => {
       });
 
       // Update context with navigation target
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: 50,
         setNavigationTargetLine: mockSetNavigationTargetLine,
         currentView: 'reader',
@@ -724,7 +741,7 @@ describe('GuideReader Tests', () => {
       const mockSetNavigationTargetLine = jest.fn();
       
       // Set up both navigation target and current position bookmark
-      mockUseApp.mockReturnValue({
+      mockUseAppStore.mockReturnValue({
         navigationTargetLine: 25,
         setNavigationTargetLine: mockSetNavigationTargetLine,
         currentView: 'reader',

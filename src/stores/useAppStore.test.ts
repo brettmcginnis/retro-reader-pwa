@@ -1,5 +1,5 @@
 import { act } from '@testing-library/react';
-import { useAppStore } from '../useAppStore';
+import { useAppStore } from './useAppStore';
 
 describe('useAppStore', () => {
   beforeEach(() => {
