@@ -313,19 +313,6 @@ describe('DatabaseService', () => {
       });
     });
 
-    describe('getBookmarksForGuide', () => {
-      it('should call getBookmarks', async () => {
-        const bookmarks: Bookmark[] = [];
-        mockDb.getAllFromIndex.mockResolvedValue(bookmarks);
-        jest.spyOn(db, 'getBookmarks');
-
-        const result = await db.getBookmarksForGuide('guide-1');
-        
-        expect(db.getBookmarks).toHaveBeenCalledWith('guide-1');
-        expect(result).toEqual(bookmarks);
-      });
-    });
-
     describe('getAllBookmarks', () => {
       it('should get all bookmarks', async () => {
         const bookmarks: Bookmark[] = [

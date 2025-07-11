@@ -1,5 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { Guide, Bookmark, ReadingProgress } from '../types';
+import { generateId } from '../utils/common';
 
 interface RetroReaderDB extends DBSchema {
   guides: {
@@ -131,9 +132,6 @@ class DatabaseService {
     }));
   }
 
-  async getBookmarksForGuide(guideId: string): Promise<Bookmark[]> {
-    return this.getBookmarks(guideId);
-  }
 
   async getAllBookmarks(): Promise<Bookmark[]> {
     const db = this.ensureDB();
@@ -162,7 +160,7 @@ class DatabaseService {
       // Convert to regular bookmark by removing isCurrentPosition flag
       const regularBookmark: Bookmark = {
         ...currentPositionBookmark,
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        id: generateId(),
         title: currentPositionBookmark.title === 'Current Position' ? `Previous Position (Line ${currentPositionBookmark.line})` : currentPositionBookmark.title,
         isCurrentPosition: false
       };

@@ -1,5 +1,6 @@
 import { db } from './database';
 import { Bookmark } from '../types';
+import { generateId } from '../utils/common';
 
 // Mock the database module
 jest.mock('./database', () => {
@@ -48,7 +49,7 @@ describe('Current Position Bookmark', () => {
         // Convert to regular bookmark
         const regularBookmark: Bookmark = {
           ...existing,
-          id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+          id: generateId(),
           title: existing.title === 'Current Position' ? `Previous Position (Line ${existing.line})` : existing.title,
           isCurrentPosition: false
         };

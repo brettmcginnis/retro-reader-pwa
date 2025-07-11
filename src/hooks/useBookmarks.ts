@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bookmark } from '../types';
 import { db } from '../services/database';
+import { generateId } from '../utils/common';
 
 /**
  * Hook for managing bookmarks - loading, adding, updating, and deleting.
@@ -35,7 +36,7 @@ export const useBookmarks = (guideId?: string) => {
     try {
       const newBookmark: Bookmark = {
         ...bookmark,
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        id: generateId(),
         dateCreated: new Date()
       };
       await db.saveBookmark(newBookmark);

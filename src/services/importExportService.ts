@@ -1,5 +1,6 @@
 import { Guide, GuideCollection } from '../types';
 import { db } from './database';
+import { generateId, extractTitleFromUrl, wrapError } from '../utils/common';
 
 /**
  * Service for importing and exporting guides and bookmarks.
@@ -15,7 +16,7 @@ export class ImportExportService {
       await db.init();
     } catch (error) {
       console.error('Error initializing database:', error);
-      throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw wrapError(error, 'Database initialization failed');
     }
   }
 
@@ -49,7 +50,7 @@ export class ImportExportService {
       throw new Error('Guide not found');
     }
 
-    const bookmarks = await db.getBookmarksForGuide(guideId);
+    const bookmarks = await db.getBookmarks(guideId);
     const progress = await db.getProgress(guideId);
 
     const collection: GuideCollection = {
@@ -116,7 +117,7 @@ export class ImportExportService {
 
           // Create guide from txt file
           const guide: Guide = {
-            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+            id: generateId(),
             title: this.extractTitleFromFilename(file.name),
             content: content,
             url: '', // No URL for uploaded files
@@ -249,7 +250,7 @@ export class ImportExportService {
       throw new Error('Guide not found');
     }
 
-    const bookmarks = await db.getBookmarksForGuide(guideId);
+    const bookmarks = await db.getBookmarks(guideId);
     
     let content = `${guide.title}\n`;
     content += `${'='.repeat(guide.title.length)}\n\n`;
@@ -318,8 +319,8 @@ export class ImportExportService {
       }
 
       const guide: Guide = {
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
-        title: this.extractTitleFromUrl(url),
+        id: generateId(),
+        title: extractTitleFromUrl(url),
         url,
         content,
         dateAdded: new Date(),
@@ -330,7 +331,7 @@ export class ImportExportService {
       await db.saveGuide(guide);
       return guide;
     } catch (error) {
-      throw new Error(`Failed to import from URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw wrapError(error, 'Failed to import from URL');
     }
   }
 
@@ -343,16 +344,6 @@ export class ImportExportService {
     }
   }
 
-  private extractTitleFromUrl(url: string): string {
-    try {
-      const urlObj = new URL(url);
-      const pathname = urlObj.pathname;
-      const filename = pathname.split('/').pop() || 'imported-guide';
-      return filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-    } catch {
-      return 'Imported Guide';
-    }
-  }
 
   private extractTitleFromFilename(filename: string): string {
     // Remove file extension and replace underscores/hyphens with spaces

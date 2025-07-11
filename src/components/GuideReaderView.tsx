@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import { Guide, Bookmark } from '../types';
 import { LINE_HEIGHT, DOUBLE_TAP_DELAY, BOOKMARK_VIBRATION_DURATION, OVERSCAN_COUNT } from '../constants';
+import { generateId } from '../utils/common';
 
 import { GuideLineRenderer } from './GuideLineRenderer';
 import { TopNavigationBar } from './TopNavigationBar';
@@ -217,7 +218,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         // Return a new bookmark object matching the expected return type
         const newBookmark: Bookmark = {
           ...bookmark,
-          id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+          id: generateId(),
           dateCreated: new Date()
         };
         return newBookmark;
