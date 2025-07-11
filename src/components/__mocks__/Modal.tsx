@@ -9,6 +9,7 @@ interface ModalProps {
 }
 
 // Mock that renders content without HeadlessUI transitions
+// ts-prune-ignore-next
 export const Modal: React.FC<ModalProps> = ({ 
   isOpen, 
   onClose, 

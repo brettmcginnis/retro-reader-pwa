@@ -1,4 +1,4 @@
-import { getScreenIdentifier, getWindowWidth } from './screenUtils';
+import { getScreenIdentifier } from './screenUtils';
 
 describe('screenUtils', () => {
   describe('getScreenIdentifier', () => {
@@ -44,23 +44,4 @@ describe('screenUtils', () => {
     });
   });
 
-  describe('getWindowWidth', () => {
-    it('should return current window width', () => {
-      Object.defineProperty(window, 'innerWidth', {
-        writable: true,
-        configurable: true,
-        value: 1024
-      });
-
-      expect(getWindowWidth()).toBe(1024);
-
-      Object.defineProperty(window, 'innerWidth', {
-        writable: true,
-        configurable: true,
-        value: 768
-      });
-
-      expect(getWindowWidth()).toBe(768);
-    });
-  });
 });

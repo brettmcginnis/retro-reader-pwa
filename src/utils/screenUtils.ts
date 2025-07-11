@@ -12,11 +12,3 @@ export const getScreenIdentifier = (): string => {
   
   return `screen_${roundedWidth}`;
 };
-
-/**
- * Gets the current window width
- * @returns The current window inner width
- */
-export const getWindowWidth = (): number => {
-  return window.innerWidth;
-};

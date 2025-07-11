@@ -1,11 +1,13 @@
 // UI Constants
+// ts-prune-ignore-next
 export const LINE_HEIGHT = 21;
-export const MIN_LINE = 1;
 
 // Timing Constants (in milliseconds)
+// ts-prune-ignore-next
 export const DOUBLE_TAP_DELAY = 300;
-export const TOAST_DEFAULT_DURATION = 3000;
+// ts-prune-ignore-next
 export const BOOKMARK_VIBRATION_DURATION = 50;
 
 // Virtualization Constants
+// ts-prune-ignore-next
 export const OVERSCAN_COUNT = 10;

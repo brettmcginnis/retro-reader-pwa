@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 
+// ts-prune-ignore-next
 export interface AppContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
