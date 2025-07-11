@@ -10,11 +10,7 @@ interface GuideLineRendererProps {
   lineHeight: number;
   fontSize: number;
   searchQuery: string;
-  onMouseDown: (lineNumber: number) => void;
-  onMouseUp: () => void;
-  onMouseLeave: () => void;
-  onTouchStart: (lineNumber: number) => void;
-  onTouchEnd: () => void;
+  onClick: (lineNumber: number) => void;
 }
 
 const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
@@ -26,11 +22,7 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
   lineHeight,
   fontSize,
   searchQuery,
-  onMouseDown,
-  onMouseUp,
-  onMouseLeave,
-  onTouchStart,
-  onTouchEnd
+  onClick
 }) => {
   const highlightSearchQuery = (text: string, query: string) => {
     if (!query) return text;
@@ -66,11 +58,7 @@ const GuideLineRendererComponent: React.FC<GuideLineRendererProps> = ({
       )}
       style={{ height: `${lineHeight}px`, fontSize: `${fontSize}px` }}
       data-testid={`line-${lineNumber}`}
-      onMouseDown={() => onMouseDown(lineNumber)}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseLeave}
-      onTouchStart={() => onTouchStart(lineNumber)}
-      onTouchEnd={onTouchEnd}
+      onClick={() => onClick(lineNumber)}
     >
       <span className={clsx(
         // Layout

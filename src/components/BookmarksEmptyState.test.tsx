@@ -12,7 +12,7 @@ describe('BookmarksEmptyState', () => {
   it('should render instruction text', () => {
     render(<BookmarksEmptyState />);
     
-    expect(screen.getByText('Long press on any line to create one')).toBeInTheDocument();
+    expect(screen.getByText('Double tap on any line to create one')).toBeInTheDocument();
   });
 
   it('should render bookmark icon', () => {
