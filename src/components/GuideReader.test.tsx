@@ -27,29 +27,12 @@ const mockUseBookmarks = {
   refresh: mockRefresh
 };
 
-jest.mock('../stores/useProgressStore', () => ({
-  useProgressStore: () => ({
-    progress: mockUseProgress.progress,
-    saveProgress: mockUseProgress.saveProgress,
-    loadProgress: jest.fn(),
-    getProgress: () => mockUseProgress.progress,
-    loading: mockUseProgress.loading,
-    error: mockUseProgress.error
-  })
+jest.mock('../hooks/useProgress', () => ({
+  useProgress: () => mockUseProgress
 }));
 
-jest.mock('../stores/useBookmarkStore', () => ({
-  useBookmarkStore: () => ({
-    bookmarks: mockUseBookmarks.bookmarks,
-    addBookmark: mockUseBookmarks.addBookmark,
-    deleteBookmark: mockUseBookmarks.deleteBookmark,
-    updateBookmark: mockUseBookmarks.updateBookmark,
-    loading: mockUseBookmarks.loading,
-    error: mockUseBookmarks.error,
-    refresh: mockUseBookmarks.refresh,
-    loadBookmarks: jest.fn(),
-    setCurrentGuideId: jest.fn()
-  })
+jest.mock('../hooks/useBookmarks', () => ({
+  useBookmarks: () => mockUseBookmarks
 }));
 
 const mockDb = {
@@ -673,7 +656,7 @@ describe('GuideReader Tests', () => {
       });
 
       // Verify that navigation target is available to the component
-      expect(mockUseApp().navigationTargetLine).toBe(75);
+      expect(mockUseAppStore().navigationTargetLine).toBe(75);
 
       // Verify navigation target clearing was requested
       // The container will call this after processing the navigation
@@ -729,7 +712,7 @@ describe('GuideReader Tests', () => {
       );
 
       // Verify navigation target is now set
-      expect(mockUseApp().navigationTargetLine).toBe(50);
+      expect(mockUseAppStore().navigationTargetLine).toBe(50);
 
       // Verify navigation target clearing was requested
       await waitFor(() => {
@@ -776,7 +759,7 @@ describe('GuideReader Tests', () => {
       });
 
       // Verify we have both navigation target and bookmark
-      expect(mockUseApp().navigationTargetLine).toBe(25);
+      expect(mockUseAppStore().navigationTargetLine).toBe(25);
       await expect(mockDb.getCurrentPositionBookmark('test-guide-1')).resolves.toHaveProperty('line', 80);
 
       // Verify navigation target was processed (cleared)
