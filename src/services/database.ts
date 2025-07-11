@@ -70,12 +70,33 @@ class DatabaseService {
 
   async getGuide(id: string): Promise<Guide | undefined> {
     const db = this.ensureDB();
-    return await db.get('guides', id);
+    const guide = await db.get('guides', id);
+    if (!guide) return undefined;
+    // Ensure date fields are Date objects, handle missing fields gracefully
+    return {
+      ...guide,
+      dateAdded: guide.dateAdded 
+        ? (guide.dateAdded instanceof Date ? guide.dateAdded : new Date(guide.dateAdded))
+        : new Date(),
+      dateModified: guide.dateModified 
+        ? (guide.dateModified instanceof Date ? guide.dateModified : new Date(guide.dateModified))
+        : new Date()
+    };
   }
 
   async getAllGuides(): Promise<Guide[]> {
     const db = this.ensureDB();
-    return await db.getAll('guides');
+    const guides = await db.getAll('guides');
+    // Ensure date fields are Date objects, handle missing fields gracefully
+    return guides.map(guide => ({
+      ...guide,
+      dateAdded: guide.dateAdded 
+        ? (guide.dateAdded instanceof Date ? guide.dateAdded : new Date(guide.dateAdded))
+        : new Date(),
+      dateModified: guide.dateModified 
+        ? (guide.dateModified instanceof Date ? guide.dateModified : new Date(guide.dateModified))
+        : new Date()
+    }));
   }
 
   async deleteGuide(id: string): Promise<void> {
@@ -100,7 +121,14 @@ class DatabaseService {
 
   async getBookmarks(guideId: string): Promise<Bookmark[]> {
     const db = this.ensureDB();
-    return await db.getAllFromIndex('bookmarks', 'by-guide', guideId);
+    const bookmarks = await db.getAllFromIndex('bookmarks', 'by-guide', guideId);
+    // Ensure dateCreated is a Date object
+    return bookmarks.map(bookmark => ({
+      ...bookmark,
+      dateCreated: bookmark.dateCreated instanceof Date 
+        ? bookmark.dateCreated 
+        : new Date(bookmark.dateCreated)
+    }));
   }
 
   async getBookmarksForGuide(guideId: string): Promise<Bookmark[]> {
@@ -109,7 +137,14 @@ class DatabaseService {
 
   async getAllBookmarks(): Promise<Bookmark[]> {
     const db = this.ensureDB();
-    return await db.getAll('bookmarks');
+    const bookmarks = await db.getAll('bookmarks');
+    // Ensure dateCreated is a Date object
+    return bookmarks.map(bookmark => ({
+      ...bookmark,
+      dateCreated: bookmark.dateCreated instanceof Date 
+        ? bookmark.dateCreated 
+        : new Date(bookmark.dateCreated)
+    }));
   }
 
   async deleteBookmark(id: string): Promise<void> {
@@ -162,17 +197,50 @@ class DatabaseService {
 
   async getProgress(guideId: string): Promise<ReadingProgress | undefined> {
     const db = this.ensureDB();
-    return await db.get('progress', guideId);
+    const progress = await db.get('progress', guideId);
+    if (!progress) return undefined;
+    // Ensure lastRead is a Date object
+    return {
+      ...progress,
+      lastRead: progress.lastRead instanceof Date 
+        ? progress.lastRead 
+        : new Date(progress.lastRead)
+    };
   }
 
 
   async exportData(): Promise<{ guides: Guide[], bookmarks: Bookmark[], progress: ReadingProgress[] }> {
     const db = this.ensureDB();
-    const [guides, bookmarks, progress] = await Promise.all([
+    const [guidesRaw, bookmarksRaw, progressRaw] = await Promise.all([
       db.getAll('guides'),
       db.getAll('bookmarks'),
       db.getAll('progress')
     ]);
+    
+    // Ensure all date fields are Date objects
+    const guides = guidesRaw.map(guide => ({
+      ...guide,
+      dateAdded: guide.dateAdded instanceof Date 
+        ? guide.dateAdded 
+        : new Date(guide.dateAdded),
+      dateModified: guide.dateModified instanceof Date 
+        ? guide.dateModified 
+        : new Date(guide.dateModified)
+    }));
+    
+    const bookmarks = bookmarksRaw.map(bookmark => ({
+      ...bookmark,
+      dateCreated: bookmark.dateCreated instanceof Date 
+        ? bookmark.dateCreated 
+        : new Date(bookmark.dateCreated)
+    }));
+    
+    const progress = progressRaw.map(prog => ({
+      ...prog,
+      lastRead: prog.lastRead instanceof Date 
+        ? prog.lastRead 
+        : new Date(prog.lastRead)
+    }));
     
     return { guides, bookmarks, progress };
   }
@@ -182,15 +250,39 @@ class DatabaseService {
     const tx = db.transaction(['guides', 'bookmarks', 'progress'], 'readwrite');
     
     for (const guide of data.guides) {
-      await tx.objectStore('guides').put(guide);
+      // Ensure date fields are Date objects before storing
+      const guideWithDates = {
+        ...guide,
+        dateAdded: guide.dateAdded instanceof Date 
+          ? guide.dateAdded 
+          : new Date(guide.dateAdded),
+        dateModified: guide.dateModified instanceof Date 
+          ? guide.dateModified 
+          : new Date(guide.dateModified)
+      };
+      await tx.objectStore('guides').put(guideWithDates);
     }
     
     for (const bookmark of data.bookmarks) {
-      await tx.objectStore('bookmarks').put(bookmark);
+      // Ensure dateCreated is a Date object before storing
+      const bookmarkWithDate = {
+        ...bookmark,
+        dateCreated: bookmark.dateCreated instanceof Date 
+          ? bookmark.dateCreated 
+          : new Date(bookmark.dateCreated)
+      };
+      await tx.objectStore('bookmarks').put(bookmarkWithDate);
     }
     
     for (const progress of data.progress) {
-      await tx.objectStore('progress').put(progress);
+      // Ensure lastRead is a Date object before storing
+      const progressWithDate = {
+        ...progress,
+        lastRead: progress.lastRead instanceof Date 
+          ? progress.lastRead 
+          : new Date(progress.lastRead)
+      };
+      await tx.objectStore('progress').put(progressWithDate);
     }
     
     await tx.done;
