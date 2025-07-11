@@ -3,6 +3,7 @@ import { Guide } from '../types';
 import { GuideService } from '../services/guideService';
 import { ImportExportService } from '../services/importExportService';
 import { db } from '../services/database';
+import { generateId } from '../utils/common';
 
 const guideService = new GuideService();
 const importExportService = new ImportExportService();
@@ -66,7 +67,7 @@ export const useGuides = () => {
     try {
       const newGuide: Guide = {
         ...guide,
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        id: generateId(),
         dateAdded: new Date(),
         dateModified: new Date(),
         size: guide.content.length

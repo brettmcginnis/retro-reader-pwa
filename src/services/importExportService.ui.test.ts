@@ -4,7 +4,7 @@ jest.mock('./database', () => ({
     exportData: jest.fn(),
     getGuide: jest.fn(),
     saveGuide: jest.fn(),
-    getBookmarksForGuide: jest.fn(),
+    getBookmarks: jest.fn(),
     getProgress: jest.fn(),
     saveBookmark: jest.fn(),
     saveProgress: jest.fn()

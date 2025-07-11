@@ -1,14 +1,12 @@
 import { Guide, GuideMetadata } from '../types';
 import { db } from './database';
+import { generateId, wrapError } from '../utils/common';
 
 /**
  * Service for managing game guides - fetching, storing, and searching guide content.
  * Handles guide persistence and provides utility methods for guide manipulation.
  */
 export class GuideService {
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
 
   // Ensure database is initialized before operations
   private async ensureDbInitialized(): Promise<void> {
@@ -17,7 +15,7 @@ export class GuideService {
       await db.init();
     } catch (error) {
       console.error('Error initializing database:', error);
-      throw new Error(`Database initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw wrapError(error, 'Database initialization failed');
     }
   }
 
@@ -42,7 +40,7 @@ export class GuideService {
       const metadata = this.parseMetadata(content, url);
       
       const guide: Guide = {
-        id: this.generateId(),
+        id: generateId(),
         title: metadata.title,
         url,
         content,
@@ -56,7 +54,7 @@ export class GuideService {
       await db.saveGuide(guide);
       return guide;
     } catch (error) {
-      throw new Error(`Failed to fetch guide from ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw wrapError(error, `Failed to fetch guide from ${url}`);
     }
   }
 

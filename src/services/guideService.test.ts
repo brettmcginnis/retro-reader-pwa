@@ -5,7 +5,6 @@ import { Guide } from '../types';
 // Type helper for accessing private methods in tests
 type GuideServiceWithPrivates = GuideService & {
   ensureDbInitialized(): Promise<void>;
-  generateId(): string;
   parseMetadata(content: string, url: string): {
     title: string;
     author?: string;
@@ -68,18 +67,6 @@ describe('GuideService', () => {
     });
   });
 
-  describe('generateId', () => {
-    it('should generate unique IDs', () => {
-      const serviceWithPrivates = guideService as unknown as GuideServiceWithPrivates;
-      const id1 = serviceWithPrivates.generateId();
-      const id2 = serviceWithPrivates.generateId();
-      
-      expect(id1).toBeTruthy();
-      expect(id2).toBeTruthy();
-      expect(id1).not.toBe(id2);
-      expect(typeof id1).toBe('string');
-    });
-  });
 
   describe('fetchGuide', () => {
     const mockUrl = 'https://example.com/guide.txt';
