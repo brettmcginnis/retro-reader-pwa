@@ -193,6 +193,7 @@ describe('DatabaseService', () => {
           title: 'Test Guide',
           content: 'Test content',
           dateAdded: new Date(),
+          dateModified: new Date(),
           totalLines: 100,
           lastModified: new Date()
         };
@@ -201,7 +202,7 @@ describe('DatabaseService', () => {
         const result = await db.getGuide('test-id');
         
         expect(mockDb.get).toHaveBeenCalledWith('guides', 'test-id');
-        expect(result).toBe(guide);
+        expect(result).toEqual(guide);
       });
 
       it('should return undefined if guide not found', async () => {
@@ -221,6 +222,7 @@ describe('DatabaseService', () => {
             title: 'Guide 1',
             content: 'Content 1',
             dateAdded: new Date(),
+            dateModified: new Date(),
             totalLines: 50,
             lastModified: new Date()
           },
@@ -229,6 +231,7 @@ describe('DatabaseService', () => {
             title: 'Guide 2',
             content: 'Content 2',
             dateAdded: new Date(),
+            dateModified: new Date(),
             totalLines: 75,
             lastModified: new Date()
           }
@@ -238,7 +241,7 @@ describe('DatabaseService', () => {
         const result = await db.getAllGuides();
         
         expect(mockDb.getAll).toHaveBeenCalledWith('guides');
-        expect(result).toBe(guides);
+        expect(result).toEqual(guides);
       });
     });
 
@@ -306,7 +309,7 @@ describe('DatabaseService', () => {
         const result = await db.getBookmarks('guide-1');
         
         expect(mockDb.getAllFromIndex).toHaveBeenCalledWith('bookmarks', 'by-guide', 'guide-1');
-        expect(result).toBe(bookmarks);
+        expect(result).toEqual(bookmarks);
       });
     });
 
@@ -319,7 +322,7 @@ describe('DatabaseService', () => {
         const result = await db.getBookmarksForGuide('guide-1');
         
         expect(db.getBookmarks).toHaveBeenCalledWith('guide-1');
-        expect(result).toBe(bookmarks);
+        expect(result).toEqual(bookmarks);
       });
     });
 
@@ -340,7 +343,7 @@ describe('DatabaseService', () => {
         const result = await db.getAllBookmarks();
         
         expect(mockDb.getAll).toHaveBeenCalledWith('bookmarks');
-        expect(result).toBe(bookmarks);
+        expect(result).toEqual(bookmarks);
       });
     });
 
@@ -423,7 +426,7 @@ describe('DatabaseService', () => {
 
         const result = await db.getCurrentPositionBookmark('guide-1');
         
-        expect(result).toBe(bookmarks[1]);
+        expect(result).toEqual(bookmarks[1]);
       });
 
       it('should return null if no current position bookmark', async () => {
@@ -469,7 +472,7 @@ describe('DatabaseService', () => {
         const result = await db.getProgress('guide-1');
         
         expect(mockDb.get).toHaveBeenCalledWith('progress', 'guide-1');
-        expect(result).toBe(progress);
+        expect(result).toEqual(progress);
       });
     });
   });
@@ -481,9 +484,29 @@ describe('DatabaseService', () => {
 
     describe('exportData', () => {
       it('should export all data', async () => {
-        const guides = [{ id: 'guide-1', title: 'Guide 1' }];
-        const bookmarks = [{ id: 'bookmark-1', guideId: 'guide-1' }];
-        const progress = [{ guideId: 'guide-1', currentLine: 50 }];
+        const guides = [{ 
+          id: 'guide-1', 
+          title: 'Guide 1',
+          content: 'Test content',
+          dateAdded: new Date('2025-01-01'),
+          dateModified: new Date('2025-01-01'),
+          totalLines: 100,
+          lastModified: new Date('2025-01-01')
+        }];
+        const bookmarks = [{ 
+          id: 'bookmark-1', 
+          guideId: 'guide-1',
+          line: 10,
+          title: 'Test Bookmark',
+          dateCreated: new Date('2025-01-01'),
+          isCurrentPosition: false
+        }];
+        const progress = [{ 
+          guideId: 'guide-1', 
+          currentLine: 50,
+          totalLines: 100,
+          lastRead: new Date('2025-01-01')
+        }];
         
         mockDb.getAll.mockImplementation((store) => {
           switch (store) {
