@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, act, within } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { Guide, Bookmark } from '../types';
 import { ToastProvider } from '../contexts/ToastContext';
 
@@ -680,13 +680,8 @@ describe('GuideReader Tests', () => {
         toggleTheme: jest.fn()
       });
 
-      // Track scrollTo calls
-      let scrolledToLine = 0;
-      (Element.prototype.scrollTo as jest.Mock).mockImplementation(function(options: any) {
-        if (typeof options === 'object' && options.top !== undefined) {
-          scrolledToLine = Math.floor(options.top / 24) + 1;
-        }
-      });
+      // Clear mock to track scrollTo calls
+      (Element.prototype.scrollTo as jest.Mock).mockClear();
 
       const { rerender } = render(
         <TestWrapper>
@@ -750,14 +745,8 @@ describe('GuideReader Tests', () => {
         isCurrentPosition: true
       });
 
-      // Clear previous mock calls and track scrollTo
+      // Clear previous mock calls
       (Element.prototype.scrollTo as jest.Mock).mockClear();
-      let scrolledToLine = 0;
-      (Element.prototype.scrollTo as jest.Mock).mockImplementation(function(options: any) {
-        if (typeof options === 'object' && options.top !== undefined) {
-          scrolledToLine = Math.floor(options.top / 24) + 1;
-        }
-      });
 
       render(
         <TestWrapper>
