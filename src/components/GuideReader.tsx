@@ -4,8 +4,8 @@ import { GuideReaderContainer } from '../containers/GuideReaderContainer';
 
 interface GuideReaderProps {
   guide: Guide;
-  currentView?: 'library' | 'reader' | 'bookmarks';
-  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
+  currentView?: 'library' | 'reader';
+  onViewChange?: (view: 'library' | 'reader') => void;
 }
 
 export const GuideReader: React.FC<GuideReaderProps> = ({ guide, currentView, onViewChange }) => {

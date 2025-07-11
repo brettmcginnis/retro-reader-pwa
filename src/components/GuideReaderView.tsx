@@ -24,7 +24,7 @@ interface GuideReaderViewProps {
   initialLine: number;
   fontSize: number;
   zoomLevel: number;
-  currentView?: 'library' | 'reader' | 'bookmarks';
+  currentView?: 'library' | 'reader';
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
@@ -35,7 +35,7 @@ interface GuideReaderViewProps {
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
   onBackToLibrary: () => void;
-  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
+  onViewChange?: (view: 'library' | 'reader') => void;
   onDeleteBookmark: (id: string) => Promise<void>;
   onUpdateBookmark: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   onRefreshBookmarks: () => Promise<void>;
@@ -53,12 +53,12 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   fontSize,
   zoomLevel,
   currentView: _currentView,
-  onLineChange: _onLineChange,
+  onLineChange,
   onSearch,
   onAddBookmark,
   onSetAsCurrentPosition,
   onJumpToCurrentPosition,
-  onScrollingStateChange: _onScrollingStateChange,
+  onScrollingStateChange,
   onInitialScroll,
   onFontSizeChange,
   onZoomChange,
@@ -113,17 +113,33 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
       return prev;
     });
 
+    // Calculate current line based on scroll position
+    // Use the middle of the viewport to determine the current line
+    const viewportMiddle = scrollTop + (clientHeight / 2);
+    const newCurrentLine = Math.max(1, Math.min(totalLines, Math.floor(viewportMiddle / lineHeight) + 1));
+    
+    // Update current line if it has changed
+    if (newCurrentLine !== currentLine) {
+      onLineChange(newCurrentLine);
+      onScrollingStateChange(true);
+    }
+
     // Show floating progress on mobile when scrolling
     if (window.innerWidth < 640) {
       setShowFloatingProgress(true);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        setShowFloatingProgress(false);
-      }, 1500);
     }
-  }, [isLoading, totalLines, zoomLevel]);
+    
+    // Clear existing timeout regardless of screen size
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Set timeout to hide progress and reset scrolling state
+    scrollTimeoutRef.current = setTimeout(() => {
+      setShowFloatingProgress(false);
+      onScrollingStateChange(false);
+    }, 1500);
+  }, [isLoading, totalLines, zoomLevel, currentLine, onLineChange, onScrollingStateChange]);
 
   // Scroll to a specific line
   const scrollToLine = useCallback((line: number, behavior: ScrollBehavior = 'smooth') => {
@@ -134,7 +150,10 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
       top: targetScrollTop,
       behavior
     });
-  }, [zoomLevel]);
+    
+    // Update current line immediately when programmatically scrolling
+    onLineChange(line);
+  }, [zoomLevel, onLineChange]);
 
   // Double tap handler
   const handleLineClick = useCallback((lineNumber: number) => {
@@ -229,6 +248,20 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     }
   };
 
+  // Prevent browser scroll restoration
+  useEffect(() => {
+    // Save current scroll restoration mode
+    const previousScrollRestoration = history.scrollRestoration;
+    
+    // Disable automatic scroll restoration
+    history.scrollRestoration = 'manual';
+    
+    // Restore previous mode on unmount
+    return () => {
+      history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
+
   // Update line height when font size or zoom changes
   useEffect(() => {
     lineHeightRef.current = Math.ceil(fontSize * 1.5);
@@ -261,9 +294,22 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   // Initial scroll to saved position
   useEffect(() => {
     if (!hasInitiallyScrolled.current && initialLine > 1 && totalLines > 0) {
-      hasInitiallyScrolled.current = true;
-      scrollToLine(initialLine, 'auto');
-      onInitialScroll();
+      // Small timeout to ensure container is mounted
+      const timeoutId = setTimeout(() => {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+          // Double RAF to ensure layout is complete
+          requestAnimationFrame(() => {
+            if (containerRef.current && !hasInitiallyScrolled.current) {
+              hasInitiallyScrolled.current = true;
+              scrollToLine(initialLine, 'auto');
+              onInitialScroll();
+            }
+          });
+        });
+      }, 50);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [initialLine, totalLines, scrollToLine, onInitialScroll]);
 

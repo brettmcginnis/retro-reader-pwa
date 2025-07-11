@@ -5,7 +5,7 @@ import { Guide } from '../types';
 import { AppContentView } from '../components/AppContentView';
 
 export const AppContentContainer: React.FC = () => {
-  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId, setNavigationTargetLine } = useApp();
+  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId } = useApp();
   const { getGuide } = useGuides();
   const [currentGuide, setCurrentGuide] = React.useState<Guide | null>(null);
   const [isLoadingGuide, setIsLoadingGuide] = React.useState<boolean>(false);
@@ -87,14 +87,10 @@ export const AppContentContainer: React.FC = () => {
     window.history.pushState({}, '', '/retro-reader-pwa/');
   };
 
-  const handleViewChange = (view: 'library' | 'reader' | 'bookmarks') => {
+  const handleViewChange = (view: 'library' | 'reader') => {
     setCurrentView(view);
   };
 
-  const handleNavigateToLine = (line: number) => {
-    setNavigationTargetLine(line);
-    setCurrentView('reader');
-  };
 
   return (
     <AppContentView
@@ -103,7 +99,6 @@ export const AppContentContainer: React.FC = () => {
       isLoadingGuide={isLoadingGuide}
       onBackToLibrary={handleBackToLibrary}
       onViewChange={handleViewChange}
-      onNavigateToLine={handleNavigateToLine}
     />
   );
 };

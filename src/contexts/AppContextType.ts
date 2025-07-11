@@ -3,8 +3,8 @@ import { createContext } from 'react';
 export interface AppContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
-  currentView: 'library' | 'reader' | 'bookmarks';
-  setCurrentView: (view: 'library' | 'reader' | 'bookmarks') => void;
+  currentView: 'library' | 'reader';
+  setCurrentView: (view: 'library' | 'reader') => void;
   currentGuideId: string | null;
   setCurrentGuideId: (id: string | null) => void;
   navigationTargetLine: number | null;
