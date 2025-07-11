@@ -3,7 +3,7 @@ import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useToast } from '../contexts/useToast';
-import { useApp } from '../contexts/useApp';
+import { useAppStore } from '../stores/useAppStore';
 import { db } from '../services/database';
 import { GuideReaderView } from '../components/GuideReaderView';
 import { getScreenIdentifier } from '../utils/screenUtils';
@@ -18,7 +18,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const { progress, saveProgress } = useProgress(guide.id);
   const { addBookmark, bookmarks, deleteBookmark, updateBookmark, refresh: refreshBookmarks } = useBookmarks(guide.id);
   const { showToast } = useToast();
-  const { navigationTargetLine, setNavigationTargetLine } = useApp();
+  const { navigationTargetLine, setNavigationTargetLine } = useAppStore();
   
   // Basic state
   const [currentLine, setCurrentLine] = useState(1);

@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo } from 'react';
-import { useApp } from '../contexts/useApp';
-import { useGuides } from '../hooks/useGuides';
+import { useAppStore } from '../stores/useAppStore';
+import { useGuideStore } from '../stores/useGuideStore';
 import { Guide } from '../types';
 import { AppContentView } from '../components/AppContentView';
 
 export const AppContentContainer: React.FC = () => {
-  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId } = useApp();
-  const { getGuide } = useGuides();
+  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId } = useAppStore();
+  const { getGuide } = useGuideStore();
   const [currentGuide, setCurrentGuide] = React.useState<Guide | null>(null);
   const [isLoadingGuide, setIsLoadingGuide] = React.useState<boolean>(false);
   

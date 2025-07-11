@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Guide } from '../types';
-import { useGuides } from '../hooks/useGuides';
-import { useApp } from '../contexts/useApp';
+import { useGuideStore } from '../stores/useGuideStore';
+import { useAppStore } from '../stores/useAppStore';
 import { useToast } from '../contexts/useToast';
 import { GuideLibraryView } from '../components/GuideLibraryView';
 
@@ -9,8 +9,8 @@ import { GuideLibraryView } from '../components/GuideLibraryView';
 interface GuideLibraryContainerProps {}
 
 export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () => {
-  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuides();
-  const { theme, toggleTheme, setCurrentView, setCurrentGuideId } = useApp();
+  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuideStore();
+  const { theme, toggleTheme, setCurrentView, setCurrentGuideId } = useAppStore();
   const { showToast, showConfirmation } = useToast();
   const [fetchLoading, setFetchLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
