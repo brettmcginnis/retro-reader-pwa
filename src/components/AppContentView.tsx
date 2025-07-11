@@ -2,15 +2,14 @@ import React from 'react';
 import { Guide } from '../types';
 import { GuideLibrary } from './GuideLibrary';
 import { GuideReader } from './GuideReader';
-import { BookmarkManager } from './BookmarkManager';
+import { Loading } from './Loading';
 
 interface AppContentViewProps {
-  currentView: 'library' | 'reader' | 'bookmarks';
+  currentView: 'library' | 'reader';
   currentGuide: Guide | null;
   isLoadingGuide: boolean;
   onBackToLibrary: () => void;
-  onViewChange: (view: 'library' | 'reader' | 'bookmarks') => void;
-  onNavigateToLine: (line: number) => void;
+  onViewChange: (view: 'library' | 'reader') => void;
 }
 
 export const AppContentView: React.FC<AppContentViewProps> = ({
@@ -18,8 +17,7 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
   currentGuide,
   isLoadingGuide,
   onBackToLibrary: _onBackToLibrary,
-  onViewChange,
-  onNavigateToLine
+  onViewChange
 }) => {
   const renderContent = () => {
     switch (currentView) {
@@ -28,15 +26,7 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
         
       case 'reader':
         if (isLoadingGuide) {
-          return (
-            <div className="flex items-center justify-center h-screen bg-retro-50 dark:bg-retro-950">
-              <div className="text-lg text-retro-600 dark:text-retro-400">Loading guide...</div>
-            </div>
-          );
-        }
-        
-        if (!currentGuide && !isLoadingGuide) {
-          return <GuideLibrary />;
+          return <Loading />;
         }
         
         return currentGuide ? (
@@ -45,29 +35,7 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
             currentView={currentView}
             onViewChange={onViewChange}
           />
-        ) : null;
-        
-      case 'bookmarks':
-        if (isLoadingGuide) {
-          return (
-            <div className="flex items-center justify-center h-screen bg-retro-50 dark:bg-retro-950">
-              <div className="text-lg text-retro-600 dark:text-retro-400">Loading guide...</div>
-            </div>
-          );
-        }
-        
-        if (!currentGuide && !isLoadingGuide) {
-          return <GuideLibrary />;
-        }
-        
-        return currentGuide ? (
-          <BookmarkManager 
-            guide={currentGuide} 
-            onGotoLine={onNavigateToLine}
-            currentView={currentView}
-            onViewChange={onViewChange}
-          />
-        ) : null;
+        ) : <GuideLibrary />;
         
       default:
         return <GuideLibrary />;

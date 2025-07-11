@@ -97,6 +97,7 @@ Based on Google TypeScript Style Guide. See `examples/` for detailed examples.
 - `==` and `!=`
 - Modifying prototypes
 - Wrapper objects (`new String()`)
+- Skipping Tests
 
 ### Testing
 - Type all test code

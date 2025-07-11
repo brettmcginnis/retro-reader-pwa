@@ -5,15 +5,13 @@ import { Guide } from '../types';
 // Mock hooks and components
 const mockSetCurrentView = jest.fn();
 const mockSetCurrentGuideId = jest.fn();
-const mockSetNavigationTargetLine = jest.fn();
 const mockGetGuide = jest.fn();
 
 const mockUseApp = jest.fn(() => ({
   currentView: 'library',
   setCurrentView: mockSetCurrentView,
   currentGuideId: null,
-  setCurrentGuideId: mockSetCurrentGuideId,
-  setNavigationTargetLine: mockSetNavigationTargetLine
+  setCurrentGuideId: mockSetCurrentGuideId
 }));
 
 jest.mock('../contexts/useApp', () => ({
@@ -32,7 +30,6 @@ interface AppContentViewProps {
   currentGuide: Guide | null;
   onBackToLibrary: () => void;
   onViewChange: (view: string) => void;
-  onNavigateToLine: (line: number) => void;
 }
 
 jest.mock('../components/AppContentView', () => ({
@@ -43,8 +40,6 @@ jest.mock('../components/AppContentView', () => ({
       <div data-testid="current-guide">{props.currentGuide?.title || 'null'}</div>
       <button onClick={props.onBackToLibrary}>Back to Library</button>
       <button onClick={() => props.onViewChange('reader')}>Switch to Reader</button>
-      <button onClick={() => props.onViewChange('bookmarks')}>Switch to Bookmarks</button>
-      <button onClick={() => props.onNavigateToLine(42)}>Navigate to Line 42</button>
     </div>
   )
 }));
@@ -104,8 +99,7 @@ describe('AppContentContainer', () => {
       currentView: 'library',
       setCurrentView: mockSetCurrentView,
       currentGuideId: null,
-      setCurrentGuideId: mockSetCurrentGuideId,
-      setNavigationTargetLine: mockSetNavigationTargetLine
+      setCurrentGuideId: mockSetCurrentGuideId
     });
   });
 
@@ -129,8 +123,7 @@ describe('AppContentContainer', () => {
         currentView: 'reader',
         setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',
-        setCurrentGuideId: mockSetCurrentGuideId,
-        setNavigationTargetLine: mockSetNavigationTargetLine
+        setCurrentGuideId: mockSetCurrentGuideId
       });
 
       rerender(<AppContentContainer />);
@@ -156,8 +149,7 @@ describe('AppContentContainer', () => {
         currentView: 'reader',
         setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',
-        setCurrentGuideId: mockSetCurrentGuideId,
-        setNavigationTargetLine: mockSetNavigationTargetLine
+        setCurrentGuideId: mockSetCurrentGuideId
       });
 
       render(<AppContentContainer />);
@@ -186,8 +178,7 @@ describe('AppContentContainer', () => {
         currentView: 'reader',
         setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',
-        setCurrentGuideId: mockSetCurrentGuideId,
-        setNavigationTargetLine: mockSetNavigationTargetLine
+        setCurrentGuideId: mockSetCurrentGuideId
       });
 
       render(<AppContentContainer />);
@@ -229,21 +220,8 @@ describe('AppContentContainer', () => {
       
       await user.click(screen.getByText('Switch to Reader'));
       expect(mockSetCurrentView).toHaveBeenCalledWith('reader');
-      
-      await user.click(screen.getByText('Switch to Bookmarks'));
-      expect(mockSetCurrentView).toHaveBeenCalledWith('bookmarks');
     });
 
-    it('should handle navigate to line', async () => {
-      const user = userEvent.setup();
-      
-      render(<AppContentContainer />);
-      
-      await user.click(screen.getByText('Navigate to Line 42'));
-      
-      expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(42);
-      expect(mockSetCurrentView).toHaveBeenCalledWith('reader');
-    });
   });
 
 

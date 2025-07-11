@@ -2,19 +2,19 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import { SettingsPanel } from './SettingsPanel';
 import { NavigationButton } from './NavigationButton';
-import { Navigation, Settings, Search, Book, Bookmark, Library } from 'lucide-react';
+import { Navigation, Settings, Search, Book, Library } from 'lucide-react';
 
 interface BottomNavigationBarProps {
   isLoading: boolean;
   fontSize: number;
   zoomLevel: number;
   showSearch: boolean;
-  currentView: 'library' | 'reader' | 'bookmarks';
+  currentView: 'library' | 'reader';
   onJumpToCurrentPosition: () => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
   onToggleSearch: () => void;
-  onViewChange: (view: 'library' | 'reader' | 'bookmarks') => void;
+  onViewChange: (view: 'library' | 'reader') => void;
 }
 
 export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
@@ -69,16 +69,6 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
             />
           )}
 
-          {currentView !== 'library' && (
-            <NavigationButton
-              icon={<Bookmark className="w-5 h-5" />}
-              label="Bookmarks"
-              isActive={currentView === 'bookmarks'}
-              isDisabled={isLoading}
-              title="View bookmarks"
-              onClick={() => onViewChange('bookmarks')}
-            />
-          )}
 
           {currentView === 'reader' && (
             <NavigationButton
