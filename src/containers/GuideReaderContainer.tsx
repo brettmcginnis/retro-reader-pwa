@@ -10,8 +10,8 @@ import { getScreenIdentifier } from '../utils/screenUtils';
 
 interface GuideReaderContainerProps {
   guide: Guide;
-  currentView?: 'library' | 'reader' | 'bookmarks';
-  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
+  currentView?: 'library' | 'reader';
+  onViewChange?: (view: 'library' | 'reader') => void;
 }
 
 export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide, currentView, onViewChange }) => {

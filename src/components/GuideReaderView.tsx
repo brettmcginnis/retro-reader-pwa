@@ -24,7 +24,7 @@ interface GuideReaderViewProps {
   initialLine: number;
   fontSize: number;
   zoomLevel: number;
-  currentView?: 'library' | 'reader' | 'bookmarks';
+  currentView?: 'library' | 'reader';
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
@@ -35,7 +35,7 @@ interface GuideReaderViewProps {
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
   onBackToLibrary: () => void;
-  onViewChange?: (view: 'library' | 'reader' | 'bookmarks') => void;
+  onViewChange?: (view: 'library' | 'reader') => void;
   onDeleteBookmark: (id: string) => Promise<void>;
   onUpdateBookmark: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   onRefreshBookmarks: () => Promise<void>;

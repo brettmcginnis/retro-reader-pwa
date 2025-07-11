@@ -3,7 +3,6 @@ import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { Guide } from '../types';
 import { ToastProvider } from '../contexts/ToastContext';
-import { AppProvider } from '../contexts/AppContext';
 
 const mockUseProgress = {
   progress: null,

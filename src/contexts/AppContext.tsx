@@ -23,7 +23,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     
     return initialTheme;
   });
-  const [currentView, setCurrentView] = useState<'library' | 'reader' | 'bookmarks'>('library');
+  const [currentView, setCurrentView] = useState<'library' | 'reader'>('library');
   const [currentGuideId, setCurrentGuideId] = useState<string | null>(null);
   const [navigationTargetLine, setNavigationTargetLine] = useState<number | null>(null);
 
