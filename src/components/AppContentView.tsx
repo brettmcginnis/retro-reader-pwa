@@ -1,30 +1,22 @@
 import React from 'react';
-import { Guide } from '../types';
 import { GuideLibrary } from './GuideLibrary';
 import { GuideReader } from './GuideReader';
-import { Loading } from './Loading';
 
 interface AppContentViewProps {
   currentView: 'library' | 'reader';
-  currentGuide: Guide | null;
-  isLoadingGuide: boolean;
+  currentGuideId: string | null;
 }
 
 export const AppContentView: React.FC<AppContentViewProps> = ({
   currentView,
-  currentGuide,
-  isLoadingGuide
+  currentGuideId
 }) => {
   const renderContent = () => {
     switch (currentView) {
       case 'reader':
-        if (isLoadingGuide) {
-          return <Loading />;
-        }
-        
-        return currentGuide ? (
+        return currentGuideId ? (
           <GuideReader 
-            guide={currentGuide} 
+            guideId={currentGuideId} 
           />
         ) : <GuideLibrary />;
         

@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { AppContentView } from './AppContentView';
-import { Guide } from '../types';
 
 // Mock the child components
 jest.mock('./GuideLibrary', () => ({
@@ -8,32 +7,18 @@ jest.mock('./GuideLibrary', () => ({
 }));
 
 jest.mock('./GuideReader', () => ({
-  GuideReader: ({ guide }: { guide: Guide }) => (
+  GuideReader: ({ guideId }: { guideId: string }) => (
     <div data-testid="guide-reader">
-      Guide Reader: {guide.title}
+      Guide Reader: {guideId}
     </div>
   )
 }));
 
-jest.mock('./Loading', () => ({
-  Loading: () => <div data-testid="loading">Loading guide...</div>
-}));
 
 describe('AppContentView', () => {
-  const mockGuide: Guide = {
-    id: 'test-guide-1',
-    title: 'Test Guide',
-    url: 'https://example.com/guide',
-    content: 'Test content',
-    dateAdded: new Date(),
-    dateModified: new Date(),
-    size: 1000
-  };
-
   const defaultProps = {
     currentView: 'library' as const,
-    currentGuide: null,
-    isLoadingGuide: false
+    currentGuideId: null
   };
 
   beforeEach(() => {
@@ -47,42 +32,29 @@ describe('AppContentView', () => {
       
       expect(screen.getByTestId('guide-library')).toBeInTheDocument();
       expect(screen.queryByTestId('guide-reader')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
     });
 
-    it('should render GuideReader when currentView is reader and guide is loaded', () => {
+    it('should render GuideReader when currentView is reader and guideId is provided', () => {
       render(
         <AppContentView 
           {...defaultProps} 
           currentView="reader"
-          currentGuide={mockGuide}
+          currentGuideId="test-guide-1"
         />
       );
       
       expect(screen.getByTestId('guide-reader')).toBeInTheDocument();
-      expect(screen.getByText('Guide Reader: Test Guide')).toBeInTheDocument();
+      expect(screen.getByText('Guide Reader: test-guide-1')).toBeInTheDocument();
       expect(screen.queryByTestId('guide-library')).not.toBeInTheDocument();
     });
 
-    it('should show loading state when isLoadingGuide is true', () => {
-      render(
-        <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
-          isLoadingGuide={true}
-        />
-      );
-      
-      expect(screen.getByTestId('loading')).toBeInTheDocument();
-      expect(screen.queryByTestId('guide-reader')).not.toBeInTheDocument();
-    });
 
-    it('should fallback to GuideLibrary when no guide is loaded in reader view', () => {
+    it('should fallback to GuideLibrary when no guideId in reader view', () => {
       render(
         <AppContentView 
           {...defaultProps} 
           currentView="reader"
-          currentGuide={null}
+          currentGuideId={null}
         />
       );
       
@@ -92,17 +64,6 @@ describe('AppContentView', () => {
   });
 
   describe('Navigation', () => {
-    it('should render GuideReader with guide', () => {
-      render(
-        <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
-          currentGuide={mockGuide}
-        />
-      );
-      
-      expect(screen.getByText('Guide Reader: Test Guide')).toBeInTheDocument();
-    });
 
     it('should handle default case by rendering GuideLibrary', () => {
       // Cast to unknown then to the expected type to simulate an unexpected view value
@@ -127,7 +88,7 @@ describe('AppContentView', () => {
         <AppContentView 
           {...defaultProps} 
           currentView="reader"
-          currentGuide={mockGuide}
+          currentGuideId="test-guide-1"
         />
       );
       expect(screen.getByTestId('guide-reader')).toBeInTheDocument();

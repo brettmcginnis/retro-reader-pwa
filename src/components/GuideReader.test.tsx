@@ -71,6 +71,18 @@ jest.mock('../stores/useReaderStore', () => ({
   useReaderStore: () => mockUseReaderStore()
 }));
 
+const mockGetGuide = jest.fn();
+
+jest.mock('../stores/useGuideStore', () => ({
+  useGuideStore: () => ({
+    getGuide: mockGetGuide
+  })
+}));
+
+jest.mock('./Loading', () => ({
+  Loading: () => <div data-testid="loading">Loading...</div>
+}));
+
 // Import after mocks are set up
 import { GuideReader } from './GuideReader';
 
@@ -97,6 +109,9 @@ describe('GuideReader Tests', () => {
       dateModified: new Date(),
       size: 1000
     };
+    
+    // Setup mock for getGuide
+    mockGetGuide.mockResolvedValue(mockGuide);
 
     // Reset mock state
     mockUseProgress.progress = null;
@@ -138,7 +153,7 @@ describe('GuideReader Tests', () => {
     it('should handle navigation', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -196,7 +211,7 @@ describe('GuideReader Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -219,7 +234,7 @@ describe('GuideReader Tests', () => {
     it('should show bookmark modal on double tap', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -251,7 +266,7 @@ describe('GuideReader Tests', () => {
     it('should not leave reading area when bookmark modal appears', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -301,7 +316,7 @@ describe('GuideReader Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -372,7 +387,7 @@ describe('GuideReader Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -431,7 +446,7 @@ describe('GuideReader Tests', () => {
     it('should not trigger bookmark modal on single tap', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -462,7 +477,7 @@ describe('GuideReader Tests', () => {
     it('should work with touch events for mobile', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -492,7 +507,7 @@ describe('GuideReader Tests', () => {
     it('should render with navigation controls', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -537,7 +552,7 @@ describe('GuideReader Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -573,7 +588,7 @@ describe('GuideReader Tests', () => {
     it('should pre-fill bookmark title with line content', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -603,7 +618,7 @@ describe('GuideReader Tests', () => {
     it('should display Set as Current Position button in bookmark modal', async () => {
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -642,7 +657,7 @@ describe('GuideReader Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -671,7 +686,7 @@ describe('GuideReader Tests', () => {
 
       const { rerender } = render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -684,7 +699,7 @@ describe('GuideReader Tests', () => {
 
       rerender(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
@@ -717,7 +732,7 @@ describe('GuideReader Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideReader guide={mockGuide} />
+          <GuideReader guideId="test-guide-1" />
         </TestWrapper>
       );
 
