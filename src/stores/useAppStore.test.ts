@@ -6,7 +6,6 @@ describe('useAppStore', () => {
     // Reset store state
     useAppStore.setState({
       theme: 'light',
-      currentView: 'library',
       currentGuideId: null,
     });
     
@@ -19,7 +18,6 @@ describe('useAppStore', () => {
     it('should have correct initial values', () => {
       const state = useAppStore.getState();
       expect(state.theme).toBe('light');
-      expect(state.currentView).toBe('library');
       expect(state.currentGuideId).toBeNull();
     });
   });
@@ -63,14 +61,6 @@ describe('useAppStore', () => {
   });
 
   describe('view management', () => {
-    it('should set current view', () => {
-      act(() => {
-        useAppStore.getState().setCurrentView('reader');
-      });
-
-      expect(useAppStore.getState().currentView).toBe('reader');
-    });
-
     it('should set current guide ID', () => {
       act(() => {
         useAppStore.getState().setCurrentGuideId('test-guide-123');

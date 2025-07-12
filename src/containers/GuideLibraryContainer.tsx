@@ -7,7 +7,7 @@ import { GuideLibraryView } from '../components/GuideLibraryView';
 
 export const GuideLibraryContainer: React.FC = () => {
   const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuideStore();
-  const { theme, toggleTheme, setCurrentView, setCurrentGuideId } = useAppStore();
+  const { theme, toggleTheme, setCurrentGuideId } = useAppStore();
   const { showToast, confirm } = useToast();
   const [fetchLoading, setFetchLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -98,7 +98,6 @@ export const GuideLibraryContainer: React.FC = () => {
 
   const openGuide = (guide: Guide) => {
     setCurrentGuideId(guide.id);
-    setCurrentView('reader');
     window.history.pushState({ guideId: guide.id }, '', `/retro-reader-pwa/guide/${guide.id}`);
   };
 

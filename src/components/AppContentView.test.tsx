@@ -17,7 +17,6 @@ jest.mock('./GuideReader', () => ({
 
 describe('AppContentView', () => {
   const defaultProps = {
-    currentView: 'library' as const,
     currentGuideId: null
   };
 
@@ -27,18 +26,16 @@ describe('AppContentView', () => {
   });
 
   describe('View Rendering', () => {
-    it('should render GuideLibrary when currentView is library', () => {
+    it('should render GuideLibrary when currentGuideId is null', () => {
       render(<AppContentView {...defaultProps} />);
       
       expect(screen.getByTestId('guide-library')).toBeInTheDocument();
       expect(screen.queryByTestId('guide-reader')).not.toBeInTheDocument();
     });
 
-    it('should render GuideReader when currentView is reader and guideId is provided', () => {
+    it('should render GuideReader when currentGuideId is provided', () => {
       render(
         <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
           currentGuideId="test-guide-1"
         />
       );
@@ -46,35 +43,6 @@ describe('AppContentView', () => {
       expect(screen.getByTestId('guide-reader')).toBeInTheDocument();
       expect(screen.getByText('Guide Reader: test-guide-1')).toBeInTheDocument();
       expect(screen.queryByTestId('guide-library')).not.toBeInTheDocument();
-    });
-
-
-    it('should fallback to GuideLibrary when no guideId in reader view', () => {
-      render(
-        <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
-          currentGuideId={null}
-        />
-      );
-      
-      expect(screen.getByTestId('guide-library')).toBeInTheDocument();
-      expect(screen.queryByTestId('guide-reader')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Navigation', () => {
-
-    it('should handle default case by rendering GuideLibrary', () => {
-      // Cast to unknown then to the expected type to simulate an unexpected view value
-      const props = {
-        ...defaultProps,
-        currentView: 'unexpected' as unknown as 'library' | 'reader'
-      };
-      
-      render(<AppContentView {...props} />);
-      
-      expect(screen.getByTestId('guide-library')).toBeInTheDocument();
     });
   });
 
@@ -86,8 +54,6 @@ describe('AppContentView', () => {
       
       rerender(
         <AppContentView 
-          {...defaultProps} 
-          currentView="reader"
           currentGuideId="test-guide-1"
         />
       );
@@ -95,11 +61,27 @@ describe('AppContentView', () => {
       
       rerender(
         <AppContentView 
-          {...defaultProps} 
-          currentView="library"
+          currentGuideId={null}
         />
       );
       expect(screen.getByTestId('guide-library')).toBeInTheDocument();
+    });
+
+    it('should handle changing guide IDs', () => {
+      const { rerender } = render(
+        <AppContentView 
+          currentGuideId="test-guide-1"
+        />
+      );
+      
+      expect(screen.getByText('Guide Reader: test-guide-1')).toBeInTheDocument();
+      
+      rerender(
+        <AppContentView 
+          currentGuideId="test-guide-2"
+        />
+      );
+      expect(screen.getByText('Guide Reader: test-guide-2')).toBeInTheDocument();
     });
   });
 });

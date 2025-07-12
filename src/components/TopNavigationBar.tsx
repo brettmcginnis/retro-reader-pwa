@@ -34,10 +34,9 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
   onZoomChange
 }) => {
   const [showSettings, setShowSettings] = useState(false);
-  const { setCurrentView, setCurrentGuideId } = useAppStore();
+  const { setCurrentGuideId } = useAppStore();
   
   const handleBack = () => {
-    setCurrentView('library');
     setCurrentGuideId(null);
     window.history.pushState({}, '', '/retro-reader-pwa/');
   };

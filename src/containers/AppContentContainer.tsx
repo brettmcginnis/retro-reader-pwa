@@ -3,7 +3,7 @@ import { useAppStore } from '../stores/useAppStore';
 import { AppContentView } from '../components/AppContentView';
 
 export const AppContentContainer: React.FC = () => {
-  const { currentView, setCurrentView, currentGuideId, setCurrentGuideId } = useAppStore();
+  const { currentGuideId, setCurrentGuideId } = useAppStore();
 
 
   // Setup service worker
@@ -27,26 +27,22 @@ export const AppContentContainer: React.FC = () => {
     const match = window.location.pathname.match(/^\/retro-reader-pwa\/guide\/(.+)$/);
     if (match && match[1]) {
       setCurrentGuideId(match[1]);
-      setCurrentView('reader');
     }
     // Listen for popstate to handle browser navigation
     const onPopState = () => {
       const match = window.location.pathname.match(/^\/retro-reader-pwa\/guide\/(.+)$/);
       if (match && match[1]) {
         setCurrentGuideId(match[1]);
-        setCurrentView('reader');
       } else {
         setCurrentGuideId(null);
-        setCurrentView('library');
       }
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-  }, [setCurrentGuideId, setCurrentView]);
+  }, [setCurrentGuideId]);
 
   return (
     <AppContentView
-      currentView={currentView}
       currentGuideId={currentGuideId}
     />
   );

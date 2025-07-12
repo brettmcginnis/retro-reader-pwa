@@ -3,12 +3,10 @@ import '@testing-library/jest-dom';
 import { TopNavigationBar } from './TopNavigationBar';
 
 // Mock the app store
-const mockSetCurrentView = jest.fn();
 const mockSetCurrentGuideId = jest.fn();
 
 jest.mock('../stores/useAppStore', () => ({
   useAppStore: () => ({
-    setCurrentView: mockSetCurrentView,
     setCurrentGuideId: mockSetCurrentGuideId
   })
 }));
@@ -128,7 +126,6 @@ describe('TopNavigationBar', () => {
     const backButton = screen.getByTitle('Back to library');
     fireEvent.click(backButton);
     
-    expect(mockSetCurrentView).toHaveBeenCalledWith('library');
     expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
     expect(mockPushState).toHaveBeenCalledWith({}, '', '/retro-reader-pwa/');
   });

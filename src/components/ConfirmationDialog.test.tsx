@@ -3,6 +3,9 @@ import { ConfirmationDialog } from './ConfirmationDialog';
 import { useConfirmationStore } from '../stores/useConfirmationStore';
 import { act } from '@testing-library/react';
 
+// Mock the Modal component to avoid HeadlessUI transition warnings
+jest.mock('./Modal');
+
 describe('ConfirmationDialog', () => {
   beforeEach(() => {
     useConfirmationStore.setState({

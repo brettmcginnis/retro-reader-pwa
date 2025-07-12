@@ -7,8 +7,6 @@ import { persist } from 'zustand/middleware';
 interface AppState {
   /** Current theme setting for the application */
   theme: 'light' | 'dark';
-  /** Current view being displayed (library or reader) */
-  currentView: 'library' | 'reader';
   /** ID of the currently opened guide, null if in library view */
   currentGuideId: string | null;
 }
@@ -21,8 +19,6 @@ interface AppActions {
   toggleTheme: () => void;
   /** Sets the theme to a specific value */
   setTheme: (theme: 'light' | 'dark') => void;
-  /** Changes the current view */
-  setCurrentView: (view: 'library' | 'reader') => void;
   /** Sets the current guide ID */
   setCurrentGuideId: (id: string | null) => void;
 }
@@ -42,7 +38,6 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       theme: 'light',
-      currentView: 'library',
       currentGuideId: null,
 
       toggleTheme: () =>
@@ -58,7 +53,6 @@ export const useAppStore = create<AppStore>()(
           return { theme };
         }),
 
-      setCurrentView: (view) => set({ currentView: view }),
       setCurrentGuideId: (id) => set({ currentGuideId: id }),
     }),
     {

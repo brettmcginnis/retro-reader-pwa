@@ -1,12 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
 // Mock hooks and components
-const mockSetCurrentView = jest.fn();
 const mockSetCurrentGuideId = jest.fn();
 
 const mockUseAppStore = jest.fn(() => ({
-  currentView: 'library',
-  setCurrentView: mockSetCurrentView,
   currentGuideId: null,
   setCurrentGuideId: mockSetCurrentGuideId
 }));
@@ -16,14 +13,12 @@ jest.mock('../stores/useAppStore', () => ({
 }));
 
 interface AppContentViewProps {
-  currentView: string;
   currentGuideId: string | null;
 }
 
 jest.mock('../components/AppContentView', () => ({
   AppContentView: (props: AppContentViewProps) => (
     <div data-testid="app-content-view">
-      <div data-testid="current-view">{props.currentView}</div>
       <div data-testid="current-guide-id">{props.currentGuideId || 'null'}</div>
     </div>
   )
@@ -64,8 +59,6 @@ describe('AppContentContainer', () => {
     
     // Reset mock to default state
     mockUseAppStore.mockReturnValue({
-      currentView: 'library',
-      setCurrentView: mockSetCurrentView,
       currentGuideId: null,
       setCurrentGuideId: mockSetCurrentGuideId
     });
@@ -85,8 +78,6 @@ describe('AppContentContainer', () => {
 
       // Update the mock to simulate currentGuideId change
       mockUseAppStore.mockReturnValue({
-        currentView: 'reader',
-        setCurrentView: mockSetCurrentView,
         currentGuideId: 'test-guide-1',
         setCurrentGuideId: mockSetCurrentGuideId
       });
@@ -113,7 +104,6 @@ describe('AppContentContainer', () => {
       render(<AppContentContainer />);
       
       expect(mockSetCurrentGuideId).toHaveBeenCalledWith('test-guide-123');
-      expect(mockSetCurrentView).toHaveBeenCalledWith('reader');
 
       // Restore original pathname
       Object.defineProperty(window, 'location', {
@@ -136,7 +126,6 @@ describe('AppContentContainer', () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
       
       expect(mockSetCurrentGuideId).toHaveBeenCalledWith('another-guide');
-      expect(mockSetCurrentView).toHaveBeenCalledWith('reader');
       
       // Simulate navigating back to root
       Object.defineProperty(window, 'location', {
@@ -147,7 +136,6 @@ describe('AppContentContainer', () => {
       window.dispatchEvent(new PopStateEvent('popstate'));
       
       expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
-      expect(mockSetCurrentView).toHaveBeenCalledWith('library');
 
       // Restore original pathname
       Object.defineProperty(window, 'location', {
