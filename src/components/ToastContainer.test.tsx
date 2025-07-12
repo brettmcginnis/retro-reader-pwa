@@ -89,9 +89,9 @@ describe('ToastContainer', () => {
     const { container } = render(<ToastContainer />);
 
     // Check for presence of different colored icons
-    expect(container.querySelector('.text-green-600')).toBeInTheDocument(); // success
-    expect(container.querySelector('.text-red-600')).toBeInTheDocument(); // error
-    expect(container.querySelector('.text-yellow-600')).toBeInTheDocument(); // warning
-    expect(container.querySelector('.text-blue-600')).toBeInTheDocument(); // info
+    expect(container.querySelector('.text-green-500')).toBeInTheDocument(); // success
+    expect(container.querySelector('.text-red-500')).toBeInTheDocument(); // error
+    expect(container.querySelector('.text-amber-500')).toBeInTheDocument(); // warning
+    expect(container.querySelector('.text-blue-500')).toBeInTheDocument(); // info
   });
 });

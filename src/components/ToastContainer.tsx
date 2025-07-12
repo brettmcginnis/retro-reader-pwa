@@ -12,45 +12,45 @@ export const ToastContainer: React.FC = () => {
   const getIcon = (type: ToastType) => {
     switch (type) {
       case 'success':
-        return <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />;
+        return <Check className="w-6 h-6 text-green-500 dark:text-green-400 flex-shrink-0" />;
       case 'error':
-        return <X className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />;
+        return <X className="w-6 h-6 text-red-500 dark:text-red-400 flex-shrink-0" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />;
+        return <AlertTriangle className="w-6 h-6 text-amber-500 dark:text-amber-400 flex-shrink-0" />;
       case 'info':
-        return <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />;
+        return <Info className="w-6 h-6 text-blue-500 dark:text-blue-400 flex-shrink-0" />;
     }
   };
 
   return (
-    <div className="fixed bottom-0 right-0 p-4 space-y-4 z-50 pointer-events-none">
+    <div className="fixed top-4 right-4 space-y-3 z-[60] pointer-events-none">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="max-w-md w-full bg-white dark:bg-retro-900 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-20 cursor-pointer animate-enter"
+          className="w-80 sm:w-96 bg-white dark:bg-retro-800 shadow-xl rounded-lg pointer-events-auto flex ring-2 ring-black ring-opacity-10 dark:ring-white dark:ring-opacity-10 cursor-pointer animate-enter overflow-hidden"
           onClick={() => dismissToast(toast.id)}
         >
           <div className="flex-1 w-0 p-4">
             <div className="flex items-start space-x-3">
               {getIcon(toast.type)}
-              <div className="flex-1">
-                <p className="font-medium text-retro-900 dark:text-retro-100">{toast.title}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-semibold text-gray-900 dark:text-white break-words">{toast.title}</p>
                 {toast.message && (
-                  <p className="text-sm text-retro-600 dark:text-retro-400 mt-1">{toast.message}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 break-words leading-5">{toast.message}</p>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex border-l border-retro-200 dark:border-retro-700">
+          <div className="flex border-l-2 border-gray-200 dark:border-gray-700">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 dismissToast(toast.id);
               }}
-              className="w-full p-4 flex items-center justify-center hover:bg-retro-50 dark:hover:bg-retro-800 rounded-r-lg transition-colors duration-150"
+              className="w-full px-4 py-2 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-retro-700 transition-colors duration-150"
               aria-label="Dismiss notification"
             >
-              <X className="w-5 h-5 text-retro-400 dark:text-retro-500" />
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
         </div>
