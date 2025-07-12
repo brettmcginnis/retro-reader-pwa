@@ -80,14 +80,14 @@ describe('FontSizeControl', () => {
   });
 
   it('should disable decrease button at minimum font size', () => {
-    render(<FontSizeControl {...defaultProps} fontSize={10} />);
+    render(<FontSizeControl {...defaultProps} fontSize={10} minSize={10} />);
     
     const decreaseButton = screen.getAllByRole('button')[0];
     expect(decreaseButton).toBeDisabled();
   });
 
   it('should disable increase button at maximum font size', () => {
-    render(<FontSizeControl {...defaultProps} fontSize={24} />);
+    render(<FontSizeControl {...defaultProps} fontSize={24} maxSize={24} />);
     
     const increaseButton = screen.getAllByRole('button')[1];
     expect(increaseButton).toBeDisabled();
