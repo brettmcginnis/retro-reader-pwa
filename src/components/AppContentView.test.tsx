@@ -33,8 +33,7 @@ describe('AppContentView', () => {
   const defaultProps = {
     currentView: 'library' as const,
     currentGuide: null,
-    isLoadingGuide: false,
-    onBackToLibrary: jest.fn()
+    isLoadingGuide: false
   };
 
   beforeEach(() => {

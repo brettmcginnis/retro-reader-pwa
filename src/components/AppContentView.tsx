@@ -8,20 +8,15 @@ interface AppContentViewProps {
   currentView: 'library' | 'reader';
   currentGuide: Guide | null;
   isLoadingGuide: boolean;
-  onBackToLibrary: () => void;
 }
 
 export const AppContentView: React.FC<AppContentViewProps> = ({
   currentView,
   currentGuide,
-  isLoadingGuide,
-  onBackToLibrary: _onBackToLibrary
+  isLoadingGuide
 }) => {
   const renderContent = () => {
     switch (currentView) {
-      case 'library':
-        return <GuideLibrary />;
-        
       case 'reader':
         if (isLoadingGuide) {
           return <Loading />;

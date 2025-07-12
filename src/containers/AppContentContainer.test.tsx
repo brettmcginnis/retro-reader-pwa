@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { Guide } from '../types';
 
 // Mock hooks and components
@@ -28,7 +27,6 @@ interface AppContentViewProps {
   currentView: string;
   isLoadingGuide: boolean;
   currentGuide: Guide | null;
-  onBackToLibrary: () => void;
 }
 
 jest.mock('../components/AppContentView', () => ({
@@ -37,7 +35,6 @@ jest.mock('../components/AppContentView', () => ({
       <div data-testid="current-view">{props.currentView}</div>
       <div data-testid="is-loading">{props.isLoadingGuide.toString()}</div>
       <div data-testid="current-guide">{props.currentGuide?.title || 'null'}</div>
-      <button onClick={props.onBackToLibrary}>Back to Library</button>
     </div>
   )
 }));
@@ -198,21 +195,6 @@ describe('AppContentContainer', () => {
     });
   });
 
-  describe('Navigation', () => {
-    it('should handle back to library navigation', async () => {
-      const user = userEvent.setup();
-      
-      render(<AppContentContainer />);
-      
-      await user.click(screen.getByText('Back to Library'));
-      
-      expect(mockSetCurrentView).toHaveBeenCalledWith('library');
-      expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
-      expect(mockPushState).toHaveBeenCalledWith({}, '', '/retro-reader-pwa/');
-    });
-
-
-  });
 
 
   describe('URL Handling', () => {

@@ -81,18 +81,11 @@ export const AppContentContainer: React.FC = () => {
     return () => window.removeEventListener('popstate', onPopState);
   }, [setCurrentGuideId, setCurrentView]);
 
-  const handleBackToLibrary = () => {
-    setCurrentView('library');
-    setCurrentGuideId(null);
-    window.history.pushState({}, '', '/retro-reader-pwa/');
-  };
-
   return (
     <AppContentView
       currentView={currentView}
       currentGuide={memoizedCurrentGuide}
       isLoadingGuide={isLoadingGuide}
-      onBackToLibrary={handleBackToLibrary}
     />
   );
 };
