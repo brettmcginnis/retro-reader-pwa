@@ -5,10 +5,7 @@ import { useAppStore } from '../stores/useAppStore';
 import { useToast } from '../contexts/useToast';
 import { GuideLibraryView } from '../components/GuideLibraryView';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface GuideLibraryContainerProps {}
-
-export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () => {
+export const GuideLibraryContainer: React.FC = () => {
   const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuideStore();
   const { theme, toggleTheme, setCurrentView, setCurrentGuideId } = useAppStore();
   const { showToast, confirm } = useToast();
