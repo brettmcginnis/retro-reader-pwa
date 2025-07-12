@@ -23,10 +23,8 @@ describe('useToastStore', () => {
 
   describe('showToast', () => {
     it('should add a success toast', () => {
-      let toastId: string;
-      
       act(() => {
-        toastId = useToastStore.getState().showToast('success', 'Success!', 'Operation completed');
+        useToastStore.getState().showToast('success', 'Success!', 'Operation completed');
       });
 
       const state = useToastStore.getState();

@@ -1,13 +1,13 @@
 import { useToastStore } from '../stores/useToastStore';
-import { ToastType, ConfirmationOptions } from '../types';
+import { useConfirmationStore } from '../stores/useConfirmationStore';
+import { ConfirmationOptions } from '../types';
 
 export const useToast = () => {
   const { showToast } = useToastStore();
+  const { showConfirmation } = useConfirmationStore();
 
   const confirm = async (options: ConfirmationOptions): Promise<boolean> => {
-    // For now, we'll use the browser's native confirm dialog
-    // In a future enhancement, this could be replaced with a custom modal
-    return window.confirm(`${options.title}\n\n${options.message || ''}`);
+    return showConfirmation(options);
   };
 
   return {

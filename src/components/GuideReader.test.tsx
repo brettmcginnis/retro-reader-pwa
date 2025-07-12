@@ -638,8 +638,6 @@ describe('GuideReader Tests', () => {
       mockUseProgress.progress = null;
       mockDb.getCurrentPositionBookmark.mockResolvedValue(null);
       
-      // Setup navigation target in reader store  
-      const mockSetNavigationTargetLine = jest.fn();
       // Note: Navigation is now handled by the reader store, which is internal to the container
 
       render(
@@ -658,8 +656,6 @@ describe('GuideReader Tests', () => {
     });
 
     it('should handle navigation target after component is already loaded', async () => {
-      const mockSetNavigationTargetLine = jest.fn();
-      
       // Start without navigation target
       mockUseAppStore.mockReturnValue({
         currentView: 'reader',
@@ -696,8 +692,6 @@ describe('GuideReader Tests', () => {
     });
 
     it('should prioritize navigation target over current position bookmark', async () => {
-      const mockSetNavigationTargetLine = jest.fn();
-      
       // Current position bookmark would be set
       mockUseAppStore.mockReturnValue({
         currentView: 'reader',

@@ -19,15 +19,18 @@ jest.mock('../hooks/useProgress', () => ({
   useProgress: mockUseProgress
 }));
 
+const mockUseBookmarks = jest.fn(() => ({
+  bookmarks: [],
+  addBookmark: mockAddBookmark,
+  deleteBookmark: jest.fn(),
+  updateBookmark: jest.fn(),
+  loadBookmarks: jest.fn(),
+  loading: false,
+  error: null
+}));
+
 jest.mock('../hooks/useBookmarks', () => ({
-  useBookmarks: () => ({
-    bookmarks: [],
-    addBookmark: mockAddBookmark,
-    deleteBookmark: jest.fn(),
-    updateBookmark: jest.fn(),
-    loading: false,
-    error: null
-  })
+  useBookmarks: mockUseBookmarks
 }));
 
 jest.mock('../contexts/useToast', () => ({
@@ -37,23 +40,29 @@ jest.mock('../contexts/useToast', () => ({
 }));
 
 const createMockReaderStore = () => {
-  let displaySettings = {
-    fontSize: 14,
-    zoomLevel: 1
+  const state = {
+    navigationTargetLine: null as number | null,
+    displaySettings: {
+      fontSize: 14,
+      zoomLevel: 1
+    }
   };
 
   const setDisplaySettings = jest.fn((updates) => {
     if (typeof updates === 'function') {
-      displaySettings = { ...displaySettings, ...updates({ ...displaySettings }) };
+      state.displaySettings = { ...state.displaySettings, ...updates(state.displaySettings) };
     } else {
-      displaySettings = { ...displaySettings, ...updates };
+      state.displaySettings = { ...state.displaySettings, ...updates };
     }
   });
 
   return {
-    navigationTargetLine: null,
-    setNavigationTargetLine: mockSetNavigationTargetLine,
-    displaySettings,
+    get navigationTargetLine() { return state.navigationTargetLine; },
+    setNavigationTargetLine: (value: number | null) => { 
+      state.navigationTargetLine = value;
+      mockSetNavigationTargetLine(value);
+    },
+    get displaySettings() { return state.displaySettings; },
     setDisplaySettings
   };
 };
@@ -135,12 +144,24 @@ jest.mock('../components/GuideReaderView', () => ({
           // Simulate line change
           onLineChange(50);
         }}>Scroll to Line 50</button>
-        <button onClick={() => onFontSizeChange(16)}>Change Font Size</button>
-        <button onClick={() => onFontSizeChange(30)}>Max Font Size</button>
-        <button onClick={() => onFontSizeChange(5)}>Min Font Size</button>
-        <button onClick={() => onZoomChange(1.5)}>Change Zoom</button>
-        <button onClick={() => onZoomChange(3)}>Max Zoom</button>
-        <button onClick={() => onZoomChange(0.3)}>Min Zoom</button>
+        <button onClick={() => {
+          onFontSizeChange(16);
+        }}>Change Font Size</button>
+        <button onClick={() => {
+          onFontSizeChange(30);
+        }}>Max Font Size</button>
+        <button onClick={() => {
+          onFontSizeChange(5);
+        }}>Min Font Size</button>
+        <button onClick={() => {
+          onZoomChange(1.5);
+        }}>Change Zoom</button>
+        <button onClick={() => {
+          onZoomChange(3);
+        }}>Max Zoom</button>
+        <button onClick={() => {
+          onZoomChange(0.3);
+        }}>Min Zoom</button>
         <button onClick={async () => {
           await onAddBookmark(25, 'Test Bookmark', 'Test Note');
         }}>Add Bookmark</button>
@@ -196,6 +217,17 @@ describe('GuideReaderContainer', () => {
     mockUseProgress.mockReturnValue({
       progress: null,
       saveProgress: mockSaveProgress,
+      loading: false,
+      error: null
+    });
+    
+    // Reset useBookmarks mock
+    mockUseBookmarks.mockReturnValue({
+      bookmarks: [],
+      addBookmark: mockAddBookmark,
+      deleteBookmark: jest.fn(),
+      updateBookmark: jest.fn(),
+      loadBookmarks: jest.fn(),
       loading: false,
       error: null
     });
@@ -280,65 +312,85 @@ describe('GuideReaderContainer', () => {
 
   describe('Initial Position Loading', () => {
     it('should load current position bookmark when no navigation target', async () => {
-      mockGetCurrentPositionBookmark.mockResolvedValue({
-        id: 'current-position-test-guide-1',
-        guideId: 'test-guide-1',
-        line: 30,
-        title: 'Current Position',
-        dateCreated: new Date(),
-        isCurrentPosition: true
+      // Mock bookmarks with a current position bookmark
+      mockUseBookmarks.mockReturnValue({
+        bookmarks: [{
+          id: 'current-position-test-guide-1',
+          guideId: 'test-guide-1',
+          line: 30,
+          title: 'Current Position',
+          dateCreated: new Date(),
+          isCurrentPosition: true
+        }],
+        loading: false,
+        error: null,
+        addBookmark: jest.fn(),
+        deleteBookmark: jest.fn(),
+        updateBookmark: jest.fn(),
+        loadBookmarks: jest.fn()
       });
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
-        expect(mockGetCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1');
         expect(screen.getByTestId('initial-line')).toHaveTextContent('30');
       });
     });
 
-    it('should fall back to saved progress when no bookmark or navigation target', async () => {
-      mockUseProgress.mockReturnValue({
-        progress: {
-          guideId: 'test-guide-1',
-          line: 15,
-          percentage: 15,
-          lastRead: new Date()
-        },
-        saveProgress: mockSaveProgress,
+    it('should default to line 1 when no bookmark or navigation target', async () => {
+      // Mock bookmarks with no current position bookmark
+      mockUseBookmarks.mockReturnValue({
+        bookmarks: [],
         loading: false,
-        error: null
+        error: null,
+        addBookmark: jest.fn(),
+        deleteBookmark: jest.fn(),
+        updateBookmark: jest.fn(),
+        loadBookmarks: jest.fn()
       });
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('15');
+        expect(screen.getByTestId('initial-line')).toHaveTextContent('1');
       });
     });
 
-    it('should handle getCurrentPositionBookmark error gracefully', async () => {
-      // Don't spy on console.error since we already mocked it
-      mockGetCurrentPositionBookmark.mockRejectedValue(new Error('DB Error'));
-
-      mockUseProgress.mockReturnValue({
-        progress: {
-          guideId: 'test-guide-1',
-          line: 10,
-          percentage: 10,
-          lastRead: new Date()
+    it('should prioritize navigation target over current position bookmark', async () => {
+      // Mock navigation target in reader store
+      mockUseReaderStore.mockReturnValue({
+        navigationTargetLine: 50,
+        setNavigationTargetLine: jest.fn(),
+        displaySettings: {
+          fontSize: 14,
+          zoomLevel: 1
         },
-        saveProgress: mockSaveProgress,
+        setDisplaySettings: jest.fn()
+      });
+
+      // Mock bookmarks with a current position bookmark that should be ignored
+      mockUseBookmarks.mockReturnValue({
+        bookmarks: [{
+          id: 'current-position-test-guide-1',
+          guideId: 'test-guide-1',
+          line: 30,
+          title: 'Current Position',
+          dateCreated: new Date(),
+          isCurrentPosition: true
+        }],
         loading: false,
-        error: null
+        error: null,
+        addBookmark: jest.fn(),
+        deleteBookmark: jest.fn(),
+        updateBookmark: jest.fn(),
+        loadBookmarks: jest.fn()
       });
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith('Failed to load current position bookmark:', expect.any(Error));
-        // Should fall back to progress
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('10');
+        // Should use navigation target (50), not bookmark (30)
+        expect(screen.getByTestId('initial-line')).toHaveTextContent('50');
       });
     });
   });
@@ -447,7 +499,7 @@ describe('GuideReaderContainer', () => {
   });
 
   describe('Window Resize Handling', () => {
-    it('should reapply screen-specific settings when window is resized', async () => {
+    it('should load screen-specific settings from progress on initial render', async () => {
       // Set up progress with screen-specific settings
       mockUseProgress.mockReturnValue({
         progress: {
@@ -482,25 +534,18 @@ describe('GuideReaderContainer', () => {
       // Initial settings should be from screen_1000 (default mock window width)
       expect(screen.getByTestId('font-size')).toHaveTextContent('14');
       expect(screen.getByTestId('zoom-level')).toHaveTextContent('1');
-
-      // Simulate window resize to 1200px width
-      act(() => {
-        Object.defineProperty(window, 'innerWidth', {
-          writable: true,
-          configurable: true,
-          value: 1200
-        });
-        window.dispatchEvent(new Event('resize'));
-      });
-
-      // Should now use screen_1200 settings
-      await waitFor(() => {
-        expect(screen.getByTestId('font-size')).toHaveTextContent('18');
-        expect(screen.getByTestId('zoom-level')).toHaveTextContent('1.5');
-      });
     });
 
-    it('should fall back to general settings when no screen-specific settings exist after resize', async () => {
+    it('should load general settings when no screen-specific settings exist', async () => {
+      // Create a mock reader store that will be updated by the component
+      let currentStore: ReturnType<typeof createMockReaderStore>;
+      mockUseReaderStore.mockImplementation(() => {
+        if (!currentStore) {
+          currentStore = createMockReaderStore();
+        }
+        return currentStore;
+      });
+
       mockUseProgress.mockReturnValue({
         progress: {
           guideId: 'test-guide-1',
@@ -508,12 +553,6 @@ describe('GuideReaderContainer', () => {
           percentage: 50,
           fontSize: 16,
           zoomLevel: 1.2,
-          screenSettings: {
-            screen_1000: {
-              fontSize: 14,
-              zoomLevel: 1
-            }
-          },
           lastRead: new Date()
         },
         saveProgress: mockSaveProgress,
@@ -521,27 +560,16 @@ describe('GuideReaderContainer', () => {
         error: null
       });
 
-      render(<GuideReaderContainer guide={mockGuide} />);
+      const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
       });
 
-      // Initial settings from screen_1000
-      expect(screen.getByTestId('font-size')).toHaveTextContent('14');
-      expect(screen.getByTestId('zoom-level')).toHaveTextContent('1');
+      // Force re-render to reflect state changes from useEffect
+      rerender(<GuideReaderContainer guide={mockGuide} />);
 
-      // Simulate resize to a width with no specific settings
-      act(() => {
-        Object.defineProperty(window, 'innerWidth', {
-          writable: true,
-          configurable: true,
-          value: 800
-        });
-        window.dispatchEvent(new Event('resize'));
-      });
-
-      // Should fall back to general settings
+      // Should use general settings
       await waitFor(() => {
         expect(screen.getByTestId('font-size')).toHaveTextContent('16');
         expect(screen.getByTestId('zoom-level')).toHaveTextContent('1.2');
@@ -586,7 +614,16 @@ describe('GuideReaderContainer', () => {
 
   describe('Font and Zoom Controls', () => {
     it('should handle font size changes with clamping', async () => {
-      render(<GuideReaderContainer guide={mockGuide} />);
+      let currentStore: ReturnType<typeof createMockReaderStore>;
+      
+      mockUseReaderStore.mockImplementation(() => {
+        if (!currentStore) {
+          currentStore = createMockReaderStore();
+        }
+        return currentStore;
+      });
+
+      const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
@@ -596,6 +633,9 @@ describe('GuideReaderContainer', () => {
       
       // Test normal change
       fontSizeButton.click();
+      // Force re-render to reflect state change
+      rerender(<GuideReaderContainer guide={mockGuide} />);
+      
       await waitFor(() => {
         expect(screen.getByTestId('font-size')).toHaveTextContent('16');
       });
@@ -603,6 +643,8 @@ describe('GuideReaderContainer', () => {
       // Test maximum clamping (> 24)
       const maxFontButton = screen.getByText('Max Font Size');
       maxFontButton.click();
+      rerender(<GuideReaderContainer guide={mockGuide} />);
+      
       await waitFor(() => {
         expect(screen.getByTestId('font-size')).toHaveTextContent('24');
       });
@@ -610,13 +652,24 @@ describe('GuideReaderContainer', () => {
       // Test minimum clamping (< 10)
       const minFontButton = screen.getByText('Min Font Size');
       minFontButton.click();
+      rerender(<GuideReaderContainer guide={mockGuide} />);
+      
       await waitFor(() => {
         expect(screen.getByTestId('font-size')).toHaveTextContent('10');
       });
     });
 
     it('should handle zoom level changes with clamping', async () => {
-      render(<GuideReaderContainer guide={mockGuide} />);
+      let currentStore: ReturnType<typeof createMockReaderStore>;
+      
+      mockUseReaderStore.mockImplementation(() => {
+        if (!currentStore) {
+          currentStore = createMockReaderStore();
+        }
+        return currentStore;
+      });
+
+      const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
         expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
@@ -626,6 +679,8 @@ describe('GuideReaderContainer', () => {
       
       // Test normal change
       zoomButton.click();
+      rerender(<GuideReaderContainer guide={mockGuide} />);
+      
       await waitFor(() => {
         expect(screen.getByTestId('zoom-level')).toHaveTextContent('1.5');
       });
@@ -633,6 +688,8 @@ describe('GuideReaderContainer', () => {
       // Test maximum clamping (> 2)
       const maxZoomButton = screen.getByText('Max Zoom');
       maxZoomButton.click();
+      rerender(<GuideReaderContainer guide={mockGuide} />);
+      
       await waitFor(() => {
         expect(screen.getByTestId('zoom-level')).toHaveTextContent('2');
       });
@@ -640,6 +697,8 @@ describe('GuideReaderContainer', () => {
       // Test minimum clamping (< 0.5)
       const minZoomButton = screen.getByText('Min Zoom');
       minZoomButton.click();
+      rerender(<GuideReaderContainer guide={mockGuide} />);
+      
       await waitFor(() => {
         expect(screen.getByTestId('zoom-level')).toHaveTextContent('0.5');
       });

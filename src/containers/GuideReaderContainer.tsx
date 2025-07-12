@@ -3,7 +3,6 @@ import { Guide } from '../types';
 import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useToast } from '../contexts/useToast';
-import { useAppStore } from '../stores/useAppStore';
 import { useReaderStore } from '../stores/useReaderStore';
 import { db } from '../services/database';
 import { GuideReaderView } from '../components/GuideReaderView';
@@ -90,7 +89,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
         }
       }
     }
-  }, [progress]);
+  }, [progress, setDisplaySettings, displaySettings.fontSize, displaySettings.zoomLevel]);
   
   // Listen for window resize to update screen ID and reapply settings
   useEffect(() => {
@@ -120,9 +119,9 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [progress]);
+  }, [progress, setDisplaySettings, displaySettings.fontSize, displaySettings.zoomLevel]);
   
-  // Set initial position from navigation target, saved progress or current position bookmark - only once
+  // Set initial position from navigation target or current position bookmark - only once
   useEffect(() => {
     if (!isLoading && !hasSetInitialPosition.current) {
       // Check for navigation target first
@@ -132,27 +131,15 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
         // Clear the navigation target after using it
         setNavigationTargetLine(null);
       } else {
-        // Check for current position bookmark
-        db.getCurrentPositionBookmark(guide.id).then(currentPosBookmark => {
-          if (currentPosBookmark) {
-            setCurrentLine(currentPosBookmark.line);
-            hasSetInitialPosition.current = true;
-          } else if (progress) {
-            // Fall back to progress if no current position bookmark
-            setCurrentLine(progress.line);
-            hasSetInitialPosition.current = true;
-          }
-        }).catch(err => {
-          console.error('Failed to load current position bookmark:', err);
-          // Fall back to progress on error
-          if (progress) {
-            setCurrentLine(progress.line);
-            hasSetInitialPosition.current = true;
-          }
-        });
+        // Find current position bookmark from bookmarks array
+        const currentPosBookmark = bookmarks.find(b => b.isCurrentPosition);
+        if (currentPosBookmark) {
+          setCurrentLine(currentPosBookmark.line);
+          hasSetInitialPosition.current = true;
+        }
       }
     }
-  }, [progress, isLoading, guide.id, navigationTargetLine, setNavigationTargetLine]);
+  }, [isLoading, guide.id, navigationTargetLine, setNavigationTargetLine, bookmarks]);
 
   // Handle navigation target changes after initial load
   useEffect(() => {
@@ -292,6 +279,9 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   
   const lines = guideRef.current;
   
+  // Find current position bookmark for initialLine calculation
+  const currentPositionBookmark = bookmarks.find(b => b.isCurrentPosition);
+  
   return (
     <GuideReaderView
       guide={guide}
@@ -301,7 +291,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       isLoading={isLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
-      initialLine={navigationTargetLine || currentLine || progress?.line || 1}
+      initialLine={navigationTargetLine || currentPositionBookmark?.line || 1}
       fontSize={displaySettings.fontSize}
       zoomLevel={displaySettings.zoomLevel}
       currentView={currentView}
