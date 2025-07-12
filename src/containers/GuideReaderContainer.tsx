@@ -10,10 +10,9 @@ import { getScreenIdentifier } from '../utils/screenUtils';
 
 interface GuideReaderContainerProps {
   guide: Guide;
-  onViewChange?: (view: 'library' | 'reader') => void;
 }
 
-export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide, onViewChange }) => {
+export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide }) => {
   const { progress, saveProgress } = useProgress(guide.id);
   const { addBookmark, bookmarks, deleteBookmark, updateBookmark, loadBookmarks } = useBookmarks(guide.id);
   const { showToast } = useToast();
@@ -340,8 +339,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onInitialScroll={handleInitialScroll}
       onFontSizeChange={handleFontSizeChange}
       onZoomChange={handleZoomChange}
-      onBackToLibrary={() => onViewChange?.('library')}
-      onViewChange={onViewChange}
       onDeleteBookmark={deleteBookmark}
       onUpdateBookmark={updateBookmark}
       onRefreshBookmarks={loadBookmarks}

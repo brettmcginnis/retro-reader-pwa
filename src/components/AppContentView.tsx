@@ -9,15 +9,13 @@ interface AppContentViewProps {
   currentGuide: Guide | null;
   isLoadingGuide: boolean;
   onBackToLibrary: () => void;
-  onViewChange: (view: 'library' | 'reader') => void;
 }
 
 export const AppContentView: React.FC<AppContentViewProps> = ({
   currentView,
   currentGuide,
   isLoadingGuide,
-  onBackToLibrary: _onBackToLibrary,
-  onViewChange
+  onBackToLibrary: _onBackToLibrary
 }) => {
   const renderContent = () => {
     switch (currentView) {
@@ -32,7 +30,6 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
         return currentGuide ? (
           <GuideReader 
             guide={currentGuide} 
-            onViewChange={onViewChange}
           />
         ) : <GuideLibrary />;
         

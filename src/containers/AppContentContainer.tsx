@@ -87,18 +87,12 @@ export const AppContentContainer: React.FC = () => {
     window.history.pushState({}, '', '/retro-reader-pwa/');
   };
 
-  const handleViewChange = (view: 'library' | 'reader') => {
-    setCurrentView(view);
-  };
-
-
   return (
     <AppContentView
       currentView={currentView}
       currentGuide={memoizedCurrentGuide}
       isLoadingGuide={isLoadingGuide}
       onBackToLibrary={handleBackToLibrary}
-      onViewChange={handleViewChange}
     />
   );
 };

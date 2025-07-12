@@ -29,7 +29,6 @@ interface AppContentViewProps {
   isLoadingGuide: boolean;
   currentGuide: Guide | null;
   onBackToLibrary: () => void;
-  onViewChange: (view: string) => void;
 }
 
 jest.mock('../components/AppContentView', () => ({
@@ -39,7 +38,6 @@ jest.mock('../components/AppContentView', () => ({
       <div data-testid="is-loading">{props.isLoadingGuide.toString()}</div>
       <div data-testid="current-guide">{props.currentGuide?.title || 'null'}</div>
       <button onClick={props.onBackToLibrary}>Back to Library</button>
-      <button onClick={() => props.onViewChange('reader')}>Switch to Reader</button>
     </div>
   )
 }));
@@ -213,14 +211,6 @@ describe('AppContentContainer', () => {
       expect(mockPushState).toHaveBeenCalledWith({}, '', '/retro-reader-pwa/');
     });
 
-    it('should handle view changes', async () => {
-      const user = userEvent.setup();
-      
-      render(<AppContentContainer />);
-      
-      await user.click(screen.getByText('Switch to Reader'));
-      expect(mockSetCurrentView).toHaveBeenCalledWith('reader');
-    });
 
   });
 

@@ -8,10 +8,9 @@ jest.mock('./GuideLibrary', () => ({
 }));
 
 jest.mock('./GuideReader', () => ({
-  GuideReader: ({ guide, onViewChange }: { guide: Guide; onViewChange?: (view: string) => void }) => (
+  GuideReader: ({ guide }: { guide: Guide }) => (
     <div data-testid="guide-reader">
       Guide Reader: {guide.title}
-      {onViewChange && <button onClick={() => onViewChange('library')}>Go to Library</button>}
     </div>
   )
 }));
@@ -35,8 +34,7 @@ describe('AppContentView', () => {
     currentView: 'library' as const,
     currentGuide: null,
     isLoadingGuide: false,
-    onBackToLibrary: jest.fn(),
-    onViewChange: jest.fn()
+    onBackToLibrary: jest.fn()
   };
 
   beforeEach(() => {
@@ -95,7 +93,7 @@ describe('AppContentView', () => {
   });
 
   describe('Navigation', () => {
-    it('should pass onViewChange to GuideReader', () => {
+    it('should render GuideReader with guide', () => {
       render(
         <AppContentView 
           {...defaultProps} 
@@ -104,7 +102,7 @@ describe('AppContentView', () => {
         />
       );
       
-      expect(screen.getByText('Go to Library')).toBeInTheDocument();
+      expect(screen.getByText('Guide Reader: Test Guide')).toBeInTheDocument();
     });
 
     it('should handle default case by rendering GuideLibrary', () => {
