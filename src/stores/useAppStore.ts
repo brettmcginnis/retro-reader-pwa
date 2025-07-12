@@ -1,19 +1,30 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+/**
+ * State interface for global app configuration and navigation
+ */
 interface AppState {
+  /** Current theme setting for the application */
   theme: 'light' | 'dark';
+  /** Current view being displayed (library or reader) */
   currentView: 'library' | 'reader';
+  /** ID of the currently opened guide, null if in library view */
   currentGuideId: string | null;
-  navigationTargetLine: number | null;
 }
 
+/**
+ * Actions for managing app state
+ */
 interface AppActions {
+  /** Toggles between light and dark theme */
   toggleTheme: () => void;
+  /** Sets the theme to a specific value */
   setTheme: (theme: 'light' | 'dark') => void;
+  /** Changes the current view */
   setCurrentView: (view: 'library' | 'reader') => void;
+  /** Sets the current guide ID */
   setCurrentGuideId: (id: string | null) => void;
-  setNavigationTargetLine: (line: number | null) => void;
 }
 
 type AppStore = AppState & AppActions;
@@ -33,7 +44,6 @@ export const useAppStore = create<AppStore>()(
       theme: 'light',
       currentView: 'library',
       currentGuideId: null,
-      navigationTargetLine: null,
 
       toggleTheme: () =>
         set((state) => {
@@ -50,7 +60,6 @@ export const useAppStore = create<AppStore>()(
 
       setCurrentView: (view) => set({ currentView: view }),
       setCurrentGuideId: (id) => set({ currentGuideId: id }),
-      setNavigationTargetLine: (line) => set({ navigationTargetLine: line }),
     }),
     {
       name: 'app-storage',

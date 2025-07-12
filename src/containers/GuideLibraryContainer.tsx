@@ -11,7 +11,7 @@ interface GuideLibraryContainerProps {}
 export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () => {
   const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuideStore();
   const { theme, toggleTheme, setCurrentView, setCurrentGuideId } = useAppStore();
-  const { showToast, showConfirmation } = useToast();
+  const { showToast, confirm } = useToast();
   const [fetchLoading, setFetchLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,20 +33,21 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
   };
 
   const handleDeleteGuide = async (guide: Guide) => {
-    showConfirmation({
+    const confirmed = await confirm({
       title: 'Delete Guide',
       message: `Are you sure you want to delete '${guide.title}'? This action cannot be undone.`,
       confirmText: 'Delete',
-      cancelText: 'Cancel',
-      onConfirm: async () => {
-        try {
-          await deleteGuide(guide.id);
-          showToast('success', 'Guide Deleted', `'${guide.title}' has been deleted`);
-        } catch (error) {
-          showToast('error', 'Failed to delete guide', error instanceof Error ? error.message : 'Unknown error');
-        }
-      }
+      cancelText: 'Cancel'
     });
+    
+    if (confirmed) {
+      try {
+        await deleteGuide(guide.id);
+        showToast('success', 'Guide Deleted', `'${guide.title}' has been deleted`);
+      } catch (error) {
+        showToast('error', 'Failed to delete guide', error instanceof Error ? error.message : 'Unknown error');
+      }
+    }
   };
 
   const handleExportGuide = async (id: string) => {
@@ -69,16 +70,12 @@ export const GuideLibraryContainer: React.FC<GuideLibraryContainerProps> = () =>
 
   const handleImportFile = async (file: File) => {
     try {
-      const confirmCallback = (title: string): Promise<boolean> => {
-        return new Promise((resolve) => {
-          showConfirmation({
-            title: 'Guide Already Exists',
-            message: `A guide titled '${title}' already exists. Do you want to replace it?`,
-            confirmText: 'Replace',
-            cancelText: 'Skip',
-            onConfirm: () => resolve(true),
-            onCancel: () => resolve(false)
-          });
+      const confirmCallback = async (title: string): Promise<boolean> => {
+        return await confirm({
+          title: 'Guide Already Exists',
+          message: `A guide titled '${title}' already exists. Do you want to replace it?`,
+          confirmText: 'Replace',
+          cancelText: 'Skip'
         });
       };
 

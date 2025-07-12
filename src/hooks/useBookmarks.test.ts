@@ -294,8 +294,8 @@ describe('useBookmarks', () => {
     });
   });
 
-  describe('refresh', () => {
-    it('should reload bookmarks when refresh is called', async () => {
+  describe('loadBookmarks', () => {
+    it('should reload bookmarks when loadBookmarks is called', async () => {
       const { result } = renderHook(() => useBookmarks('guide-1'));
 
       await waitFor(() => {
@@ -306,7 +306,7 @@ describe('useBookmarks', () => {
       expect(db.getBookmarks).toHaveBeenCalledTimes(1);
 
       await act(async () => {
-        await result.current.refresh();
+        await result.current.loadBookmarks();
       });
 
       // Should have been called again

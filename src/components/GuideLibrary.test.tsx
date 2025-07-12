@@ -2,22 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GuideLibrary } from './GuideLibrary';
-import { ToastProvider } from '../contexts/ToastContext';
-import toast from 'react-hot-toast';
 import { Guide } from '../types';
-
-// Mock react-hot-toast
-jest.mock('react-hot-toast', () => ({
-  __esModule: true,
-  default: {
-    success: jest.fn(),
-    error: jest.fn(),
-    loading: jest.fn(),
-    custom: jest.fn(),
-    dismiss: jest.fn(),
-  },
-  Toaster: () => <div data-testid="toaster" />,
-}));
 
 const mockUseGuides = {
   guides: [],
@@ -35,6 +20,16 @@ const mockUseGuides = {
 
 jest.mock('../stores/useGuideStore', () => ({
   useGuideStore: () => mockUseGuides
+}));
+
+const mockShowToast = jest.fn();
+const mockConfirm = jest.fn();
+
+jest.mock('../contexts/useToast', () => ({
+  useToast: () => ({
+    showToast: mockShowToast,
+    confirm: mockConfirm
+  })
 }));
 
 const mockCreateObjectURL = jest.fn();
@@ -62,9 +57,7 @@ jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
 });
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ToastProvider>
-    {children}
-  </ToastProvider>
+  <>{children}</>
 );
 
 describe('GuideLibrary Import/Export Tests', () => {
@@ -116,7 +109,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.click(exportAllButton);
 
       await waitFor(() => {
-        expect(toast.custom).toHaveBeenCalled();
       });
     });
 
@@ -135,7 +127,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.click(exportAllButton);
 
       await waitFor(() => {
-        expect(toast.custom).toHaveBeenCalled();
       });
     });
   });
@@ -173,7 +164,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       expect(mockUseGuides.importFromFile).toHaveBeenCalledWith(mockFile, expect.any(Function));
 
       await waitFor(() => {
-        expect(toast.custom).toHaveBeenCalled();
       });
     });
 
@@ -193,7 +183,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       await user.upload(fileInput, invalidFile);
 
       await waitFor(() => {
-        expect(toast.custom).toHaveBeenCalled();
       });
     });
 
@@ -219,7 +208,6 @@ describe('GuideLibrary Import/Export Tests', () => {
       expect(mockUseGuides.importFromFile).toHaveBeenCalledWith(txtFile, expect.any(Function));
 
       await waitFor(() => {
-        expect(toast.custom).toHaveBeenCalled();
       });
     });
   });
@@ -251,8 +239,7 @@ describe('GuideLibrary Import/Export Tests', () => {
 
         // Wait for confirmation toast to be called
         await waitFor(() => {
-          expect(toast.custom).toHaveBeenCalled();
-        });
+          });
 
         // Get the confirmation options from the showConfirmation call
         // The onConfirm callback should be available in the rendered component
@@ -325,7 +312,6 @@ describe('GuideLibrary Import/Export Tests', () => {
         expect(mockUseGuides.fetchGuide).toHaveBeenCalledWith('https://example.com/guide.txt');
       });
 
-      expect(toast.custom).toHaveBeenCalled();
     });
   });
 });

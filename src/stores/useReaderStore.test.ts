@@ -13,8 +13,8 @@ describe('useReaderStore', () => {
       expect(state.currentLine).toBe(1);
       expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
-      expect(state.fontSize).toBe(14);
-      expect(state.zoomLevel).toBe(1);
+      expect(state.displaySettings.fontSize).toBe(14);
+      expect(state.displaySettings.zoomLevel).toBe(1);
       expect(state.searchQuery).toBe('');
       expect(state.guideContent).toEqual([]);
       expect(state.lastContentHash).toBe('');
@@ -59,20 +59,20 @@ describe('useReaderStore', () => {
   });
 
   describe('display settings', () => {
-    it('should set font size', () => {
+    it('should set display settings', () => {
       act(() => {
-        useReaderStore.getState().setFontSize(18);
+        useReaderStore.getState().setDisplaySettings({ fontSize: 18 });
       });
 
-      expect(useReaderStore.getState().fontSize).toBe(18);
-    });
+      expect(useReaderStore.getState().displaySettings.fontSize).toBe(18);
+      expect(useReaderStore.getState().displaySettings.zoomLevel).toBe(1); // unchanged
 
-    it('should set zoom level', () => {
       act(() => {
-        useReaderStore.getState().setZoomLevel(1.5);
+        useReaderStore.getState().setDisplaySettings({ zoomLevel: 1.5 });
       });
 
-      expect(useReaderStore.getState().zoomLevel).toBe(1.5);
+      expect(useReaderStore.getState().displaySettings.fontSize).toBe(18); // unchanged
+      expect(useReaderStore.getState().displaySettings.zoomLevel).toBe(1.5);
     });
 
     it('should update screen settings', () => {
@@ -83,8 +83,8 @@ describe('useReaderStore', () => {
       });
 
       const state = useReaderStore.getState();
-      expect(state.fontSize).toBe(20);
-      expect(state.zoomLevel).toBe(1.25);
+      expect(state.displaySettings.fontSize).toBe(20);
+      expect(state.displaySettings.zoomLevel).toBe(1.25);
     });
   });
 
@@ -166,8 +166,7 @@ describe('useReaderStore', () => {
         store.setCurrentLine(50);
         store.setTotalLines(200);
         store.setIsLoading(false);
-        store.setFontSize(20);
-        store.setZoomLevel(1.5);
+        store.setDisplaySettings({ fontSize: 20, zoomLevel: 1.5 });
         store.setSearchQuery('search');
         store.setGuideContent(['Line 1'], 'hash');
         store.setHasSetInitialPosition(true);
@@ -185,14 +184,37 @@ describe('useReaderStore', () => {
       expect(state.currentLine).toBe(1);
       expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
-      expect(state.fontSize).toBe(14);
-      expect(state.zoomLevel).toBe(1);
+      expect(state.displaySettings.fontSize).toBe(14);
+      expect(state.displaySettings.zoomLevel).toBe(1);
       expect(state.searchQuery).toBe('');
       expect(state.guideContent).toEqual([]);
       expect(state.lastContentHash).toBe('');
       expect(state.hasSetInitialPosition).toBe(false);
       expect(state.hasInitiallyScrolled).toBe(false);
       expect(state.userScrolling).toBe(false);
+      expect(state.navigationTargetLine).toBeNull();
+    });
+  });
+
+  describe('navigation target', () => {
+    it('should set navigation target line', () => {
+      act(() => {
+        useReaderStore.getState().setNavigationTargetLine(42);
+      });
+
+      expect(useReaderStore.getState().navigationTargetLine).toBe(42);
+    });
+
+    it('should clear navigation target line', () => {
+      act(() => {
+        useReaderStore.getState().setNavigationTargetLine(42);
+      });
+
+      act(() => {
+        useReaderStore.getState().setNavigationTargetLine(null);
+      });
+
+      expect(useReaderStore.getState().navigationTargetLine).toBeNull();
     });
   });
 });

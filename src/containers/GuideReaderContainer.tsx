@@ -4,6 +4,7 @@ import { useProgress } from '../hooks/useProgress';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { useToast } from '../contexts/useToast';
 import { useAppStore } from '../stores/useAppStore';
+import { useReaderStore } from '../stores/useReaderStore';
 import { db } from '../services/database';
 import { GuideReaderView } from '../components/GuideReaderView';
 import { getScreenIdentifier } from '../utils/screenUtils';
@@ -16,18 +17,19 @@ interface GuideReaderContainerProps {
 
 export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide, currentView, onViewChange }) => {
   const { progress, saveProgress } = useProgress(guide.id);
-  const { addBookmark, bookmarks, deleteBookmark, updateBookmark, refresh: refreshBookmarks } = useBookmarks(guide.id);
+  const { addBookmark, bookmarks, deleteBookmark, updateBookmark, loadBookmarks } = useBookmarks(guide.id);
   const { showToast } = useToast();
-  const { navigationTargetLine, setNavigationTargetLine } = useAppStore();
+  const { 
+    navigationTargetLine, 
+    setNavigationTargetLine,
+    displaySettings,
+    setDisplaySettings 
+  } = useReaderStore();
   
   // Basic state
   const [currentLine, setCurrentLine] = useState(1);
   const [totalLines, setTotalLines] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Font size and zoom level state - will be loaded from progress
-  const [fontSize, setFontSize] = useState(14); // Default to 14px
-  const [zoomLevel, setZoomLevel] = useState(1); // Default to 100%
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,12 +76,18 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       // Check for screen-specific settings first
       if (progress.screenSettings && progress.screenSettings[screenId]) {
         const screenSettings = progress.screenSettings[screenId];
-        setFontSize(screenSettings.fontSize);
-        setZoomLevel(screenSettings.zoomLevel);
+        setDisplaySettings({
+          fontSize: screenSettings.fontSize,
+          zoomLevel: screenSettings.zoomLevel
+        });
       } else {
         // Fall back to general settings
-        if (progress.fontSize) setFontSize(progress.fontSize);
-        if (progress.zoomLevel) setZoomLevel(progress.zoomLevel);
+        if (progress.fontSize || progress.zoomLevel) {
+          setDisplaySettings({
+            fontSize: progress.fontSize || displaySettings.fontSize,
+            zoomLevel: progress.zoomLevel || displaySettings.zoomLevel
+          });
+        }
       }
     }
   }, [progress]);
@@ -94,12 +102,18 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
         // Check for screen-specific settings first
         if (progress.screenSettings && progress.screenSettings[newScreenId]) {
           const screenSettings = progress.screenSettings[newScreenId];
-          setFontSize(screenSettings.fontSize);
-          setZoomLevel(screenSettings.zoomLevel);
+          setDisplaySettings({
+            fontSize: screenSettings.fontSize,
+            zoomLevel: screenSettings.zoomLevel
+          });
         } else {
           // Fall back to general settings if no screen-specific settings exist
-          if (progress.fontSize) setFontSize(progress.fontSize);
-          if (progress.zoomLevel) setZoomLevel(progress.zoomLevel);
+          if (progress.fontSize || progress.zoomLevel) {
+            setDisplaySettings({
+              fontSize: progress.fontSize || displaySettings.fontSize,
+              zoomLevel: progress.zoomLevel || displaySettings.zoomLevel
+            });
+          }
         }
       }
     };
@@ -175,20 +189,20 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
         guideId: guide.id,
         line: currentLine,
         percentage: Math.min(100, Math.max(0, (currentLine / totalLines) * 100)),
-        fontSize,
-        zoomLevel,
+        fontSize: displaySettings.fontSize,
+        zoomLevel: displaySettings.zoomLevel,
         screenSettings: {
           ...existingProgress.screenSettings,
           [screenId]: {
-            fontSize,
-            zoomLevel
+            fontSize: displaySettings.fontSize,
+            zoomLevel: displaySettings.zoomLevel
           }
         }
       }).catch(err => console.error('Failed to save progress:', err));
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [currentLine, guide.id, isLoading, saveProgress, totalLines, fontSize, zoomLevel, progress]);
+  }, [currentLine, guide.id, isLoading, saveProgress, totalLines, displaySettings, progress]);
   
   // Search handling
   const performSearch = useCallback((query: string) => {
@@ -267,14 +281,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Handle font size change
   const handleFontSizeChange = useCallback((newSize: number) => {
     const size = Math.max(10, Math.min(24, newSize)); // Clamp between 10 and 24
-    setFontSize(size);
-  }, []);
+    setDisplaySettings({ fontSize: size });
+  }, [setDisplaySettings]);
   
   // Handle zoom level change
   const handleZoomChange = useCallback((newZoom: number) => {
     const zoom = Math.max(0.5, Math.min(2, newZoom)); // Clamp between 50% and 200%
-    setZoomLevel(zoom);
-  }, []);
+    setDisplaySettings({ zoomLevel: zoom });
+  }, [setDisplaySettings]);
   
   const lines = guideRef.current;
   
@@ -288,8 +302,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       searchQuery={searchQuery}
       bookmarks={bookmarks}
       initialLine={navigationTargetLine || currentLine || progress?.line || 1}
-      fontSize={fontSize}
-      zoomLevel={zoomLevel}
+      fontSize={displaySettings.fontSize}
+      zoomLevel={displaySettings.zoomLevel}
       currentView={currentView}
       onLineChange={handleLineChange}
       onSearch={performSearch}
@@ -304,7 +318,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onViewChange={onViewChange}
       onDeleteBookmark={deleteBookmark}
       onUpdateBookmark={updateBookmark}
-      onRefreshBookmarks={refreshBookmarks}
+      onRefreshBookmarks={loadBookmarks}
     />
   );
 };

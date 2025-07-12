@@ -8,23 +8,43 @@ import { generateId } from '../utils/common';
 const guideService = new GuideService();
 const importExportService = new ImportExportService();
 
+/**
+ * State interface for guide collection management
+ */
 interface GuideState {
+  /** Array of all guides in the collection */
   guides: Guide[];
+  /** Loading state for guide operations */
   loading: boolean;
+  /** Error message if guide operations fail */
   error: string | null;
+  /** Whether the database has been initialized */
   dbInitialized: boolean;
 }
 
+/**
+ * Actions for managing guides
+ */
 interface GuideActions {
+  /** Initializes the database and loads guides */
   initDatabase: () => Promise<void>;
+  /** Loads all guides from the database */
   loadGuides: () => Promise<void>;
+  /** Fetches a guide from a URL and adds it to the collection */
   fetchGuide: (url: string) => Promise<void>;
+  /** Creates a new guide in the collection */
   createGuide: (guide: Omit<Guide, 'id' | 'dateAdded' | 'dateModified'>) => Promise<Guide>;
+  /** Deletes a guide and its associated data */
   deleteGuide: (id: string) => Promise<void>;
+  /** Retrieves a specific guide by ID */
   getGuide: (id: string) => Promise<Guide | null>;
+  /** Exports a single guide to a file */
   exportGuide: (id: string) => Promise<void>;
+  /** Exports all guides to a single file */
   exportAll: () => Promise<void>;
+  /** Imports guides from a file with optional confirmation handler */
   importFromFile: (file: File, onConfirm?: (title: string) => Promise<boolean>) => Promise<{ imported: number; skipped: number; errors: string[] }>;
+  /** Refreshes the guide list */
   refresh: () => Promise<void>;
 }
 

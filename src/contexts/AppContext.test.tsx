@@ -6,8 +6,6 @@ import { useApp } from './useApp';
 // Test component to access context values
 const TestComponent = () => {
   const { 
-    navigationTargetLine, 
-    setNavigationTargetLine,
     currentView,
     setCurrentView,
     currentGuideId,
@@ -18,12 +16,9 @@ const TestComponent = () => {
   
   return (
     <div>
-      <div data-testid="navigation-target">{navigationTargetLine ?? 'null'}</div>
       <div data-testid="current-view">{currentView}</div>
       <div data-testid="current-guide">{currentGuideId ?? 'null'}</div>
       <div data-testid="theme">{theme}</div>
-      <button onClick={() => setNavigationTargetLine(42)}>Set Navigation Target</button>
-      <button onClick={() => setNavigationTargetLine(null)}>Clear Navigation Target</button>
       <button onClick={() => setCurrentView('reader')}>Switch to Reader</button>
       <button onClick={() => setCurrentGuideId('test-guide')}>Set Guide ID</button>
       <button onClick={toggleTheme}>Toggle Theme</button>
@@ -37,48 +32,6 @@ describe('AppContext', () => {
     localStorage.clear();
   });
 
-  describe('Navigation Target Line', () => {
-    it('should have initial navigation target as null', () => {
-      render(
-        <AppProvider>
-          <TestComponent />
-        </AppProvider>
-      );
-
-      expect(screen.getByTestId('navigation-target')).toHaveTextContent('null');
-    });
-
-    it('should update navigation target line when set', async () => {
-      const user = userEvent.setup();
-      
-      render(
-        <AppProvider>
-          <TestComponent />
-        </AppProvider>
-      );
-
-      await user.click(screen.getByText('Set Navigation Target'));
-      expect(screen.getByTestId('navigation-target')).toHaveTextContent('42');
-    });
-
-    it('should clear navigation target line when set to null', async () => {
-      const user = userEvent.setup();
-      
-      render(
-        <AppProvider>
-          <TestComponent />
-        </AppProvider>
-      );
-
-      // Set a value first
-      await user.click(screen.getByText('Set Navigation Target'));
-      expect(screen.getByTestId('navigation-target')).toHaveTextContent('42');
-
-      // Clear it
-      await user.click(screen.getByText('Clear Navigation Target'));
-      expect(screen.getByTestId('navigation-target')).toHaveTextContent('null');
-    });
-  });
 
   describe('Existing Context Values', () => {
     it('should have initial current view as library', () => {
@@ -162,8 +115,8 @@ describe('AppContext', () => {
 
   describe('Multiple Components', () => {
     const AnotherTestComponent = () => {
-      const { navigationTargetLine } = useApp();
-      return <div data-testid="another-navigation-target">{navigationTargetLine ?? 'null'}</div>;
+      const { currentView } = useApp();
+      return <div data-testid="another-current-view">{currentView}</div>;
     };
 
     it('should share state between multiple components', async () => {
@@ -176,13 +129,13 @@ describe('AppContext', () => {
         </AppProvider>
       );
 
-      expect(screen.getByTestId('navigation-target')).toHaveTextContent('null');
-      expect(screen.getByTestId('another-navigation-target')).toHaveTextContent('null');
+      expect(screen.getByTestId('current-view')).toHaveTextContent('library');
+      expect(screen.getByTestId('another-current-view')).toHaveTextContent('library');
 
-      await user.click(screen.getByText('Set Navigation Target'));
+      await user.click(screen.getByText('Switch to Reader'));
       
-      expect(screen.getByTestId('navigation-target')).toHaveTextContent('42');
-      expect(screen.getByTestId('another-navigation-target')).toHaveTextContent('42');
+      expect(screen.getByTestId('current-view')).toHaveTextContent('reader');
+      expect(screen.getByTestId('another-current-view')).toHaveTextContent('reader');
     });
   });
 

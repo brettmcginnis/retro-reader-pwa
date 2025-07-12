@@ -76,6 +76,6 @@ export const useBookmarks = (guideId?: string) => {
     addBookmark,
     deleteBookmark,
     updateBookmark,
-    refresh: loadBookmarks,
+    loadBookmarks,
   };
 };

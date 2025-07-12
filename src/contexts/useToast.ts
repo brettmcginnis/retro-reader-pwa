@@ -1,10 +1,17 @@
-import { useContext } from 'react';
-import { ToastContext } from './ToastContextInstance';
+import { useToastStore } from '../stores/useToastStore';
+import { ToastType, ConfirmationOptions } from '../types';
 
 export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-  return context;
+  const { showToast } = useToastStore();
+
+  const confirm = async (options: ConfirmationOptions): Promise<boolean> => {
+    // For now, we'll use the browser's native confirm dialog
+    // In a future enhancement, this could be replaced with a custom modal
+    return window.confirm(`${options.title}\n\n${options.message || ''}`);
+  };
+
+  return {
+    showToast,
+    confirm,
+  };
 }; 

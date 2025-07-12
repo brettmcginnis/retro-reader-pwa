@@ -234,18 +234,6 @@ describe('useBookmarkStore', () => {
     });
   });
 
-  describe('refresh', () => {
-    it('should reload bookmarks', async () => {
-      useBookmarkStore.setState({ currentGuideId: 'guide-1' });
-      (db.getBookmarks as jest.Mock).mockResolvedValue(mockBookmarks);
-
-      await act(async () => {
-        await useBookmarkStore.getState().refresh();
-      });
-
-      expect(db.getBookmarks).toHaveBeenCalledWith('guide-1');
-    });
-  });
 
   describe('setCurrentGuideId', () => {
     it('should set guide ID and load bookmarks', async () => {

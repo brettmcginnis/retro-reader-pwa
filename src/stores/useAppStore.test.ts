@@ -8,7 +8,6 @@ describe('useAppStore', () => {
       theme: 'light',
       currentView: 'library',
       currentGuideId: null,
-      navigationTargetLine: null,
     });
     
     // Clear DOM
@@ -22,7 +21,6 @@ describe('useAppStore', () => {
       expect(state.theme).toBe('light');
       expect(state.currentView).toBe('library');
       expect(state.currentGuideId).toBeNull();
-      expect(state.navigationTargetLine).toBeNull();
     });
   });
 
@@ -92,24 +90,5 @@ describe('useAppStore', () => {
     });
   });
 
-  describe('navigation', () => {
-    it('should set navigation target line', () => {
-      act(() => {
-        useAppStore.getState().setNavigationTargetLine(42);
-      });
-
-      expect(useAppStore.getState().navigationTargetLine).toBe(42);
-    });
-
-    it('should clear navigation target line', () => {
-      useAppStore.setState({ navigationTargetLine: 42 });
-      
-      act(() => {
-        useAppStore.getState().setNavigationTargetLine(null);
-      });
-
-      expect(useAppStore.getState().navigationTargetLine).toBeNull();
-    });
-  });
 
 });

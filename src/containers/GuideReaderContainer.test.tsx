@@ -36,13 +36,32 @@ jest.mock('../contexts/useToast', () => ({
   })
 }));
 
-const mockUseAppStore = jest.fn(() => ({
-  navigationTargetLine: null,
-  setNavigationTargetLine: mockSetNavigationTargetLine
-}));
+const createMockReaderStore = () => {
+  let displaySettings = {
+    fontSize: 14,
+    zoomLevel: 1
+  };
 
-jest.mock('../stores/useAppStore', () => ({
-  useAppStore: mockUseAppStore
+  const setDisplaySettings = jest.fn((updates) => {
+    if (typeof updates === 'function') {
+      displaySettings = { ...displaySettings, ...updates({ ...displaySettings }) };
+    } else {
+      displaySettings = { ...displaySettings, ...updates };
+    }
+  });
+
+  return {
+    navigationTargetLine: null,
+    setNavigationTargetLine: mockSetNavigationTargetLine,
+    displaySettings,
+    setDisplaySettings
+  };
+};
+
+const mockUseReaderStore = jest.fn(createMockReaderStore);
+
+jest.mock('../stores/useReaderStore', () => ({
+  useReaderStore: mockUseReaderStore
 }));
 
 const mockGetCurrentPositionBookmark = jest.fn();
@@ -160,6 +179,9 @@ describe('GuideReaderContainer', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     
+    // Reset the mock to create new store instance
+    mockUseReaderStore.mockImplementation(createMockReaderStore);
+    
     // Mock console.error to suppress expected errors in tests
     console.error = jest.fn();
     
@@ -170,11 +192,7 @@ describe('GuideReaderContainer', () => {
       value: 1000
     });
     
-    // Reset mock implementations to defaults
-    mockUseAppStore.mockReturnValue({
-      navigationTargetLine: null,
-      setNavigationTargetLine: mockSetNavigationTargetLine
-    });
+    // Mock return value is already set by the mock definition
     mockUseProgress.mockReturnValue({
       progress: null,
       saveProgress: mockSaveProgress,
@@ -197,10 +215,10 @@ describe('GuideReaderContainer', () => {
   describe('Navigation Target Line', () => {
     it('should use navigation target line as initial position when available', async () => {
       // Set navigation target
-      mockUseAppStore.mockReturnValue({
-        navigationTargetLine: 42,
-        setNavigationTargetLine: mockSetNavigationTargetLine
-      });
+      mockUseReaderStore.mockImplementation(() => ({
+        ...createMockReaderStore(),
+        navigationTargetLine: 42
+      }));
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -214,10 +232,10 @@ describe('GuideReaderContainer', () => {
 
     it('should prioritize navigation target over current position bookmark', async () => {
       // Set both navigation target and current position bookmark
-      mockUseAppStore.mockReturnValue({
-        navigationTargetLine: 25,
-        setNavigationTargetLine: mockSetNavigationTargetLine
-      });
+      mockUseReaderStore.mockImplementation(() => ({
+        ...createMockReaderStore(),
+        navigationTargetLine: 25
+      }));
 
       mockGetCurrentPositionBookmark.mockResolvedValue({
         id: 'current-position-test-guide-1',
@@ -245,10 +263,10 @@ describe('GuideReaderContainer', () => {
       });
 
       // Update navigation target
-      mockUseAppStore.mockReturnValue({
-        navigationTargetLine: 60,
-        setNavigationTargetLine: mockSetNavigationTargetLine
-      });
+      mockUseReaderStore.mockImplementation(() => ({
+        ...createMockReaderStore(),
+        navigationTargetLine: 60
+      }));
 
       rerender(<GuideReaderContainer guide={mockGuide} />);
 

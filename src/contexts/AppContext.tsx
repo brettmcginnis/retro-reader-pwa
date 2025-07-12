@@ -25,7 +25,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   });
   const [currentView, setCurrentView] = useState<'library' | 'reader'>('library');
   const [currentGuideId, setCurrentGuideId] = useState<string | null>(null);
-  const [navigationTargetLine, setNavigationTargetLine] = useState<number | null>(null);
 
   // Apply theme to document
   useEffect(() => {
@@ -53,8 +52,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         setCurrentView,
         currentGuideId,
         setCurrentGuideId,
-        navigationTargetLine,
-        setNavigationTargetLine,
       }}
     >
       {children}
