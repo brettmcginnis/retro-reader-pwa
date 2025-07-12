@@ -32,7 +32,6 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
         return currentGuide ? (
           <GuideReader 
             guide={currentGuide} 
-            currentView={currentView}
             onViewChange={onViewChange}
           />
         ) : <GuideLibrary />;

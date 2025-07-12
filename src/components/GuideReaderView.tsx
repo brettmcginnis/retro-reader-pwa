@@ -25,7 +25,6 @@ interface GuideReaderViewProps {
   initialLine: number;
   fontSize: number;
   zoomLevel: number;
-  currentView?: 'library' | 'reader';
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
@@ -53,7 +52,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   initialLine,
   fontSize,
   zoomLevel,
-  currentView: _currentView,
   onLineChange,
   onSearch,
   onAddBookmark,
