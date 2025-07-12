@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Guide } from '../types';
-import { useProgress } from '../hooks/useProgress';
-import { useBookmarks } from '../hooks/useBookmarks';
+import { useProgressForGuide } from '../stores/useProgressForGuide';
+import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useToast } from '../contexts/useToast';
 import { useReaderStore } from '../stores/useReaderStore';
-import { db } from '../services/database';
 import { GuideReaderView } from '../components/GuideReaderView';
 import { getScreenIdentifier } from '../utils/screenUtils';
 
@@ -13,8 +12,22 @@ interface GuideReaderContainerProps {
 }
 
 export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide }) => {
-  const { progress, saveProgress } = useProgress(guide.id);
-  const { addBookmark, bookmarks, deleteBookmark, updateBookmark, loadBookmarks } = useBookmarks(guide.id);
+  const { progress, saveProgress } = useProgressForGuide(guide.id);
+  const { 
+    bookmarks, 
+    addBookmark, 
+    deleteBookmark, 
+    updateBookmark, 
+    loadBookmarks,
+    saveCurrentPositionBookmark,
+    getCurrentPositionBookmark,
+    setCurrentGuideId 
+  } = useBookmarkStore();
+  
+  // Set the current guide ID when component mounts or guide changes
+  useEffect(() => {
+    setCurrentGuideId(guide.id);
+  }, [guide.id, setCurrentGuideId]);
   const { showToast } = useToast();
   const { 
     navigationTargetLine, 
@@ -252,18 +265,18 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Set as current position
   const handleSetAsCurrentPosition = useCallback(async (line: number) => {
     try {
-      await db.saveCurrentPositionBookmark(guide.id, line);
+      await saveCurrentPositionBookmark(guide.id, line);
       return true;
     } catch (error) {
       showToast('error', 'Failed to set current position', error instanceof Error ? error.message : 'Unknown error');
       return false;
     }
-  }, [guide.id, showToast]);
+  }, [guide.id, saveCurrentPositionBookmark, showToast]);
   
   // Jump to current position
   const handleJumpToCurrentPosition = useCallback(async () => {
     try {
-      const currentPosBookmark = await db.getCurrentPositionBookmark(guide.id);
+      const currentPosBookmark = await getCurrentPositionBookmark(guide.id);
       if (currentPosBookmark) {
         return currentPosBookmark.line;
       } else {
@@ -274,7 +287,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       showToast('error', 'Failed to jump to position', error instanceof Error ? error.message : 'Unknown error');
       return null;
     }
-  }, [guide.id, showToast]);
+  }, [guide.id, getCurrentPositionBookmark, showToast]);
   
   // Handle line change with scrolling state management
   const handleLineChange = useCallback((line: number) => {
@@ -341,7 +354,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onZoomChange={handleZoomChange}
       onDeleteBookmark={deleteBookmark}
       onUpdateBookmark={updateBookmark}
-      onRefreshBookmarks={loadBookmarks}
+      onRefreshBookmarks={() => loadBookmarks(guide.id)}
     />
   );
 };

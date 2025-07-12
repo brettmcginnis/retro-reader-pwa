@@ -1,36 +1,47 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { Guide, Bookmark } from '../types';
+import { useProgressForGuide } from '../stores/useProgressForGuide';
+import { useBookmarkStore } from '../stores/useBookmarkStore';
 
 // Mock hooks and services
 const mockSaveProgress = jest.fn().mockResolvedValue(undefined);
 const mockAddBookmark = jest.fn();
 const mockShowToast = jest.fn();
 const mockSetNavigationTargetLine = jest.fn();
+const mockSetCurrentGuideId = jest.fn();
+const mockSaveCurrentPositionBookmark = jest.fn().mockResolvedValue(undefined);
+const mockGetCurrentPositionBookmark = jest.fn().mockResolvedValue(null);
 
-const mockUseProgress = jest.fn(() => ({
-  progress: null,
-  saveProgress: mockSaveProgress,
-  loading: false,
-  error: null
+// Mock useProgressForGuide
+jest.mock('../stores/useProgressForGuide', () => ({
+  useProgressForGuide: jest.fn(() => ({
+    progress: null,
+    saveProgress: mockSaveProgress,
+    loading: false,
+    error: null,
+    refresh: jest.fn()
+  }))
 }));
 
-jest.mock('../hooks/useProgress', () => ({
-  useProgress: mockUseProgress
-}));
-
-const mockUseBookmarks = jest.fn(() => ({
+// Helper to create bookmark store mock
+const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => ({
   bookmarks: [],
   addBookmark: mockAddBookmark,
   deleteBookmark: jest.fn(),
   updateBookmark: jest.fn(),
   loadBookmarks: jest.fn(),
+  setCurrentGuideId: mockSetCurrentGuideId,
+  saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
+  getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
   loading: false,
-  error: null
-}));
+  error: null,
+  ...overrides
+});
 
-jest.mock('../hooks/useBookmarks', () => ({
-  useBookmarks: mockUseBookmarks
+// Mock useBookmarkStore
+jest.mock('../stores/useBookmarkStore', () => ({
+  useBookmarkStore: jest.fn(() => createBookmarkStoreMock())
 }));
 
 jest.mock('../contexts/useToast', () => ({
@@ -73,17 +84,6 @@ jest.mock('../stores/useReaderStore', () => ({
   useReaderStore: mockUseReaderStore
 }));
 
-const mockGetCurrentPositionBookmark = jest.fn();
-const mockSaveCurrentPositionBookmark = jest.fn();
-
-const mockDb = {
-  getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
-  saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
-};
-
-jest.mock('../services/database', () => ({
-  db: mockDb
-}));
 
 // Simplified mock props for testing - using actual types from GuideReaderView
 interface MockGuideReaderViewProps {
@@ -214,7 +214,7 @@ describe('GuideReaderContainer', () => {
     });
     
     // Mock return value is already set by the mock definition
-    mockUseProgress.mockReturnValue({
+    (useProgressForGuide as jest.Mock).mockReturnValue({
       progress: null,
       saveProgress: mockSaveProgress,
       loading: false,
@@ -222,20 +222,21 @@ describe('GuideReaderContainer', () => {
     });
     
     // Reset useBookmarks mock
-    mockUseBookmarks.mockReturnValue({
+    (useBookmarkStore as jest.Mock).mockReturnValue({
       bookmarks: [],
       addBookmark: mockAddBookmark,
       deleteBookmark: jest.fn(),
       updateBookmark: jest.fn(),
       loadBookmarks: jest.fn(),
+      setCurrentGuideId: mockSetCurrentGuideId,
+      saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
+      getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
       loading: false,
       error: null
     });
     
     // Default mock implementations
     mockGetCurrentPositionBookmark.mockResolvedValue(null);
-    mockDb.getCurrentPositionBookmark = mockGetCurrentPositionBookmark;
-    mockDb.saveCurrentPositionBookmark = mockSaveCurrentPositionBookmark;
   });
 
   afterEach(() => {
@@ -311,9 +312,17 @@ describe('GuideReaderContainer', () => {
   });
 
   describe('Initial Position Loading', () => {
+    it('should set current guide ID when component mounts', async () => {
+      render(<GuideReaderContainer guide={mockGuide} />);
+      
+      await waitFor(() => {
+        expect(mockSetCurrentGuideId).toHaveBeenCalledWith('test-guide-1');
+      });
+    });
+
     it('should load current position bookmark when no navigation target', async () => {
       // Mock bookmarks with a current position bookmark
-      mockUseBookmarks.mockReturnValue({
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
         bookmarks: [{
           id: 'current-position-test-guide-1',
           guideId: 'test-guide-1',
@@ -321,14 +330,8 @@ describe('GuideReaderContainer', () => {
           title: 'Current Position',
           dateCreated: new Date(),
           isCurrentPosition: true
-        }],
-        loading: false,
-        error: null,
-        addBookmark: jest.fn(),
-        deleteBookmark: jest.fn(),
-        updateBookmark: jest.fn(),
-        loadBookmarks: jest.fn()
-      });
+        }]
+      }));
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -339,15 +342,9 @@ describe('GuideReaderContainer', () => {
 
     it('should default to line 1 when no bookmark or navigation target', async () => {
       // Mock bookmarks with no current position bookmark
-      mockUseBookmarks.mockReturnValue({
-        bookmarks: [],
-        loading: false,
-        error: null,
-        addBookmark: jest.fn(),
-        deleteBookmark: jest.fn(),
-        updateBookmark: jest.fn(),
-        loadBookmarks: jest.fn()
-      });
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
+        bookmarks: []
+      }));
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -369,7 +366,7 @@ describe('GuideReaderContainer', () => {
       });
 
       // Mock bookmarks with a current position bookmark that should be ignored
-      mockUseBookmarks.mockReturnValue({
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
         bookmarks: [{
           id: 'current-position-test-guide-1',
           guideId: 'test-guide-1',
@@ -377,14 +374,8 @@ describe('GuideReaderContainer', () => {
           title: 'Current Position',
           dateCreated: new Date(),
           isCurrentPosition: true
-        }],
-        loading: false,
-        error: null,
-        addBookmark: jest.fn(),
-        deleteBookmark: jest.fn(),
-        updateBookmark: jest.fn(),
-        loadBookmarks: jest.fn()
-      });
+        }]
+      }));
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -448,7 +439,7 @@ describe('GuideReaderContainer', () => {
     });
 
     it('should load font size and zoom level from progress', async () => {
-      mockUseProgress.mockReturnValue({
+      (useProgressForGuide as jest.Mock).mockReturnValue({
         progress: {
           guideId: 'test-guide-1',
           line: 1,
@@ -459,7 +450,8 @@ describe('GuideReaderContainer', () => {
         },
         saveProgress: mockSaveProgress,
         loading: false,
-        error: null
+        error: null,
+        refresh: jest.fn()
       });
 
       render(<GuideReaderContainer guide={mockGuide} />);
@@ -501,7 +493,7 @@ describe('GuideReaderContainer', () => {
   describe('Window Resize Handling', () => {
     it('should load screen-specific settings from progress on initial render', async () => {
       // Set up progress with screen-specific settings
-      mockUseProgress.mockReturnValue({
+      (useProgressForGuide as jest.Mock).mockReturnValue({
         progress: {
           guideId: 'test-guide-1',
           line: 50,
@@ -522,7 +514,8 @@ describe('GuideReaderContainer', () => {
         },
         saveProgress: mockSaveProgress,
         loading: false,
-        error: null
+        error: null,
+        refresh: jest.fn()
       });
 
       render(<GuideReaderContainer guide={mockGuide} />);
@@ -546,7 +539,7 @@ describe('GuideReaderContainer', () => {
         return currentStore;
       });
 
-      mockUseProgress.mockReturnValue({
+      (useProgressForGuide as jest.Mock).mockReturnValue({
         progress: {
           guideId: 'test-guide-1',
           line: 50,
@@ -557,7 +550,8 @@ describe('GuideReaderContainer', () => {
         },
         saveProgress: mockSaveProgress,
         loading: false,
-        error: null
+        error: null,
+        refresh: jest.fn()
       });
 
       const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);
@@ -577,11 +571,12 @@ describe('GuideReaderContainer', () => {
     });
 
     it('should handle resize when no progress exists', async () => {
-      mockUseProgress.mockReturnValue({
+      (useProgressForGuide as jest.Mock).mockReturnValue({
         progress: null,
         saveProgress: mockSaveProgress,
         loading: false,
-        error: null
+        error: null,
+        refresh: jest.fn()
       });
 
       render(<GuideReaderContainer guide={mockGuide} />);
@@ -759,7 +754,7 @@ describe('GuideReaderContainer', () => {
       setPositionButton.click();
 
       await waitFor(() => {
-        expect(mockDb.saveCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1', 30);
+        expect(mockSaveCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1', 30);
       });
     });
 
@@ -800,7 +795,7 @@ describe('GuideReaderContainer', () => {
       jumpButton.click();
 
       await waitFor(() => {
-        expect(mockDb.getCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1');
+        expect(mockGetCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1');
         expect(screen.getByTestId('jumped-to-line')).toHaveTextContent('75');
       });
     });
