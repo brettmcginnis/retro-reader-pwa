@@ -1,5 +1,5 @@
 import React from 'react';
-import { GuideLibrary } from './GuideLibrary';
+import { GuideLibraryContainer } from '../containers/GuideLibraryContainer';
 import { GuideReader } from './GuideReader';
 
 interface AppContentViewProps {
@@ -13,5 +13,5 @@ export const AppContentView: React.FC<AppContentViewProps> = ({
     <GuideReader 
       guideId={currentGuideId} 
     />
-  ) : <GuideLibrary />;
+  ) : <GuideLibraryContainer />;
 };

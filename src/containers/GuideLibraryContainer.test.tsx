@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GuideLibrary } from './GuideLibrary';
+import { GuideLibraryContainer } from './GuideLibraryContainer';
 import { Guide } from '../types';
 
 const mockUseGuides = {
@@ -60,7 +60,7 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <>{children}</>
 );
 
-describe('GuideLibrary Import/Export Tests', () => {
+describe('GuideLibraryContainer Import/Export Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
@@ -85,7 +85,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -101,7 +101,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -119,7 +119,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -154,7 +154,7 @@ describe('GuideLibrary Import/Export Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -175,7 +175,7 @@ describe('GuideLibrary Import/Export Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -198,7 +198,7 @@ describe('GuideLibrary Import/Export Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -229,7 +229,7 @@ describe('GuideLibrary Import/Export Tests', () => {
 
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -255,7 +255,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 
@@ -283,7 +283,7 @@ describe('GuideLibrary Import/Export Tests', () => {
       
       render(
         <TestWrapper>
-          <GuideLibrary />
+          <GuideLibraryContainer />
         </TestWrapper>
       );
 

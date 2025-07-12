@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { AppContentView } from './AppContentView';
 
 // Mock the child components
-jest.mock('./GuideLibrary', () => ({
-  GuideLibrary: () => <div data-testid="guide-library">Guide Library</div>
+jest.mock('../containers/GuideLibraryContainer', () => ({
+  GuideLibraryContainer: () => <div data-testid="guide-library">Guide Library</div>
 }));
 
 jest.mock('./GuideReader', () => ({
