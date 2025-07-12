@@ -25,7 +25,6 @@ interface GuideReaderViewProps {
   initialLine: number;
   fontSize: number;
   zoomLevel: number;
-  currentView?: 'library' | 'reader';
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
@@ -35,8 +34,6 @@ interface GuideReaderViewProps {
   onInitialScroll: () => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
-  onBackToLibrary: () => void;
-  onViewChange?: (view: 'library' | 'reader') => void;
   onDeleteBookmark: (id: string) => Promise<void>;
   onUpdateBookmark: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   onRefreshBookmarks: () => Promise<void>;
@@ -53,7 +50,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   initialLine,
   fontSize,
   zoomLevel,
-  currentView: _currentView,
   onLineChange,
   onSearch,
   onAddBookmark,
@@ -63,8 +59,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   onInitialScroll,
   onFontSizeChange,
   onZoomChange,
-  onBackToLibrary,
-  onViewChange: _onViewChange,
   onDeleteBookmark,
   onUpdateBookmark,
   onRefreshBookmarks
@@ -150,7 +144,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         zoomLevel={zoomLevel}
         searchQuery={searchQuery}
         isSearching={showSearch}
-        onBack={onBackToLibrary}
         onSearch={onSearch}
         onSearchToggle={toggleSearch}
         onFontSizeChange={onFontSizeChange}

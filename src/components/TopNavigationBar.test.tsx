@@ -2,6 +2,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { TopNavigationBar } from './TopNavigationBar';
 
+// Mock the app store
+const mockSetCurrentGuideId = jest.fn();
+
+jest.mock('../stores/useAppStore', () => ({
+  useAppStore: () => ({
+    setCurrentGuideId: mockSetCurrentGuideId
+  })
+}));
+
 interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
@@ -75,11 +84,11 @@ jest.mock('lucide-react', () => ({
 }));
 
 describe('TopNavigationBar', () => {
-  const mockOnBack = jest.fn();
   const mockOnSearch = jest.fn();
   const mockOnSearchToggle = jest.fn();
   const mockOnFontSizeChange = jest.fn();
   const mockOnZoomChange = jest.fn();
+  const mockPushState = jest.fn();
   
   const defaultProps = {
     guideTitle: 'Test Guide',
@@ -89,7 +98,6 @@ describe('TopNavigationBar', () => {
     zoomLevel: 1,
     searchQuery: '',
     isSearching: false,
-    onBack: mockOnBack,
     onSearch: mockOnSearch,
     onSearchToggle: mockOnSearchToggle,
     onFontSizeChange: mockOnFontSizeChange,
@@ -98,6 +106,11 @@ describe('TopNavigationBar', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock window.history.pushState
+    Object.defineProperty(window, 'history', {
+      writable: true,
+      value: { pushState: mockPushState }
+    });
   });
 
   it('should render navigation bar with title and progress', () => {
@@ -107,13 +120,14 @@ describe('TopNavigationBar', () => {
     expect(screen.getByText('Line 50 of 100 • 50%')).toBeInTheDocument();
   });
 
-  it('should call onBack when back button is clicked', () => {
+  it('should navigate back to library when back button is clicked', () => {
     render(<TopNavigationBar {...defaultProps} />);
     
     const backButton = screen.getByTitle('Back to library');
     fireEvent.click(backButton);
     
-    expect(mockOnBack).toHaveBeenCalled();
+    expect(mockSetCurrentGuideId).toHaveBeenCalledWith(null);
+    expect(mockPushState).toHaveBeenCalledWith({}, '', '/retro-reader-pwa/');
   });
 
   it('should toggle settings panel when settings button is clicked', () => {

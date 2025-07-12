@@ -12,16 +12,21 @@ jest.mock('../utils/common', () => ({
 }));
 
 const mockShowToast = jest.fn();
-const mockShowConfirmation = jest.fn();
+const mockConfirm = jest.fn().mockResolvedValue(true);
 
 jest.mock('../contexts/useToast', () => ({
   useToast: () => ({
     showToast: mockShowToast,
-    showConfirmation: mockShowConfirmation
+    confirm: mockConfirm
   })
 }));
 
 describe('useBookmarkUI', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockConfirm.mockResolvedValue(true);
+  });
+
   const mockBookmarks: Bookmark[] = [
     {
       id: 'bookmark-1',
@@ -279,33 +284,27 @@ describe('useBookmarkUI', () => {
   });
 
   describe('bookmark deletion', () => {
-    it('should show confirmation dialog before deletion', () => {
+    it('should show confirmation dialog before deletion', async () => {
       const { result } = renderHook(() => useBookmarkUI(defaultProps));
 
-      act(() => {
-        result.current.handleDeleteBookmark('bookmark-1');
+      await act(async () => {
+        await result.current.handleDeleteBookmark('bookmark-1');
       });
 
-      expect(mockShowConfirmation).toHaveBeenCalledWith({
+      expect(mockConfirm).toHaveBeenCalledWith({
         title: 'Delete Bookmark',
         message: 'Are you sure you want to delete the bookmark "Chapter 1"?',
         confirmText: 'Delete',
-        cancelText: 'Cancel',
-        onConfirm: expect.any(Function)
+        cancelText: 'Cancel'
       });
     });
 
     it('should delete bookmark on confirmation', async () => {
+      mockConfirm.mockResolvedValueOnce(true);
       const { result } = renderHook(() => useBookmarkUI(defaultProps));
 
-      act(() => {
-        result.current.handleDeleteBookmark('bookmark-1');
-      });
-
-      const confirmCallback = mockShowConfirmation.mock.calls[0][0].onConfirm;
-
       await act(async () => {
-        await confirmCallback();
+        await result.current.handleDeleteBookmark('bookmark-1');
       });
 
       expect(defaultProps.onDeleteBookmark).toHaveBeenCalledWith('bookmark-1');
@@ -317,6 +316,7 @@ describe('useBookmarkUI', () => {
     });
 
     it('should show error toast if deletion fails', async () => {
+      mockConfirm.mockResolvedValueOnce(true);
       const error = new Error('Delete failed');
       const onDeleteBookmark = jest.fn().mockRejectedValue(error);
       const { result } = renderHook(() => useBookmarkUI({
@@ -324,14 +324,8 @@ describe('useBookmarkUI', () => {
         onDeleteBookmark
       }));
 
-      act(() => {
-        result.current.handleDeleteBookmark('bookmark-1');
-      });
-
-      const confirmCallback = mockShowConfirmation.mock.calls[0][0].onConfirm;
-
       await act(async () => {
-        await confirmCallback();
+        await result.current.handleDeleteBookmark('bookmark-1');
       });
 
       expect(mockShowToast).toHaveBeenCalledWith(
@@ -339,6 +333,18 @@ describe('useBookmarkUI', () => {
         'Failed to delete bookmark',
         'Delete failed'
       );
+    });
+
+    it('should not delete bookmark when user cancels', async () => {
+      mockConfirm.mockResolvedValueOnce(false);
+      const { result } = renderHook(() => useBookmarkUI(defaultProps));
+
+      await act(async () => {
+        await result.current.handleDeleteBookmark('bookmark-1');
+      });
+
+      expect(defaultProps.onDeleteBookmark).not.toHaveBeenCalled();
+      expect(mockShowToast).not.toHaveBeenCalled();
     });
   });
 

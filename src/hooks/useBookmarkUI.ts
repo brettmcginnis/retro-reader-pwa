@@ -55,7 +55,7 @@ export const useBookmarkUI = ({
   const lastTapTimeRef = useRef<number>(0);
   const lastTapLineRef = useRef<number>(0);
   
-  const { showToast, showConfirmation } = useToast();
+  const { showToast, confirm } = useToast();
   
   // Create a map of bookmarked lines for quick lookup
   const bookmarkedLines = new Map<number, Bookmark>();
@@ -99,22 +99,23 @@ export const useBookmarkUI = ({
   };
 
   // Bookmark overlay handlers
-  const handleDeleteBookmark = (bookmarkId: string) => {
+  const handleDeleteBookmark = async (bookmarkId: string) => {
     const bookmark = bookmarks.find(b => b.id === bookmarkId);
-    showConfirmation({
+    const confirmed = await confirm({
       title: 'Delete Bookmark',
       message: `Are you sure you want to delete the bookmark "${bookmark?.title}"?`,
       confirmText: 'Delete',
-      cancelText: 'Cancel',
-      onConfirm: async () => {
-        try {
-          await onDeleteBookmark(bookmarkId);
-          showToast('success', 'Bookmark deleted', 'Bookmark has been successfully deleted');
-        } catch (error) {
-          showToast('error', 'Failed to delete bookmark', error instanceof Error ? error.message : 'Unknown error');
-        }
-      }
+      cancelText: 'Cancel'
     });
+
+    if (confirmed) {
+      try {
+        await onDeleteBookmark(bookmarkId);
+        showToast('success', 'Bookmark deleted', 'Bookmark has been successfully deleted');
+      } catch (error) {
+        showToast('error', 'Failed to delete bookmark', error instanceof Error ? error.message : 'Unknown error');
+      }
+    }
   };
 
   const handleAddBookmarkFromOverlay = async (bookmark: Omit<Bookmark, 'id' | 'dateCreated'>) => {

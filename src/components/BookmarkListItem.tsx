@@ -3,10 +3,21 @@ import { Calendar, Edit2, Trash2 } from 'lucide-react';
 import { Button } from './Button';
 import { Bookmark } from '../types';
 
+/**
+ * Props for the BookmarkListItem component.
+ * Renders a single bookmark item with controls for navigation and management.
+ */
 interface BookmarkListItemProps {
+  /** The bookmark data to display. */
   bookmark: Bookmark;
+  
+  /** Callback invoked when the user clicks to navigate to the bookmark's line. */
   onGotoLine: (line: number) => void;
+  
+  /** Callback invoked when the user clicks to edit the bookmark. */
   onEdit: (bookmark: Bookmark) => void;
+  
+  /** Callback invoked when the user clicks to delete the bookmark. */
   onDelete: (bookmarkId: string) => void;
 }
 

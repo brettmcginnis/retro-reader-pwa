@@ -11,8 +11,8 @@ interface FontSizeControlProps {
 export const FontSizeControl: React.FC<FontSizeControlProps> = ({
   fontSize,
   onFontSizeChange,
-  minSize = 10,
-  maxSize = 24
+  minSize = 1,
+  maxSize = 99
 }) => {
   return (
     <div className="flex items-center justify-between">
