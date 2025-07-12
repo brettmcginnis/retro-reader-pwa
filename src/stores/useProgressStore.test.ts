@@ -16,15 +16,7 @@ describe('useProgressStore', () => {
     guideId: 'guide-1',
     line: 42,
     percentage: 25.5,
-    lastRead: new Date('2024-01-01'),
-    fontSize: 16,
-    zoomLevel: 1.2,
-    screenSettings: {
-      'desktop-1920x1080': {
-        fontSize: 16,
-        zoomLevel: 1.2,
-      },
-    },
+    lastRead: new Date('2024-01-01')
   };
 
   beforeEach(() => {

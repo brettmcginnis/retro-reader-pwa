@@ -26,23 +26,19 @@ const mockUseBookmarks = {
   loadBookmarks: mockLoadBookmarks
 };
 
-jest.mock('../hooks/useProgress', () => ({
-  useProgress: () => mockUseProgress
+jest.mock('../stores/useProgressForGuide', () => ({
+  useProgressForGuide: () => mockUseProgress
 }));
 
-jest.mock('../hooks/useBookmarks', () => ({
-  useBookmarks: () => mockUseBookmarks
+jest.mock('../stores/useBookmarkStore', () => ({
+  useBookmarkStore: () => ({
+    ...mockUseBookmarks,
+    setCurrentGuideId: jest.fn(),
+    saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
+    getCurrentPositionBookmark: jest.fn().mockResolvedValue(null)
+  })
 }));
 
-const mockDb = {
-  saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
-  getCurrentPositionBookmark: jest.fn().mockResolvedValue(null),
-  init: jest.fn().mockResolvedValue(undefined)
-};
-
-jest.mock('../services/database', () => ({
-  db: mockDb
-}));
 
 const mockUseAppStore = jest.fn(() => ({
   currentView: 'reader',
@@ -122,8 +118,6 @@ describe('GuideReader Tests', () => {
     mockUpdateBookmark.mockClear();
     mockLoadBookmarks.mockClear();
     mockLoadBookmarks.mockResolvedValue(undefined);
-    mockDb.saveCurrentPositionBookmark.mockClear();
-    mockDb.getCurrentPositionBookmark.mockClear().mockResolvedValue(null);
     
     // Reset mockUseApp to default
     mockUseAppStore.mockReturnValue({
@@ -651,7 +645,6 @@ describe('GuideReader Tests', () => {
       // Reset all mocks
       jest.clearAllMocks();
       mockUseProgress.progress = null;
-      mockDb.getCurrentPositionBookmark.mockResolvedValue(null);
       
       // Note: Navigation is now handled by the reader store, which is internal to the container
 
@@ -718,14 +711,14 @@ describe('GuideReader Tests', () => {
       });
 
       // Mock getCurrentPositionBookmark to return a bookmark
-      mockDb.getCurrentPositionBookmark.mockResolvedValue({
+      mockBookmarksState = [{
         id: 'current-position-test-guide-1',
-        guideId: 'test-guide-1',
+        guideId: 'test-guide-1',  
         line: 80,
         title: 'Current Position',
         dateCreated: new Date(),
         isCurrentPosition: true
-      });
+      }];
 
       // Clear previous mock calls
       (Element.prototype.scrollTo as jest.Mock).mockClear();
@@ -741,7 +734,7 @@ describe('GuideReader Tests', () => {
       });
 
       // Verify we have bookmark
-      await expect(mockDb.getCurrentPositionBookmark('test-guide-1')).resolves.toHaveProperty('line', 80);
+      // The bookmark store should have the current position bookmark
       
       // The container now handles navigation priority internally via reader store
       // This behavior is tested in the container unit tests

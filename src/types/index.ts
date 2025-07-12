@@ -30,9 +30,6 @@ export interface ReadingProgress {
   line: number;
   percentage: number;
   lastRead: Date;
-  fontSize?: number;
-  zoomLevel?: number;
-  screenSettings?: Record<string, ScreenSettings>;
 }
 
 export interface GuideCollection {

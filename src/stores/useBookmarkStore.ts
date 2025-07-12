@@ -31,6 +31,10 @@ interface BookmarkActions {
   updateBookmark: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   /** Sets the current guide ID and loads its bookmarks */
   setCurrentGuideId: (guideId: string | null) => void;
+  /** Saves the current reading position as a special bookmark */
+  saveCurrentPositionBookmark: (guideId: string, line: number) => Promise<void>;
+  /** Gets the current position bookmark for a guide */
+  getCurrentPositionBookmark: (guideId: string) => Promise<Bookmark | null>;
 }
 
 type BookmarkStore = BookmarkState & BookmarkActions;
@@ -98,6 +102,24 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     set({ currentGuideId: guideId });
     if (guideId) {
       get().loadBookmarks(guideId);
+    }
+  },
+
+  saveCurrentPositionBookmark: async (guideId: string, line: number) => {
+    try {
+      await db.saveCurrentPositionBookmark(guideId, line);
+      // Reload bookmarks to reflect the change
+      await get().loadBookmarks(guideId);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to save current position');
+    }
+  },
+
+  getCurrentPositionBookmark: async (guideId: string) => {
+    try {
+      return await db.getCurrentPositionBookmark(guideId);
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to get current position');
     }
   },
 }));
