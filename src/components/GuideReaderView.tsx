@@ -29,7 +29,7 @@ interface GuideReaderViewProps {
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
-  onJumpToCurrentPosition: () => Promise<number | null>;
+  onJumpToCurrentPosition: () => number | null;
   onScrollingStateChange: (isScrolling: boolean) => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;

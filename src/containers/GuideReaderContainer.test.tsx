@@ -8,8 +8,6 @@ const mockAddBookmark = jest.fn();
 const mockShowToast = jest.fn();
 const mockSetCurrentGuideId = jest.fn();
 const mockSaveCurrentPositionBookmark = jest.fn().mockResolvedValue(undefined);
-const mockGetCurrentPositionBookmark = jest.fn().mockResolvedValue(null);
-
 
 // Helper to create bookmark store mock
 const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => {
@@ -24,7 +22,6 @@ const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => {
     loadBookmarks: jest.fn(),
     setCurrentGuideId: mockSetCurrentGuideId,
     saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
-    getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
     loading: false,
     error: null,
     get currentPosition() {
@@ -92,7 +89,7 @@ interface MockGuideReaderViewProps {
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
-  onJumpToCurrentPosition: () => Promise<number | null>;
+  onJumpToCurrentPosition: () => number | null;
   onScrollingStateChange: (isScrolling: boolean) => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
@@ -150,8 +147,8 @@ jest.mock('../components/GuideReaderView', () => ({
         <button onClick={async () => {
           await onSetAsCurrentPosition(30);
         }}>Set Current Position</button>
-        <button onClick={async () => {
-          const line = await onJumpToCurrentPosition();
+        <button onClick={() => {
+          const line = onJumpToCurrentPosition();
           if (line !== null) {
             setJumpedToLine(line);
           }
@@ -205,13 +202,9 @@ describe('GuideReaderContainer', () => {
       loadBookmarks: jest.fn(),
       setCurrentGuideId: mockSetCurrentGuideId,
       saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
-      getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
       loading: false,
       error: null
     });
-    
-    // Default mock implementations
-    mockGetCurrentPositionBookmark.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -459,14 +452,20 @@ describe('GuideReaderContainer', () => {
     });
 
     it('should handle jumping to current position', async () => {
-      mockGetCurrentPositionBookmark.mockResolvedValue({
+      // Set up the store with a current position bookmark
+      const bookmarks = [{
         id: 'current-pos',
         guideId: 'test-guide-1',
         line: 75,
         title: 'Current Position',
         dateCreated: new Date(),
         isCurrentPosition: true
-      });
+      }];
+      
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({ 
+        bookmarks,
+        currentGuideId: 'test-guide-1'
+      }));
       
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -478,13 +477,16 @@ describe('GuideReaderContainer', () => {
       jumpButton.click();
 
       await waitFor(() => {
-        expect(mockGetCurrentPositionBookmark).toHaveBeenCalledWith('test-guide-1');
         expect(screen.getByTestId('jumped-to-line')).toHaveTextContent('75');
       });
     });
 
     it('should show info toast when no current position exists', async () => {
-      mockGetCurrentPositionBookmark.mockResolvedValue(null);
+      // Set up the store with no current position bookmark (currentPosition will be 1)
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({ 
+        bookmarks: [],
+        currentGuideId: 'test-guide-1'
+      }));
       
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -500,22 +502,7 @@ describe('GuideReaderContainer', () => {
       });
     });
 
-    it('should handle jump to position errors', async () => {
-      mockGetCurrentPositionBookmark.mockRejectedValue(new Error('DB Read Error'));
-      
-      render(<GuideReaderContainer guide={mockGuide} />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
-      });
-
-      const jumpButton = screen.getByText('Jump to Current Position');
-      jumpButton.click();
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith('error', 'Failed to jump to position', 'DB Read Error');
-      });
-    });
+    // Error handling test removed - the new synchronous implementation doesn't have error cases
   });
 
 });

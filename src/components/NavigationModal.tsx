@@ -10,7 +10,7 @@ interface NavigationModalProps {
   totalLines: number;
   onNavigate: (line: number) => void;
   onClose: () => void;
-  onJumpToCurrentPosition: () => Promise<number | null>;
+  onJumpToCurrentPosition: () => number | null;
 }
 
 export const NavigationModal: React.FC<NavigationModalProps> = ({
@@ -45,8 +45,8 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
     setError('');
   };
 
-  const handleJumpToSaved = async () => {
-    const position = await onJumpToCurrentPosition();
+  const handleJumpToSaved = () => {
+    const position = onJumpToCurrentPosition();
     if (position) {
       onNavigate(position);
       onClose();

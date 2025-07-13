@@ -17,7 +17,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     updateBookmark, 
     loadBookmarks,
     saveCurrentPositionBookmark,
-    getCurrentPositionBookmark,
     setCurrentGuideId,
     currentPosition 
   } = useBookmarkStore();
@@ -117,20 +116,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   }, [guide.id, saveCurrentPositionBookmark, showToast]);
   
   // Jump to current position
-  const handleJumpToCurrentPosition = useCallback(async () => {
-    try {
-      const currentPosBookmark = await getCurrentPositionBookmark(guide.id);
-      if (currentPosBookmark) {
-        return currentPosBookmark.line;
-      } else {
-        showToast('info', 'No current position saved', 'Tap any line to set your current reading position');
-        return null;
-      }
-    } catch (error) {
-      showToast('error', 'Failed to jump to position', error instanceof Error ? error.message : 'Unknown error');
+  const handleJumpToCurrentPosition = useCallback(() => {
+    if (currentPosition > 1) {
+      return currentPosition;
+    } else {
+      showToast('info', 'No current position saved', 'Tap any line to set your current reading position');
       return null;
     }
-  }, [guide.id, getCurrentPositionBookmark, showToast]);
+  }, [currentPosition, showToast]);
   
   // Handle line change with scrolling state management
   const handleLineChange = useCallback((line: number) => {
