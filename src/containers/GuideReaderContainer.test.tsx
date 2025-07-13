@@ -8,7 +8,6 @@ import { useBookmarkStore } from '../stores/useBookmarkStore';
 const mockSaveProgress = jest.fn().mockResolvedValue(undefined);
 const mockAddBookmark = jest.fn();
 const mockShowToast = jest.fn();
-const mockSetNavigationTargetLine = jest.fn();
 const mockSetCurrentGuideId = jest.fn();
 const mockSaveCurrentPositionBookmark = jest.fn().mockResolvedValue(undefined);
 const mockGetCurrentPositionBookmark = jest.fn().mockResolvedValue(null);
@@ -52,7 +51,6 @@ jest.mock('../contexts/useToast', () => ({
 
 const createMockReaderStore = () => {
   const state = {
-    navigationTargetLine: null as number | null,
     displaySettings: {
       fontSize: 14,
       zoomLevel: 1
@@ -68,11 +66,6 @@ const createMockReaderStore = () => {
   });
 
   return {
-    get navigationTargetLine() { return state.navigationTargetLine; },
-    setNavigationTargetLine: (value: number | null) => { 
-      state.navigationTargetLine = value;
-      mockSetNavigationTargetLine(value);
-    },
     get displaySettings() { return state.displaySettings; },
     setDisplaySettings
   };
@@ -245,72 +238,6 @@ describe('GuideReaderContainer', () => {
     console.error = originalConsoleError;
   });
 
-  describe('Navigation Target Line', () => {
-    it('should use navigation target line as initial position when available', async () => {
-      // Set navigation target
-      mockUseReaderStore.mockImplementation(() => ({
-        ...createMockReaderStore(),
-        navigationTargetLine: 42
-      }));
-
-      render(<GuideReaderContainer guide={mockGuide} />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('42');
-      });
-
-      // Should clear navigation target after using it
-      expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
-    });
-
-    it('should prioritize navigation target over current position bookmark', async () => {
-      // Set both navigation target and current position bookmark
-      mockUseReaderStore.mockImplementation(() => ({
-        ...createMockReaderStore(),
-        navigationTargetLine: 25
-      }));
-
-      mockGetCurrentPositionBookmark.mockResolvedValue({
-        id: 'current-position-test-guide-1',
-        guideId: 'test-guide-1',
-        line: 75,
-        title: 'Current Position',
-        dateCreated: new Date(),
-        isCurrentPosition: true
-      });
-
-      render(<GuideReaderContainer guide={mockGuide} />);
-
-      await waitFor(() => {
-        // Should use navigation target (25) instead of current position (75)
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('25');
-      });
-    });
-
-    it('should handle navigation target changes after initial load', async () => {
-      const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);
-
-      // Initial render without navigation target
-      await waitFor(() => {
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('1');
-      });
-
-      // Update navigation target
-      mockUseReaderStore.mockImplementation(() => ({
-        ...createMockReaderStore(),
-        navigationTargetLine: 60
-      }));
-
-      rerender(<GuideReaderContainer guide={mockGuide} />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('60');
-      });
-
-      expect(mockSetNavigationTargetLine).toHaveBeenCalledWith(null);
-    });
-  });
-
   describe('Initial Position Loading', () => {
     it('should set current guide ID when component mounts', async () => {
       render(<GuideReaderContainer guide={mockGuide} />);
@@ -350,38 +277,6 @@ describe('GuideReaderContainer', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('initial-line')).toHaveTextContent('1');
-      });
-    });
-
-    it('should prioritize navigation target over current position bookmark', async () => {
-      // Mock navigation target in reader store
-      mockUseReaderStore.mockReturnValue({
-        navigationTargetLine: 50,
-        setNavigationTargetLine: jest.fn(),
-        displaySettings: {
-          fontSize: 14,
-          zoomLevel: 1
-        },
-        setDisplaySettings: jest.fn()
-      });
-
-      // Mock bookmarks with a current position bookmark that should be ignored
-      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
-        bookmarks: [{
-          id: 'current-position-test-guide-1',
-          guideId: 'test-guide-1',
-          line: 30,
-          title: 'Current Position',
-          dateCreated: new Date(),
-          isCurrentPosition: true
-        }]
-      }));
-
-      render(<GuideReaderContainer guide={mockGuide} />);
-
-      await waitFor(() => {
-        // Should use navigation target (50), not bookmark (30)
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('50');
       });
     });
   });

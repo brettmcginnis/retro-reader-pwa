@@ -29,8 +29,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   }, [guide.id, setCurrentGuideId]);
   const { showToast } = useToast();
   const { 
-    navigationTargetLine, 
-    setNavigationTargetLine,
     displaySettings,
     setDisplaySettings 
   } = useReaderStore();
@@ -78,36 +76,17 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   }, [guide]);
   
   
-  // Set initial position from navigation target or current position bookmark - only once
+  // Set initial position from current position bookmark - only once
   useEffect(() => {
     if (!isLoading && !hasSetInitialPosition.current) {
-      // Check for navigation target first
-      if (navigationTargetLine !== null) {
-        setCurrentLine(navigationTargetLine);
+      // Find current position bookmark from bookmarks array
+      const currentPosBookmark = bookmarks.find(b => b.isCurrentPosition);
+      if (currentPosBookmark) {
+        setCurrentLine(currentPosBookmark.line);
         hasSetInitialPosition.current = true;
-        // Clear the navigation target after using it
-        setNavigationTargetLine(null);
-      } else {
-        // Find current position bookmark from bookmarks array
-        const currentPosBookmark = bookmarks.find(b => b.isCurrentPosition);
-        if (currentPosBookmark) {
-          setCurrentLine(currentPosBookmark.line);
-          hasSetInitialPosition.current = true;
-        }
       }
     }
-  }, [isLoading, guide.id, navigationTargetLine, setNavigationTargetLine, bookmarks]);
-
-  // Handle navigation target changes after initial load
-  useEffect(() => {
-    if (navigationTargetLine !== null && hasSetInitialPosition.current && !isLoading) {
-      setCurrentLine(navigationTargetLine);
-      // Reset the scrolled flag to trigger scrolling
-      hasInitiallyScrolled.current = false;
-      // Clear the navigation target
-      setNavigationTargetLine(null);
-    }
-  }, [navigationTargetLine, setNavigationTargetLine, isLoading]);
+  }, [isLoading, guide.id, bookmarks]);
   
   // Save progress when current line changes (with debounce)
   useEffect(() => {
@@ -231,7 +210,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       isLoading={isLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
-      initialLine={navigationTargetLine || currentPositionBookmark?.line || 1}
+      initialLine={currentPositionBookmark?.line || 1}
       fontSize={displaySettings.fontSize}
       zoomLevel={displaySettings.zoomLevel}
       onLineChange={handleLineChange}

@@ -192,29 +192,7 @@ describe('useReaderStore', () => {
       expect(state.hasSetInitialPosition).toBe(false);
       expect(state.hasInitiallyScrolled).toBe(false);
       expect(state.userScrolling).toBe(false);
-      expect(state.navigationTargetLine).toBeNull();
     });
   });
 
-  describe('navigation target', () => {
-    it('should set navigation target line', () => {
-      act(() => {
-        useReaderStore.getState().setNavigationTargetLine(42);
-      });
-
-      expect(useReaderStore.getState().navigationTargetLine).toBe(42);
-    });
-
-    it('should clear navigation target line', () => {
-      act(() => {
-        useReaderStore.getState().setNavigationTargetLine(42);
-      });
-
-      act(() => {
-        useReaderStore.getState().setNavigationTargetLine(null);
-      });
-
-      expect(useReaderStore.getState().navigationTargetLine).toBeNull();
-    });
-  });
 });

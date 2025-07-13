@@ -54,8 +54,6 @@ jest.mock('../stores/useAppStore', () => ({
 }));
 
 const mockUseReaderStore = jest.fn(() => ({
-  navigationTargetLine: null,
-  setNavigationTargetLine: jest.fn(),
   displaySettings: {
     fontSize: 14,
     zoomLevel: 1

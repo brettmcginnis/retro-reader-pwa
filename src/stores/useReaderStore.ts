@@ -44,8 +44,6 @@ interface ReaderState {
   hasInitiallyScrolled: boolean;
   /** Whether the user is currently scrolling */
   userScrolling: boolean;
-  /** Target line number for navigation within a guide */
-  navigationTargetLine: number | null;
 }
 
 /**
@@ -74,8 +72,6 @@ interface ReaderActions {
   resetReaderState: () => void;
   /** Updates screen-specific settings */
   updateScreenSettings: (screenId: string, settings: ScreenSettings) => void;
-  /** Sets the navigation target line for jumping to specific lines in guides */
-  setNavigationTargetLine: (line: number | null) => void;
 }
 
 type ReaderStore = ReaderState & ReaderActions;
@@ -94,7 +90,6 @@ const initialState: ReaderState = {
   hasSetInitialPosition: false,
   hasInitiallyScrolled: false,
   userScrolling: false,
-  navigationTargetLine: null,
 };
 
 export const useReaderStore = create<ReaderStore>((set) => ({
@@ -127,6 +122,4 @@ export const useReaderStore = create<ReaderStore>((set) => ({
       zoomLevel: settings.zoomLevel,
     }
   })),
-  
-  setNavigationTargetLine: (line) => set({ navigationTargetLine: line }),
 }));
