@@ -77,7 +77,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   useEffect(() => {
     if (!isLoading && !hasSetInitialPosition.current) {
       // Find current position bookmark from bookmarks array
-      const currentPosBookmark = bookmarks.find(b => b.isCurrentPosition);
+      const currentPosBookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === guide.id);
       if (currentPosBookmark) {
         setCurrentLine(currentPosBookmark.line);
         hasSetInitialPosition.current = true;
@@ -172,7 +172,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const lines = guideRef.current;
   
   // Find current position bookmark for initialLine calculation
-  const currentPositionBookmark = bookmarks.find(b => b.isCurrentPosition);
+  const currentPositionBookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === guide.id);
   
   return (
     <GuideReaderView

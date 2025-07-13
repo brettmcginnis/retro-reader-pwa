@@ -99,7 +99,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   },
 
   setCurrentGuideId: (guideId: string | null) => {
-    set({ currentGuideId: guideId });
+    set({ currentGuideId: guideId, bookmarks: [] });
     if (guideId) {
       get().loadBookmarks(guideId);
     }
