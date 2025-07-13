@@ -31,7 +31,6 @@ interface GuideReaderViewProps {
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
   onJumpToCurrentPosition: () => Promise<number | null>;
   onScrollingStateChange: (isScrolling: boolean) => void;
-  onInitialScroll: () => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
   onDeleteBookmark: (id: string) => Promise<void>;
@@ -56,7 +55,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   onSetAsCurrentPosition,
   onJumpToCurrentPosition,
   onScrollingStateChange,
-  onInitialScroll,
   onFontSizeChange,
   onZoomChange,
   onDeleteBookmark,
@@ -81,8 +79,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     zoomLevel,
     isLoading,
     onLineChange,
-    onScrollingStateChange,
-    onInitialScroll
+    onScrollingStateChange
   });
 
   // Use custom hook for bookmark UI

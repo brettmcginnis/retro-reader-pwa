@@ -138,7 +138,6 @@ describe('GuideLibraryContainer Import/Export Tests', () => {
         [JSON.stringify({
           guides: [{ id: '1', title: 'Test Guide', content: 'Test content' }],
           bookmarks: [],
-          progress: [],
           exportDate: '2023-01-01T00:00:00.000Z',
           version: '1.0.0'
         })],

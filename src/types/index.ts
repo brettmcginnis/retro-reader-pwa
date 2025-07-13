@@ -25,17 +25,10 @@ export interface ScreenSettings {
   zoomLevel: number;
 }
 
-export interface ReadingProgress {
-  guideId: string;
-  line: number;
-  percentage: number;
-  lastRead: Date;
-}
 
 export interface GuideCollection {
   guides: Guide[];
   bookmarks: Bookmark[];
-  progress: ReadingProgress[];
   exportDate: Date;
   version: string;
 }

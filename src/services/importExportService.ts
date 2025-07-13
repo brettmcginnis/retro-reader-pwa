@@ -21,7 +21,7 @@ export class ImportExportService {
   }
 
   /**
-   * Exports all guides, bookmarks, and progress data as a JSON file download.
+   * Exports all guides and bookmarks as a JSON file download.
    */
   async exportAll(): Promise<void> {
     await this.ensureDbInitialized();
@@ -29,7 +29,6 @@ export class ImportExportService {
     const collection: GuideCollection = {
       guides: data.guides,
       bookmarks: data.bookmarks,
-      progress: data.progress,
       exportDate: new Date(),
       version: ImportExportService.VERSION
     };
@@ -51,12 +50,10 @@ export class ImportExportService {
     }
 
     const bookmarks = await db.getBookmarks(guideId);
-    const progress = await db.getProgress(guideId);
 
     const collection: GuideCollection = {
       guides: [guide],
       bookmarks,
-      progress: progress ? [progress] : [],
       exportDate: new Date(),
       version: ImportExportService.VERSION
     };
@@ -197,16 +194,6 @@ export class ImportExportService {
       }
     }
 
-    for (const progress of collection.progress) {
-      try {
-        await db.saveProgress({
-          ...progress,
-          lastRead: new Date(progress.lastRead)
-        });
-      } catch (error) {
-        result.errors.push(`Failed to import progress for guide ${progress.guideId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
-    }
 
     return result;
   }
@@ -231,7 +218,6 @@ export class ImportExportService {
     return (
       Array.isArray(collection.guides) &&
       Array.isArray(collection.bookmarks) &&
-      Array.isArray(collection.progress) &&
       typeof collection.version === 'string' &&
       isValidDate(collection.exportDate)
     );

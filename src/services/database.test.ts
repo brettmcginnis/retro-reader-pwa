@@ -1,6 +1,6 @@
 import { IDBPDatabase, IDBPTransaction, IDBPObjectStore, IDBPIndex, StoreNames, DBSchema } from 'idb';
 import { db } from './database';
-import { Guide, Bookmark, ReadingProgress } from '../types';
+import { Guide, Bookmark } from '../types';
 
 // Define RetroReaderDB interface to match the one in database.ts
 interface RetroReaderDB extends DBSchema {
@@ -13,11 +13,6 @@ interface RetroReaderDB extends DBSchema {
     key: string;
     value: Bookmark;
     indexes: { 'by-guide': string; 'by-date': Date };
-  };
-  progress: {
-    key: string;
-    value: ReadingProgress;
-    indexes: { 'by-last-read': Date };
   };
 }
 
@@ -120,8 +115,7 @@ describe('DatabaseService', () => {
       
       expect(mockUpgradeDb.createObjectStore).toHaveBeenCalledWith('guides', { keyPath: 'id' });
       expect(mockUpgradeDb.createObjectStore).toHaveBeenCalledWith('bookmarks', { keyPath: 'id' });
-      expect(mockUpgradeDb.createObjectStore).toHaveBeenCalledWith('progress', { keyPath: 'guideId' });
-      expect(mockObjectStore.createIndex).toHaveBeenCalledTimes(5);
+      expect(mockObjectStore.createIndex).toHaveBeenCalledTimes(4);
     });
 
     it('should not create stores if they already exist', async () => {
@@ -254,7 +248,6 @@ describe('DatabaseService', () => {
         
         expect(mockTransaction.objectStore).toHaveBeenCalledWith('guides');
         expect(mockTransaction.objectStore).toHaveBeenCalledWith('bookmarks');
-        expect(mockTransaction.objectStore).toHaveBeenCalledWith('progress');
         expect(mockObjectStore.delete).toHaveBeenCalledWith('guide-id');
         expect(mockObjectStore.delete).toHaveBeenCalledWith('bookmark-1');
         expect(mockObjectStore.delete).toHaveBeenCalledWith('bookmark-2');
@@ -426,43 +419,6 @@ describe('DatabaseService', () => {
     });
   });
 
-  describe('Progress operations', () => {
-    beforeEach(async () => {
-      await db.init();
-    });
-
-    describe('saveProgress', () => {
-      it('should save progress', async () => {
-        const progress: ReadingProgress = {
-          guideId: 'guide-1',
-          currentLine: 100,
-          totalLines: 500,
-          lastRead: new Date()
-        };
-
-        await db.saveProgress(progress);
-        
-        expect(mockDb.put).toHaveBeenCalledWith('progress', progress);
-      });
-    });
-
-    describe('getProgress', () => {
-      it('should get progress for a guide', async () => {
-        const progress: ReadingProgress = {
-          guideId: 'guide-1',
-          currentLine: 100,
-          totalLines: 500,
-          lastRead: new Date()
-        };
-        mockDb.get.mockResolvedValue(progress);
-
-        const result = await db.getProgress('guide-1');
-        
-        expect(mockDb.get).toHaveBeenCalledWith('progress', 'guide-1');
-        expect(result).toEqual(progress);
-      });
-    });
-  });
 
   describe('Import/Export operations', () => {
     beforeEach(async () => {
@@ -488,18 +444,11 @@ describe('DatabaseService', () => {
           dateCreated: new Date('2025-01-01'),
           isCurrentPosition: false
         }];
-        const progress = [{ 
-          guideId: 'guide-1', 
-          currentLine: 50,
-          totalLines: 100,
-          lastRead: new Date('2025-01-01')
-        }];
         
         mockDb.getAll.mockImplementation((store) => {
           switch (store) {
             case 'guides': return Promise.resolve(guides);
             case 'bookmarks': return Promise.resolve(bookmarks);
-            case 'progress': return Promise.resolve(progress);
             default: return Promise.resolve([]);
           }
         });
@@ -508,8 +457,7 @@ describe('DatabaseService', () => {
         
         expect(mockDb.getAll).toHaveBeenCalledWith('guides');
         expect(mockDb.getAll).toHaveBeenCalledWith('bookmarks');
-        expect(mockDb.getAll).toHaveBeenCalledWith('progress');
-        expect(result).toEqual({ guides, bookmarks, progress });
+        expect(result).toEqual({ guides, bookmarks });
       });
     });
 
@@ -521,18 +469,14 @@ describe('DatabaseService', () => {
           ] as Guide[],
           bookmarks: [
             { id: 'bookmark-1', guideId: 'guide-1', line: 10, title: 'Test', dateCreated: new Date(), isCurrentPosition: false }
-          ] as Bookmark[],
-          progress: [
-            { guideId: 'guide-1', currentLine: 50, totalLines: 100, lastRead: new Date() }
-          ] as ReadingProgress[]
+          ] as Bookmark[]
         };
 
         await db.importData(data);
         
         expect(mockTransaction.objectStore).toHaveBeenCalledWith('guides');
         expect(mockTransaction.objectStore).toHaveBeenCalledWith('bookmarks');
-        expect(mockTransaction.objectStore).toHaveBeenCalledWith('progress');
-        expect(mockObjectStore.put).toHaveBeenCalledTimes(3);
+        expect(mockObjectStore.put).toHaveBeenCalledTimes(2);
       });
     });
   });

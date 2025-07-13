@@ -65,7 +65,7 @@ describe('ImportExportService', () => {
             return false;
           }
           
-          const collection = data as { guides: unknown; bookmarks: unknown; progress: unknown; version: unknown; exportDate: unknown };
+          const collection = data as { guides: unknown; bookmarks: unknown; version: unknown; exportDate: unknown };
           
           const isValidDate = (dateValue: unknown): boolean => {
             if (dateValue instanceof Date) return true;
@@ -79,7 +79,6 @@ describe('ImportExportService', () => {
           return (
             Array.isArray(collection.guides) &&
             Array.isArray(collection.bookmarks) &&
-            Array.isArray(collection.progress) &&
             typeof collection.version === 'string' &&
             isValidDate(collection.exportDate)
           );
@@ -111,7 +110,6 @@ describe('ImportExportService', () => {
       const invalidData = {
         guides: 'not an array',
         bookmarks: [],
-        progress: [],
         version: '1.0.0',
         exportDate: new Date().toISOString()
       };
@@ -122,29 +120,17 @@ describe('ImportExportService', () => {
       const invalidData = {
         guides: [],
         bookmarks: null,
-        progress: [],
         version: '1.0.0',
         exportDate: new Date().toISOString()
       };
       expect(mockService.validateImportData(invalidData)).toBe(false);
     });
 
-    it('should return false when progress is not an array', () => {
-      const invalidData = {
-        guides: [],
-        bookmarks: [],
-        progress: {},
-        version: '1.0.0',
-        exportDate: new Date().toISOString()
-      };
-      expect(mockService.validateImportData(invalidData)).toBe(false);
-    });
 
     it('should return false when version is not a string', () => {
       const invalidData = {
         guides: [],
         bookmarks: [],
-        progress: [],
         version: 123,
         exportDate: new Date().toISOString()
       };
@@ -155,7 +141,6 @@ describe('ImportExportService', () => {
       const invalidData = {
         guides: [],
         bookmarks: [],
-        progress: [],
         version: '1.0.0',
         exportDate: 'invalid date'
       };
@@ -166,7 +151,6 @@ describe('ImportExportService', () => {
       const invalidData = {
         guides: [],
         bookmarks: [],
-        progress: [],
         version: '1.0.0'
       };
       expect(mockService.validateImportData(invalidData)).toBe(false);
@@ -176,7 +160,6 @@ describe('ImportExportService', () => {
       const validData = {
         guides: [],
         bookmarks: [],
-        progress: [],
         version: '1.0.0',
         exportDate: new Date()
       };
@@ -187,7 +170,6 @@ describe('ImportExportService', () => {
       const validData = {
         guides: [],
         bookmarks: [],
-        progress: [],
         version: '1.0.0',
         exportDate: new Date().toISOString()
       };
@@ -216,14 +198,6 @@ describe('ImportExportService', () => {
             dateCreated: new Date().toISOString()
           }
         ],
-        progress: [
-          {
-            guideId: '1',
-            line: 50,
-            percentage: 25,
-            lastRead: new Date().toISOString()
-          }
-        ],
         version: '1.0.0',
         exportDate: new Date().toISOString()
       };
@@ -242,7 +216,6 @@ describe('ImportExportService', () => {
         const validData = {
           guides: [],
           bookmarks: [],
-          progress: [],
           version: '1.0.0',
           exportDate: dateFormat
         };

@@ -2,13 +2,6 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { Guide, Bookmark } from '../types';
 
-const mockUseProgress = {
-  progress: null,
-  saveProgress: jest.fn().mockResolvedValue(undefined),
-  loading: false,
-  error: null,
-  refresh: jest.fn()
-};
 
 let mockBookmarksState: Bookmark[] = [];
 const mockAddBookmark = jest.fn();
@@ -26,9 +19,6 @@ const mockUseBookmarks = {
   loadBookmarks: mockLoadBookmarks
 };
 
-jest.mock('../stores/useProgressForGuide', () => ({
-  useProgressForGuide: () => mockUseProgress
-}));
 
 jest.mock('../stores/useBookmarkStore', () => ({
   useBookmarkStore: () => ({
@@ -108,8 +98,6 @@ describe('GuideReader Tests', () => {
     mockGetGuide.mockResolvedValue(mockGuide);
 
     // Reset mock state
-    mockUseProgress.progress = null;
-    mockUseProgress.saveProgress.mockClear();
     mockBookmarksState = []; // Reset bookmarks
     mockAddBookmark.mockClear();
     mockDeleteBookmark.mockClear();
@@ -189,17 +177,16 @@ describe('GuideReader Tests', () => {
       // which would require more complex mocking to test properly
     });
 
-    it('should restore reading position when reopening guide', async () => {
-      // Set up progress to indicate we were at line 75
-      mockUseProgress.progress = {
+    it('should restore reading position from current position bookmark', async () => {
+      // Set up a current position bookmark
+      mockBookmarksState = [{
+        id: 'current-position-test-guide-1',
         guideId: 'test-guide-1',
         line: 75,
-        totalLines: 200,
-        fontSize: 14,
-        zoomLevel: 1,
-        screenIdentifier: 'test-screen',
-        dateModified: new Date()
-      };
+        title: 'Current Position',
+        dateCreated: new Date(),
+        isCurrentPosition: true
+      }];
 
       render(
         <TestWrapper>
@@ -211,10 +198,10 @@ describe('GuideReader Tests', () => {
         expect(screen.getByText('Test Guide')).toBeInTheDocument();
       });
 
-      // Verify that the component renders with progress data available
-      expect(mockUseProgress.progress.line).toBe(75);
+      // Verify that the component renders with bookmark data available
+      expect(mockBookmarksState[0].line).toBe(75);
       
-      // Verify that the progress is accessible to the component
+      // Verify that the guide is displayed
       expect(screen.getByText(/Line \d+ of 200/)).toBeInTheDocument();
       
       // The actual scrolling behavior is handled by the container's useEffect
@@ -642,7 +629,6 @@ describe('GuideReader Tests', () => {
     it('should scroll to bookmark line when navigating from bookmark manager', async () => {
       // Reset all mocks
       jest.clearAllMocks();
-      mockUseProgress.progress = null;
       
       // Note: Navigation is now handled by the reader store, which is internal to the container
 

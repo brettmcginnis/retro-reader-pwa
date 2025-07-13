@@ -11,7 +11,6 @@ interface UseGuideScrollProps {
   isLoading: boolean;
   onLineChange: (line: number) => void;
   onScrollingStateChange: (isScrolling: boolean) => void;
-  onInitialScroll: () => void;
 }
 
 interface UseGuideScrollReturn {
@@ -31,8 +30,7 @@ export const useGuideScroll = ({
   zoomLevel,
   isLoading,
   onLineChange,
-  onScrollingStateChange,
-  onInitialScroll
+  onScrollingStateChange
 }: UseGuideScrollProps): UseGuideScrollReturn => {
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 100 });
   const [showFloatingProgress, setShowFloatingProgress] = useState(false);
@@ -128,9 +126,8 @@ export const useGuideScroll = ({
       hasInitiallyScrolled.current = true;
       // Use immediate scroll for initial position
       scrollToLine(initialLine, 'auto');
-      onInitialScroll();
     }
-  }, [initialLine, totalLines, scrollToLine, onInitialScroll]);
+  }, [initialLine, totalLines, scrollToLine]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Guide } from '../types';
-import { useProgressForGuide } from '../stores/useProgressForGuide';
 import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useToast } from '../contexts/useToast';
 import { useReaderStore } from '../stores/useReaderStore';
@@ -11,7 +10,6 @@ interface GuideReaderContainerProps {
 }
 
 export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide }) => {
-  const { saveProgress } = useProgressForGuide(guide.id);
   const { 
     bookmarks, 
     addBookmark, 
@@ -45,7 +43,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const guideRef = useRef<string[]>([]);
   const lastContentRef = useRef<string>('');
   const hasSetInitialPosition = useRef(false);
-  const hasInitiallyScrolled = useRef(false);
   const userScrollingRef = useRef(false);
   const userScrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -88,27 +85,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     }
   }, [isLoading, guide.id, bookmarks]);
   
-  // Save progress when current line changes (with debounce)
-  useEffect(() => {
-    if (isLoading || !totalLines) return;
-    
-    // Only save progress when the user is not actively scrolling
-    if (userScrollingRef.current) return;
-    
-    // Don't save progress during initial setup
-    if (!hasInitiallyScrolled.current) return;
-    
-    const timer = setTimeout(() => {
-      saveProgress({
-        guideId: guide.id,
-        line: currentLine,
-        percentage: Math.min(100, Math.max(0, (currentLine / totalLines) * 100)),
-        lastRead: new Date()
-      }).catch(err => console.error('Failed to save progress:', err));
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [currentLine, guide.id, isLoading, saveProgress, totalLines]);
   
   // Search handling
   const performSearch = useCallback((query: string) => {
@@ -180,9 +156,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     }
   }, []);
   
-  const handleInitialScroll = useCallback(() => {
-    hasInitiallyScrolled.current = true;
-  }, []);
   
   // Handle font size change
   const handleFontSizeChange = useCallback((newSize: number) => {
@@ -219,7 +192,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onSetAsCurrentPosition={handleSetAsCurrentPosition}
       onJumpToCurrentPosition={handleJumpToCurrentPosition}
       onScrollingStateChange={handleScrollingStateChange}
-      onInitialScroll={handleInitialScroll}
       onFontSizeChange={handleFontSizeChange}
       onZoomChange={handleZoomChange}
       onDeleteBookmark={deleteBookmark}
