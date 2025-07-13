@@ -18,7 +18,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     loadBookmarks,
     saveCurrentPositionBookmark,
     getCurrentPositionBookmark,
-    setCurrentGuideId 
+    setCurrentGuideId,
+    currentPosition 
   } = useBookmarkStore();
   
   // Set the current guide ID when component mounts or guide changes
@@ -75,15 +76,11 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   
   // Set initial position from current position bookmark - only once
   useEffect(() => {
-    if (!isLoading && !hasSetInitialPosition.current) {
-      // Find current position bookmark from bookmarks array
-      const currentPosBookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === guide.id);
-      if (currentPosBookmark) {
-        setCurrentLine(currentPosBookmark.line);
-        hasSetInitialPosition.current = true;
-      }
+    if (!isLoading && !hasSetInitialPosition.current && currentPosition > 1) {
+      setCurrentLine(currentPosition);
+      hasSetInitialPosition.current = true;
     }
-  }, [isLoading, guide.id, bookmarks]);
+  }, [isLoading, currentPosition]);
   
   
   // Search handling
@@ -171,9 +168,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   
   const lines = guideRef.current;
   
-  // Find current position bookmark for initialLine calculation
-  const currentPositionBookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === guide.id);
-  
   return (
     <GuideReaderView
       guide={guide}
@@ -183,7 +177,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       isLoading={isLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
-      initialLine={currentPositionBookmark?.line || 1}
+      initialLine={currentPosition}
       fontSize={displaySettings.fontSize}
       zoomLevel={displaySettings.zoomLevel}
       onLineChange={handleLineChange}

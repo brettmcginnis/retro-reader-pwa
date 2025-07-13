@@ -12,19 +12,28 @@ const mockGetCurrentPositionBookmark = jest.fn().mockResolvedValue(null);
 
 
 // Helper to create bookmark store mock
-const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => ({
-  bookmarks: [],
-  addBookmark: mockAddBookmark,
-  deleteBookmark: jest.fn(),
-  updateBookmark: jest.fn(),
-  loadBookmarks: jest.fn(),
-  setCurrentGuideId: mockSetCurrentGuideId,
-  saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
-  getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
-  loading: false,
-  error: null,
-  ...overrides
-});
+const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => {
+  const bookmarks = overrides.bookmarks || [];
+  const currentGuideId = overrides.currentGuideId || 'test-guide-1';
+  
+  return {
+    bookmarks,
+    addBookmark: mockAddBookmark,
+    deleteBookmark: jest.fn(),
+    updateBookmark: jest.fn(),
+    loadBookmarks: jest.fn(),
+    setCurrentGuideId: mockSetCurrentGuideId,
+    saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
+    getCurrentPositionBookmark: mockGetCurrentPositionBookmark,
+    loading: false,
+    error: null,
+    get currentPosition() {
+      const bookmark = (bookmarks as Bookmark[]).find(b => b.isCurrentPosition && b.guideId === currentGuideId);
+      return bookmark?.line || 1;
+    },
+    ...overrides
+  };
+};
 
 // Mock useBookmarkStore
 jest.mock('../stores/useBookmarkStore', () => ({

@@ -35,6 +35,8 @@ interface BookmarkActions {
   saveCurrentPositionBookmark: (guideId: string, line: number) => Promise<void>;
   /** Gets the current position bookmark for a guide */
   getCurrentPositionBookmark: (guideId: string) => Promise<Bookmark | null>;
+  /** Gets the current position line number for the current guide (returns 1 if no bookmark) */
+  currentPosition: number;
 }
 
 type BookmarkStore = BookmarkState & BookmarkActions;
@@ -122,4 +124,11 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
       throw new Error(err instanceof Error ? err.message : 'Failed to get current position');
     }
   },
+
+  get currentPosition() {
+    const { bookmarks, currentGuideId } = get();
+    if (!currentGuideId) return 1;
+    const bookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === currentGuideId);
+    return bookmark?.line || 1;
+  }
 }));
