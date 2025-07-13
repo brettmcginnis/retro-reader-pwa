@@ -24,8 +24,6 @@ interface DisplaySettings {
  * State interface for the guide reader
  */
 interface ReaderState {
-  /** Current line number being viewed */
-  currentLine: number;
   /** Total number of lines in the guide */
   totalLines: number;
   /** Loading state for guide content */
@@ -50,8 +48,6 @@ interface ReaderState {
  * Actions for managing reader state
  */
 interface ReaderActions {
-  /** Sets the current line number */
-  setCurrentLine: (line: number) => void;
   /** Sets the total number of lines */
   setTotalLines: (total: number) => void;
   /** Sets the loading state */
@@ -77,7 +73,6 @@ interface ReaderActions {
 type ReaderStore = ReaderState & ReaderActions;
 
 const initialState: ReaderState = {
-  currentLine: 1,
   totalLines: 0,
   isLoading: true,
   displaySettings: {
@@ -95,7 +90,6 @@ const initialState: ReaderState = {
 export const useReaderStore = create<ReaderStore>((set) => ({
   ...initialState,
 
-  setCurrentLine: (line) => set({ currentLine: line }),
   setTotalLines: (total) => set({ totalLines: total }),
   setIsLoading: (loading) => set({ isLoading: loading }),
   setDisplaySettings: (settings) => set((state) => ({

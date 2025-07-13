@@ -10,7 +10,6 @@ describe('useReaderStore', () => {
   describe('initial state', () => {
     it('should have correct initial values', () => {
       const state = useReaderStore.getState();
-      expect(state.currentLine).toBe(1);
       expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
       expect(state.displaySettings.fontSize).toBe(14);
@@ -25,14 +24,6 @@ describe('useReaderStore', () => {
   });
 
   describe('line navigation', () => {
-    it('should set current line', () => {
-      act(() => {
-        useReaderStore.getState().setCurrentLine(42);
-      });
-
-      expect(useReaderStore.getState().currentLine).toBe(42);
-    });
-
     it('should set total lines', () => {
       act(() => {
         useReaderStore.getState().setTotalLines(100);
@@ -163,7 +154,6 @@ describe('useReaderStore', () => {
       // Set some custom values
       act(() => {
         const store = useReaderStore.getState();
-        store.setCurrentLine(50);
         store.setTotalLines(200);
         store.setIsLoading(false);
         store.setDisplaySettings({ fontSize: 20, zoomLevel: 1.5 });
@@ -181,7 +171,6 @@ describe('useReaderStore', () => {
 
       // Verify all values are back to initial
       const state = useReaderStore.getState();
-      expect(state.currentLine).toBe(1);
       expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
       expect(state.displaySettings.fontSize).toBe(14);
