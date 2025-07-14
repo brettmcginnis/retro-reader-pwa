@@ -10,15 +10,6 @@ interface ScreenSettings {
   zoomLevel: number;
 }
 
-/**
- * Display settings that can be configured per screen
- */
-interface DisplaySettings {
-  /** Font size in pixels */
-  fontSize: number;
-  /** Zoom level multiplier (1 = 100%) */
-  zoomLevel: number;
-}
 
 /**
  * State interface for the guide reader
@@ -29,7 +20,7 @@ interface ReaderState {
   /** Loading state for guide content */
   isLoading: boolean;
   /** Display settings for the reader */
-  displaySettings: DisplaySettings;
+  displaySettings: ScreenSettings;
   /** Current search query */
   searchQuery: string;
   /** Array of guide content lines */
@@ -53,7 +44,7 @@ interface ReaderActions {
   /** Sets the loading state */
   setIsLoading: (loading: boolean) => void;
   /** Updates display settings */
-  setDisplaySettings: (settings: Partial<DisplaySettings>) => void;
+  setDisplaySettings: (settings: Partial<ScreenSettings>) => void;
   /** Sets the search query */
   setSearchQuery: (query: string) => void;
   /** Sets the guide content and its hash */

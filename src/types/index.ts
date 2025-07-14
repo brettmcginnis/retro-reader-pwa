@@ -20,12 +20,6 @@ export interface Bookmark {
   isCurrentPosition?: boolean;
 }
 
-export interface ScreenSettings {
-  fontSize: number;
-  zoomLevel: number;
-}
-
-
 export interface GuideCollection {
   guides: Guide[];
   bookmarks: Bookmark[];
