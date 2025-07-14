@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 import { useGuideStore } from '../stores/useGuideStore';
 import { useAppStore } from '../stores/useAppStore';
 import { useToast } from '../contexts/useToast';

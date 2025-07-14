@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import { ConfirmationOptions } from '../types';
+
+export interface ConfirmationOptions {
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+}
 
 interface ConfirmationState {
   isOpen: boolean;

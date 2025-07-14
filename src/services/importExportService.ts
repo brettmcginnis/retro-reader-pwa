@@ -1,6 +1,14 @@
-import { Guide, GuideCollection } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { db } from './database';
 import { generateId, extractTitleFromUrl, wrapError } from '../utils/common';
+
+export interface GuideCollection {
+  guides: Guide[];
+  bookmarks: Bookmark[];
+  exportDate: Date;
+  version: string;
+}
 
 /**
  * Service for importing and exporting guides and bookmarks.

@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { EditBookmarkModal } from './EditBookmarkModal';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 // Mock Modal component
 interface ModalProps {

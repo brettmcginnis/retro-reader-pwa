@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, Calendar } from 'lucide-react';
 import { Button } from './Button';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 interface CurrentPositionBookmarkProps {
   bookmark: Bookmark;

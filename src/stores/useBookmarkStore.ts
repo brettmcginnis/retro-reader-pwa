@@ -1,7 +1,16 @@
 import { create } from 'zustand';
-import { Bookmark } from '../types';
 import { db } from '../services/database';
 import { generateId } from '../utils/common';
+
+export interface Bookmark {
+  id: string;
+  guideId: string;
+  line: number;
+  title: string;
+  note?: string;
+  dateCreated: Date;
+  isCurrentPosition?: boolean;
+}
 
 /**
  * State interface for bookmark management

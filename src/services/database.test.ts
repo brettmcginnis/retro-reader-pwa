@@ -1,6 +1,7 @@
 import { IDBPDatabase, IDBPTransaction, IDBPObjectStore, IDBPIndex, StoreNames, DBSchema } from 'idb';
 import { db } from './database';
-import { Guide, Bookmark } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 // Define RetroReaderDB interface to match the one in database.ts
 interface RetroReaderDB extends DBSchema {

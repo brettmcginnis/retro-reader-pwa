@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { Guide, Bookmark } from '../types';
-import { useBookmarkStore } from '../stores/useBookmarkStore';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark, useBookmarkStore } from '../stores/useBookmarkStore';
 
 // Mock hooks and services
 const mockAddBookmark = jest.fn();

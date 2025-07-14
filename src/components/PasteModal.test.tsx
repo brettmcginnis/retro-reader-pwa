@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { PasteModal } from './PasteModal';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 
 // Mock Modal component
 interface ModalProps {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, Edit2, Trash2 } from 'lucide-react';
 import { Button } from './Button';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 /**
  * Props for the BookmarkListItem component.

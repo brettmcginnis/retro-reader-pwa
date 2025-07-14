@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useBookmarkUI } from './useBookmarkUI';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 // Constants from useBookmarkUI.ts
 const DOUBLE_TAP_DELAY = 300;

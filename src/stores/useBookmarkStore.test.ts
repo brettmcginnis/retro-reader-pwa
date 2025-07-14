@@ -1,7 +1,6 @@
 import { act } from '@testing-library/react';
-import { useBookmarkStore } from './useBookmarkStore';
+import { Bookmark, useBookmarkStore } from './useBookmarkStore';
 import { db } from '../services/database';
-import { Bookmark } from '../types';
 
 // Mock database service
 jest.mock('../services/database', () => ({

@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GuideLibraryContainer } from './GuideLibraryContainer';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 
 const mockUseGuides = {
   guides: [],

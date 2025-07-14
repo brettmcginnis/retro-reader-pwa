@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BookmarkListItem } from './BookmarkListItem';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 describe('BookmarkListItem', () => {
   const mockOnGotoLine = jest.fn();

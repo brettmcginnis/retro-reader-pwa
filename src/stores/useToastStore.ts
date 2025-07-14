@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { ToastType } from '../types';
+
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 /**
  * Toast notification data

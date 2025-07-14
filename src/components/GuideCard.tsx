@@ -1,6 +1,6 @@
 import React from 'react';
 import { Book, Download, Trash2, Calendar, HardDrive } from 'lucide-react';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 import { Button } from './Button';
 
 interface GuideCardProps {

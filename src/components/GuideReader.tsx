@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 import { GuideReaderContainer } from '../containers/GuideReaderContainer';
 import { useGuideStore } from '../stores/useGuideStore';
 import { Loading } from './Loading';

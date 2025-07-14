@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 import { Modal } from './Modal';
 import { Button } from './Button';
 

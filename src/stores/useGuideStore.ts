@@ -1,9 +1,20 @@
 import { create } from 'zustand';
-import { Guide } from '../types';
 import { GuideService } from '../services/guideService';
 import { ImportExportService } from '../services/importExportService';
 import { db } from '../services/database';
 import { generateId } from '../utils/common';
+
+export interface Guide {
+  id: string;
+  title: string;
+  url: string;
+  content: string;
+  dateAdded: Date;
+  dateModified: Date;
+  size: number;
+  author?: string;
+  gameTitle?: string;
+}
 
 const guideService = new GuideService();
 const importExportService = new ImportExportService();

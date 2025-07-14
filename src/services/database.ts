@@ -1,5 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { Guide, Bookmark } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { generateId } from '../utils/common';
 
 interface RetroReaderDB extends DBSchema {

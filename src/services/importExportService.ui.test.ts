@@ -10,7 +10,7 @@ jest.mock('./database', () => ({
 }));
 
 import { ImportExportService } from './importExportService';
-import { GuideCollection } from '../types';
+import { GuideCollection } from './importExportService';
 import { db } from './database';
 
 const mockDb = db as jest.Mocked<typeof db>;

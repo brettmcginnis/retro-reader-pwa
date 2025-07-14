@@ -1,7 +1,6 @@
 import React from 'react';
 import { Check, X, AlertTriangle, Info } from 'lucide-react';
-import { useToastStore } from '../stores/useToastStore';
-import { ToastType } from '../types';
+import { useToastStore, ToastType } from '../stores/useToastStore';
 
 /**
  * Component that renders toast notifications from the toast store

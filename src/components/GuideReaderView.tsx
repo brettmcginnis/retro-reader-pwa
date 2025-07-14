@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-import { Guide, Bookmark } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { useGuideScroll } from '../hooks/useGuideScroll';
 import { useBookmarkUI } from '../hooks/useBookmarkUI';
 import { useGuideSearch } from '../hooks/useGuideSearch';

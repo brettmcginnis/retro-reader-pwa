@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { CurrentPositionBookmark } from './CurrentPositionBookmark';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 describe('CurrentPositionBookmark', () => {
   const mockOnGotoLine = jest.fn();
