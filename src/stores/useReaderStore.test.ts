@@ -12,8 +12,8 @@ describe('useReaderStore', () => {
       const state = useReaderStore.getState();
       expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
-      expect(state.displaySettings.fontSize).toBe(14);
-      expect(state.displaySettings.zoomLevel).toBe(1);
+      expect(state.fontSettings.fontSize).toBe(14);
+      expect(state.fontSettings.zoomLevel).toBe(1);
       expect(state.searchQuery).toBe('');
       expect(state.guideContent).toEqual([]);
       expect(state.lastContentHash).toBe('');
@@ -49,21 +49,21 @@ describe('useReaderStore', () => {
     });
   });
 
-  describe('display settings', () => {
-    it('should set display settings', () => {
+  describe('font settings', () => {
+    it('should set font settings', () => {
       act(() => {
-        useReaderStore.getState().setDisplaySettings({ fontSize: 18 });
+        useReaderStore.getState().setFontSettings({ fontSize: 18 });
       });
 
-      expect(useReaderStore.getState().displaySettings.fontSize).toBe(18);
-      expect(useReaderStore.getState().displaySettings.zoomLevel).toBe(1); // unchanged
+      expect(useReaderStore.getState().fontSettings.fontSize).toBe(18);
+      expect(useReaderStore.getState().fontSettings.zoomLevel).toBe(1); // unchanged
 
       act(() => {
-        useReaderStore.getState().setDisplaySettings({ zoomLevel: 1.5 });
+        useReaderStore.getState().setFontSettings({ zoomLevel: 1.5 });
       });
 
-      expect(useReaderStore.getState().displaySettings.fontSize).toBe(18); // unchanged
-      expect(useReaderStore.getState().displaySettings.zoomLevel).toBe(1.5);
+      expect(useReaderStore.getState().fontSettings.fontSize).toBe(18); // unchanged
+      expect(useReaderStore.getState().fontSettings.zoomLevel).toBe(1.5);
     });
 
     it('should update screen settings', () => {
@@ -74,8 +74,8 @@ describe('useReaderStore', () => {
       });
 
       const state = useReaderStore.getState();
-      expect(state.displaySettings.fontSize).toBe(20);
-      expect(state.displaySettings.zoomLevel).toBe(1.25);
+      expect(state.fontSettings.fontSize).toBe(20);
+      expect(state.fontSettings.zoomLevel).toBe(1.25);
     });
   });
 
@@ -156,7 +156,7 @@ describe('useReaderStore', () => {
         const store = useReaderStore.getState();
         store.setTotalLines(200);
         store.setIsLoading(false);
-        store.setDisplaySettings({ fontSize: 20, zoomLevel: 1.5 });
+        store.setFontSettings({ fontSize: 20, zoomLevel: 1.5 });
         store.setSearchQuery('search');
         store.setGuideContent(['Line 1'], 'hash');
         store.setHasSetInitialPosition(true);
@@ -173,8 +173,8 @@ describe('useReaderStore', () => {
       const state = useReaderStore.getState();
       expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
-      expect(state.displaySettings.fontSize).toBe(14);
-      expect(state.displaySettings.zoomLevel).toBe(1);
+      expect(state.fontSettings.fontSize).toBe(14);
+      expect(state.fontSettings.zoomLevel).toBe(1);
       expect(state.searchQuery).toBe('');
       expect(state.guideContent).toEqual([]);
       expect(state.lastContentHash).toBe('');

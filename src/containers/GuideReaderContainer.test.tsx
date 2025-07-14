@@ -41,23 +41,23 @@ jest.mock('../contexts/useToast', () => ({
 
 const createMockReaderStore = () => {
   const state = {
-    displaySettings: {
+    fontSettings: {
       fontSize: 14,
       zoomLevel: 1
     }
   };
 
-  const setDisplaySettings = jest.fn((updates) => {
+  const setFontSettings = jest.fn((updates) => {
     if (typeof updates === 'function') {
-      state.displaySettings = { ...state.displaySettings, ...updates(state.displaySettings) };
+      state.fontSettings = { ...state.fontSettings, ...updates(state.fontSettings) };
     } else {
-      state.displaySettings = { ...state.displaySettings, ...updates };
+      state.fontSettings = { ...state.fontSettings, ...updates };
     }
   });
 
   return {
-    get displaySettings() { return state.displaySettings; },
-    setDisplaySettings
+    get fontSettings() { return state.fontSettings; },
+    setFontSettings
   };
 };
 

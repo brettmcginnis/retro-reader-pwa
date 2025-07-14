@@ -27,8 +27,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   }, [guide.id, setCurrentGuideId]);
   const { showToast } = useToast();
   const { 
-    displaySettings,
-    setDisplaySettings 
+    fontSettings,
+    setFontSettings 
   } = useReaderStore();
   
   // Basic state
@@ -149,14 +149,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   // Handle font size change
   const handleFontSizeChange = useCallback((newSize: number) => {
     const size = Math.max(10, Math.min(24, newSize)); // Clamp between 10 and 24
-    setDisplaySettings({ fontSize: size });
-  }, [setDisplaySettings]);
+    setFontSettings({ fontSize: size });
+  }, [setFontSettings]);
   
   // Handle zoom level change
   const handleZoomChange = useCallback((newZoom: number) => {
     const zoom = Math.max(0.5, Math.min(2, newZoom)); // Clamp between 50% and 200%
-    setDisplaySettings({ zoomLevel: zoom });
-  }, [setDisplaySettings]);
+    setFontSettings({ zoomLevel: zoom });
+  }, [setFontSettings]);
   
   const lines = guideRef.current;
   
@@ -169,8 +169,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       searchQuery={searchQuery}
       bookmarks={bookmarks}
       initialLine={currentLine}
-      fontSize={displaySettings.fontSize}
-      zoomLevel={displaySettings.zoomLevel}
+      fontSize={fontSettings.fontSize}
+      zoomLevel={fontSettings.zoomLevel}
       onLineChange={handleLineChange}
       onSearch={performSearch}
       onAddBookmark={handleAddBookmark}

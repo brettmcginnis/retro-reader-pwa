@@ -46,11 +46,11 @@ jest.mock('../stores/useAppStore', () => ({
 }));
 
 const mockUseReaderStore = jest.fn(() => ({
-  displaySettings: {
+  fontSettings: {
     fontSize: 14,
     zoomLevel: 1
   },
-  setDisplaySettings: jest.fn(),
+  setFontSettings: jest.fn(),
 }));
 
 jest.mock('../stores/useReaderStore', () => ({

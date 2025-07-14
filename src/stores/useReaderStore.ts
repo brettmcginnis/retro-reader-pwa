@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 
 /**
- * Screen-specific display settings
+ * Font and display settings
  */
-interface ScreenSettings {
+interface FontSettings {
   /** Font size in pixels */
   fontSize: number;
   /** Zoom level multiplier (1 = 100%) */
@@ -19,8 +19,8 @@ interface ReaderState {
   totalLines: number;
   /** Loading state for guide content */
   isLoading: boolean;
-  /** Display settings for the reader */
-  displaySettings: ScreenSettings;
+  /** Font settings for the reader */
+  fontSettings: FontSettings;
   /** Current search query */
   searchQuery: string;
   /** Array of guide content lines */
@@ -43,8 +43,8 @@ interface ReaderActions {
   setTotalLines: (total: number) => void;
   /** Sets the loading state */
   setIsLoading: (loading: boolean) => void;
-  /** Updates display settings */
-  setDisplaySettings: (settings: Partial<ScreenSettings>) => void;
+  /** Updates font settings */
+  setFontSettings: (settings: Partial<FontSettings>) => void;
   /** Sets the search query */
   setSearchQuery: (query: string) => void;
   /** Sets the guide content and its hash */
@@ -58,7 +58,7 @@ interface ReaderActions {
   /** Resets all reader state to initial values */
   resetReaderState: () => void;
   /** Updates screen-specific settings */
-  updateScreenSettings: (screenId: string, settings: ScreenSettings) => void;
+  updateScreenSettings: (screenId: string, settings: FontSettings) => void;
 }
 
 type ReaderStore = ReaderState & ReaderActions;
@@ -66,7 +66,7 @@ type ReaderStore = ReaderState & ReaderActions;
 const initialState: ReaderState = {
   totalLines: 0,
   isLoading: true,
-  displaySettings: {
+  fontSettings: {
     fontSize: 14,
     zoomLevel: 1,
   },
@@ -83,8 +83,8 @@ export const useReaderStore = create<ReaderStore>((set) => ({
 
   setTotalLines: (total) => set({ totalLines: total }),
   setIsLoading: (loading) => set({ isLoading: loading }),
-  setDisplaySettings: (settings) => set((state) => ({
-    displaySettings: { ...state.displaySettings, ...settings }
+  setFontSettings: (settings) => set((state) => ({
+    fontSettings: { ...state.fontSettings, ...settings }
   })),
   setSearchQuery: (query) => set({ searchQuery: query }),
   
@@ -101,8 +101,8 @@ export const useReaderStore = create<ReaderStore>((set) => ({
   resetReaderState: () => set(initialState),
   
   updateScreenSettings: (_screenId, settings) => set((state) => ({
-    displaySettings: {
-      ...state.displaySettings,
+    fontSettings: {
+      ...state.fontSettings,
       fontSize: settings.fontSize,
       zoomLevel: settings.zoomLevel,
     }
