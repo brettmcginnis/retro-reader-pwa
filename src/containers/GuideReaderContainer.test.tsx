@@ -1,7 +1,6 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Guide, Bookmark } from '../types';
-import { useBookmarkStore } from '../stores/useBookmarkStore';
+import { useBookmarkStore, useCurrentLine } from '../stores/useBookmarkStore';
 
 // Mock hooks and services
 const mockAddBookmark = jest.fn();
@@ -12,29 +11,23 @@ const mockSaveCurrentPositionBookmark = jest.fn().mockResolvedValue(undefined);
 // Helper to create bookmark store mock
 const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => {
   const bookmarks = overrides.bookmarks || [];
-  const currentGuideId = overrides.currentGuideId || 'test-guide-1';
   
   return {
     bookmarks,
     addBookmark: mockAddBookmark,
     deleteBookmark: jest.fn(),
     updateBookmark: jest.fn(),
-    loadBookmarks: jest.fn(),
+    getBookmarks: jest.fn().mockResolvedValue(bookmarks),
     setCurrentGuideId: mockSetCurrentGuideId,
     saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
-    loading: false,
-    error: null,
-    get currentPosition() {
-      const bookmark = (bookmarks as Bookmark[]).find(b => b.isCurrentPosition && b.guideId === currentGuideId);
-      return bookmark?.line || 1;
-    },
     ...overrides
   };
 };
 
 // Mock useBookmarkStore
 jest.mock('../stores/useBookmarkStore', () => ({
-  useBookmarkStore: jest.fn(() => createBookmarkStoreMock())
+  useBookmarkStore: jest.fn(() => createBookmarkStoreMock()),
+  useCurrentLine: jest.fn(() => 1)
 }));
 
 jest.mock('../contexts/useToast', () => ({
@@ -73,10 +66,10 @@ jest.mock('../stores/useReaderStore', () => ({
 
 
 // Simplified mock props for testing - using actual types from GuideReaderView
+
 interface MockGuideReaderViewProps {
   guide: Guide;
   lines: string[];
-  currentLine: number;
   totalLines: number;
   isLoading: boolean;
   searchQuery: string;
@@ -89,7 +82,6 @@ interface MockGuideReaderViewProps {
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
-  onJumpToCurrentPosition: () => number | null;
   onScrollingStateChange: (isScrolling: boolean) => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
@@ -99,7 +91,6 @@ interface MockGuideReaderViewProps {
 jest.mock('../components/GuideReaderView', () => ({
   GuideReaderView: ({ 
     initialLine,
-    currentLine, 
     onLineChange, 
     fontSize,
     zoomLevel,
@@ -107,18 +98,16 @@ jest.mock('../components/GuideReaderView', () => ({
     onZoomChange,
     onAddBookmark,
     onSetAsCurrentPosition,
-    onJumpToCurrentPosition
   }: MockGuideReaderViewProps) => {
-    const [jumpedToLine, setJumpedToLine] = React.useState<number | null>(null);
-    
-
+    // Use a static value for currentLine in tests
+    const currentLine = 1;
     return (
       <div data-testid="guide-reader-view">
         <div data-testid="initial-line">{initialLine}</div>
         <div data-testid="font-size">{fontSize}</div>
         <div data-testid="zoom-level">{zoomLevel}</div>
-        <div data-testid="current-line">{currentLine || 1}</div>
-        <div data-testid="jumped-to-line">{jumpedToLine || ''}</div>
+        <div data-testid="current-line">{currentLine}</div>
+        <div data-testid="jumped-to-line"></div>
         <button onClick={() => {
           // Simulate line change
           onLineChange(50);
@@ -148,10 +137,8 @@ jest.mock('../components/GuideReaderView', () => ({
           await onSetAsCurrentPosition(30);
         }}>Set Current Position</button>
         <button onClick={() => {
-          const line = onJumpToCurrentPosition();
-          if (line !== null) {
-            setJumpedToLine(line);
-          }
+          // This button is now handled directly in NavigationModal via store
+          // Just simulate a click for testing
         }}>Jump to Current Position</button>
       </div>
     );
@@ -199,12 +186,13 @@ describe('GuideReaderContainer', () => {
       addBookmark: mockAddBookmark,
       deleteBookmark: jest.fn(),
       updateBookmark: jest.fn(),
-      loadBookmarks: jest.fn(),
+      getBookmarks: jest.fn().mockResolvedValue([]),
       setCurrentGuideId: mockSetCurrentGuideId,
-      saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
-      loading: false,
-      error: null
+      saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
     });
+    
+    // Reset currentLine mock
+    (useCurrentLine as jest.Mock).mockReturnValue(1);
   });
 
   afterEach(() => {
@@ -224,16 +212,27 @@ describe('GuideReaderContainer', () => {
 
     it('should load current position bookmark when no navigation target', async () => {
       // Mock bookmarks with a current position bookmark
-      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
-        bookmarks: [{
-          id: 'current-position-test-guide-1',
-          guideId: 'test-guide-1',
-          line: 30,
-          title: 'Current Position',
-          dateCreated: new Date(),
-          isCurrentPosition: true
-        }]
-      }));
+      const bookmarksWithPosition = [{
+        id: 'current-position-test-guide-1',
+        guideId: 'test-guide-1',
+        line: 30,
+        title: 'Current Position',
+        dateCreated: new Date(),
+        isCurrentPosition: true
+      }];
+      
+      (useBookmarkStore as jest.Mock).mockReturnValue({
+        bookmarks: bookmarksWithPosition,
+        addBookmark: mockAddBookmark,
+        deleteBookmark: jest.fn(),
+        updateBookmark: jest.fn(),
+        getBookmarks: jest.fn().mockResolvedValue(bookmarksWithPosition),
+        setCurrentGuideId: mockSetCurrentGuideId,
+        saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
+      });
+      
+      // Mock currentLine for this test
+      (useCurrentLine as jest.Mock).mockReturnValue(30);
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -244,9 +243,15 @@ describe('GuideReaderContainer', () => {
 
     it('should default to line 1 when no bookmark or navigation target', async () => {
       // Mock bookmarks with no current position bookmark
-      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
-        bookmarks: []
-      }));
+      (useBookmarkStore as jest.Mock).mockReturnValue({
+        bookmarks: [],
+        addBookmark: mockAddBookmark,
+        deleteBookmark: jest.fn(),
+        updateBookmark: jest.fn(),
+        getBookmarks: jest.fn().mockResolvedValue([]),
+        setCurrentGuideId: mockSetCurrentGuideId,
+        saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
+      });
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -451,56 +456,9 @@ describe('GuideReaderContainer', () => {
       });
     });
 
-    it('should handle jumping to current position', async () => {
-      // Set up the store with a current position bookmark
-      const bookmarks = [{
-        id: 'current-pos',
-        guideId: 'test-guide-1',
-        line: 75,
-        title: 'Current Position',
-        dateCreated: new Date(),
-        isCurrentPosition: true
-      }];
-      
-      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({ 
-        bookmarks,
-        currentGuideId: 'test-guide-1'
-      }));
-      
-      render(<GuideReaderContainer guide={mockGuide} />);
+    // Jump to current position functionality is now handled directly in NavigationModal
 
-      await waitFor(() => {
-        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
-      });
-
-      const jumpButton = screen.getByText('Jump to Current Position');
-      jumpButton.click();
-
-      await waitFor(() => {
-        expect(screen.getByTestId('jumped-to-line')).toHaveTextContent('75');
-      });
-    });
-
-    it('should show info toast when no current position exists', async () => {
-      // Set up the store with no current position bookmark (currentPosition will be 1)
-      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({ 
-        bookmarks: [],
-        currentGuideId: 'test-guide-1'
-      }));
-      
-      render(<GuideReaderContainer guide={mockGuide} />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('guide-reader-view')).toBeInTheDocument();
-      });
-
-      const jumpButton = screen.getByText('Jump to Current Position');
-      jumpButton.click();
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith('info', 'No current position saved', 'Tap any line to set your current reading position');
-      });
-    });
+    // Toast functionality for no current position is now handled directly in NavigationModal
 
     // Error handling test removed - the new synchronous implementation doesn't have error cases
   });

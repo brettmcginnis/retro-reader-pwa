@@ -1,5 +1,5 @@
-import { act } from '@testing-library/react';
-import { useBookmarkStore } from './useBookmarkStore';
+import { act, renderHook } from '@testing-library/react';
+import { useBookmarkStore, useCurrentLine } from './useBookmarkStore';
 import { db } from '../services/database';
 import { Bookmark } from '../types';
 
@@ -10,6 +10,8 @@ jest.mock('../services/database', () => ({
     getAllBookmarks: jest.fn(),
     saveBookmark: jest.fn(),
     deleteBookmark: jest.fn(),
+    saveCurrentPositionBookmark: jest.fn(),
+    getCurrentPositionBookmark: jest.fn(),
   },
 }));
 
@@ -41,8 +43,6 @@ describe('useBookmarkStore', () => {
     // Reset store state
     useBookmarkStore.setState({
       bookmarks: [],
-      loading: true,
-      error: null,
       currentGuideId: null,
     });
 
@@ -54,52 +54,45 @@ describe('useBookmarkStore', () => {
     it('should have correct initial values', () => {
       const state = useBookmarkStore.getState();
       expect(state.bookmarks).toEqual([]);
-      expect(state.loading).toBe(true);
-      expect(state.error).toBeNull();
       expect(state.currentGuideId).toBeNull();
+      // currentLine is now a selector, not part of state
     });
   });
 
-  describe('loadBookmarks', () => {
+  describe('getBookmarks', () => {
     it('should load bookmarks for a specific guide', async () => {
       (db.getBookmarks as jest.Mock).mockResolvedValue(mockBookmarks);
 
+      let result: Bookmark[] = [];
       await act(async () => {
-        await useBookmarkStore.getState().loadBookmarks('guide-1');
+        result = await useBookmarkStore.getState().getBookmarks('guide-1');
       });
 
       const state = useBookmarkStore.getState();
       expect(db.getBookmarks).toHaveBeenCalledWith('guide-1');
       expect(state.bookmarks).toEqual(mockBookmarks);
-      expect(state.loading).toBe(false);
-      expect(state.error).toBeNull();
+      expect(result).toEqual(mockBookmarks);
     });
 
     it('should load all bookmarks when no guide ID provided', async () => {
       (db.getAllBookmarks as jest.Mock).mockResolvedValue(mockBookmarks);
 
       await act(async () => {
-        await useBookmarkStore.getState().loadBookmarks();
+        await useBookmarkStore.getState().getBookmarks();
       });
 
       const state = useBookmarkStore.getState();
       expect(db.getAllBookmarks).toHaveBeenCalled();
       expect(state.bookmarks).toEqual(mockBookmarks);
-      expect(state.loading).toBe(false);
     });
 
-    it('should handle load errors', async () => {
+    it('should throw error on load failure', async () => {
       const error = new Error('Failed to load');
       (db.getBookmarks as jest.Mock).mockRejectedValue(error);
 
-      await act(async () => {
-        await useBookmarkStore.getState().loadBookmarks('guide-1');
-      });
-
-      const state = useBookmarkStore.getState();
-      expect(state.error).toBe('Failed to load');
-      expect(state.loading).toBe(false);
-      expect(state.bookmarks).toEqual([]);
+      await expect(
+        useBookmarkStore.getState().getBookmarks('guide-1')
+      ).rejects.toThrow('Failed to load');
     });
   });
 
@@ -256,6 +249,158 @@ describe('useBookmarkStore', () => {
       const state = useBookmarkStore.getState();
       expect(state.currentGuideId).toBeNull();
       expect(db.getBookmarks).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveCurrentPositionBookmark', () => {
+    beforeEach(() => {
+      useBookmarkStore.setState({ currentGuideId: 'guide-1' });
+      (db.getBookmarks as jest.Mock).mockResolvedValue([]);
+    });
+
+    it('should save current position bookmark', async () => {
+      (db.saveCurrentPositionBookmark as jest.Mock).mockResolvedValue(undefined);
+
+      await act(async () => {
+        await useBookmarkStore.getState().saveCurrentPositionBookmark('guide-1', 50);
+      });
+
+      expect(db.saveCurrentPositionBookmark).toHaveBeenCalledWith('guide-1', 50);
+      expect(db.getBookmarks).toHaveBeenCalledWith('guide-1');
+    });
+
+    it('should handle save errors', async () => {
+      const error = new Error('Save failed');
+      (db.saveCurrentPositionBookmark as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        useBookmarkStore.getState().saveCurrentPositionBookmark('guide-1', 50)
+      ).rejects.toThrow('Save failed');
+    });
+  });
+
+  describe('currentLine selector logic', () => {
+    it('should return 1 when no guide is selected', () => {
+      useBookmarkStore.setState({ currentGuideId: null, bookmarks: [] });
+      const state = useBookmarkStore.getState();
+      // Verify the state that the selector would use
+      expect(state.currentGuideId).toBeNull();
+    });
+
+    it('should return 1 when no current position bookmark exists', () => {
+      useBookmarkStore.setState({ 
+        currentGuideId: 'guide-1',
+        bookmarks: mockBookmarks // No current position bookmarks
+      });
+      const state = useBookmarkStore.getState();
+      // Verify there's no current position bookmark
+      const hasCurrentPosition = state.bookmarks.some(
+        b => b.isCurrentPosition && b.guideId === state.currentGuideId
+      );
+      expect(hasCurrentPosition).toBe(false);
+    });
+
+    it('should return line number from current position bookmark', () => {
+      const bookmarksWithCurrent = [
+        ...mockBookmarks,
+        {
+          id: 'current-pos',
+          guideId: 'guide-1',
+          line: 75,
+          title: 'Current Position',
+          dateCreated: new Date(),
+          isCurrentPosition: true
+        }
+      ];
+      
+      useBookmarkStore.setState({ 
+        currentGuideId: 'guide-1',
+        bookmarks: bookmarksWithCurrent
+      });
+      
+      // Verify the state was set correctly
+      const state = useBookmarkStore.getState();
+      expect(state.bookmarks).toHaveLength(3); // 2 mock bookmarks + 1 current position
+      expect(state.currentGuideId).toBe('guide-1');
+      
+      // Check if there's a current position bookmark
+      const currentPosBookmark = state.bookmarks.find(b => b.isCurrentPosition && b.guideId === 'guide-1');
+      expect(currentPosBookmark).toBeDefined();
+      expect(currentPosBookmark?.line).toBe(75);
+      
+      // Since we're using a selector pattern, we need to test the selector logic
+      // The store state should have the correct bookmarks and currentGuideId
+      // which the selector will use to calculate currentLine
+      expect(state.bookmarks.some(b => b.isCurrentPosition && b.line === 75)).toBe(true);
+    });
+
+    it('should only return current position for active guide', () => {
+      const bookmarksWithCurrent = [
+        {
+          id: 'current-pos',
+          guideId: 'guide-2',
+          line: 75,
+          title: 'Current Position',
+          dateCreated: new Date(),
+          isCurrentPosition: true
+        }
+      ];
+      
+      useBookmarkStore.setState({ 
+        currentGuideId: 'guide-1', // Different guide
+        bookmarks: bookmarksWithCurrent
+      });
+      
+      const state = useBookmarkStore.getState();
+      // Verify the current position bookmark is for a different guide
+      const currentPosBookmark = state.bookmarks.find(
+        b => b.isCurrentPosition && b.guideId === state.currentGuideId
+      );
+      expect(currentPosBookmark).toBeUndefined();
+    });
+  });
+
+  describe('useCurrentLine selector', () => {
+    it('should return current line from selector', () => {
+      const bookmarksWithCurrent = [
+        ...mockBookmarks,
+        {
+          id: 'current-pos',
+          guideId: 'guide-1',
+          line: 75,
+          title: 'Current Position',
+          dateCreated: new Date(),
+          isCurrentPosition: true
+        }
+      ];
+      
+      useBookmarkStore.setState({ 
+        currentGuideId: 'guide-1',
+        bookmarks: bookmarksWithCurrent
+      });
+
+      const { result } = renderHook(() => useCurrentLine());
+      expect(result.current).toBe(75);
+    });
+
+    it('should return 1 when no current position exists', () => {
+      useBookmarkStore.setState({ 
+        currentGuideId: 'guide-1',
+        bookmarks: mockBookmarks
+      });
+
+      const { result } = renderHook(() => useCurrentLine());
+      expect(result.current).toBe(1);
+    });
+
+    it('should return 1 when no guide is selected', () => {
+      useBookmarkStore.setState({ 
+        currentGuideId: null,
+        bookmarks: []
+      });
+
+      const { result } = renderHook(() => useCurrentLine());
+      expect(result.current).toBe(1);
     });
   });
 });

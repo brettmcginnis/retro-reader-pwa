@@ -7,16 +7,14 @@ let mockBookmarksState: Bookmark[] = [];
 const mockAddBookmark = jest.fn();
 const mockDeleteBookmark = jest.fn();
 const mockUpdateBookmark = jest.fn();
-const mockLoadBookmarks = jest.fn();
+const mockGetBookmarks = jest.fn();
 
 const mockUseBookmarks = {
   get bookmarks() { return [...mockBookmarksState]; }, // Return a copy to ensure fresh references
   addBookmark: mockAddBookmark,
   deleteBookmark: mockDeleteBookmark,
   updateBookmark: mockUpdateBookmark,
-  loading: false,
-  error: null,
-  loadBookmarks: mockLoadBookmarks
+  getBookmarks: mockGetBookmarks.mockResolvedValue(mockBookmarksState)
 };
 
 
@@ -26,7 +24,8 @@ jest.mock('../stores/useBookmarkStore', () => ({
     setCurrentGuideId: jest.fn(),
     saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
     getCurrentPositionBookmark: jest.fn().mockResolvedValue(null)
-  })
+  }),
+  useCurrentLine: () => 1
 }));
 
 
@@ -102,8 +101,8 @@ describe('GuideReader Tests', () => {
     mockAddBookmark.mockClear();
     mockDeleteBookmark.mockClear();
     mockUpdateBookmark.mockClear();
-    mockLoadBookmarks.mockClear();
-    mockLoadBookmarks.mockResolvedValue(undefined);
+    mockGetBookmarks.mockClear();
+    mockGetBookmarks.mockResolvedValue(undefined);
     
     // Reset mockUseApp to default
     mockUseAppStore.mockReturnValue({
@@ -413,7 +412,7 @@ describe('GuideReader Tests', () => {
 
       // Verify refresh was called when opening bookmarks
       await waitFor(() => {
-        expect(mockLoadBookmarks).toHaveBeenCalled();
+        expect(mockGetBookmarks).toHaveBeenCalled();
       });
 
       // Verify bookmarks overlay opened

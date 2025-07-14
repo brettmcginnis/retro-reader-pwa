@@ -4,6 +4,7 @@ import { Guide, Bookmark } from '../types';
 import { useGuideScroll } from '../hooks/useGuideScroll';
 import { useBookmarkUI } from '../hooks/useBookmarkUI';
 import { useGuideSearch } from '../hooks/useGuideSearch';
+import { useCurrentLine } from '../stores/useBookmarkStore';
 
 import { GuideContent } from './GuideContent';
 import { TopNavigationBar } from './TopNavigationBar';
@@ -17,7 +18,6 @@ import { GuideSearchBar } from './GuideSearchBar';
 interface GuideReaderViewProps {
   guide: Guide;
   lines: string[];
-  currentLine: number;
   totalLines: number;
   isLoading: boolean;
   searchQuery: string;
@@ -29,7 +29,7 @@ interface GuideReaderViewProps {
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
-  onJumpToCurrentPosition: () => number | null;
+  onJumpToCurrentPosition: () => void;
   onScrollingStateChange: (isScrolling: boolean) => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
@@ -41,7 +41,6 @@ interface GuideReaderViewProps {
 const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   guide,
   lines,
-  currentLine,
   totalLines,
   isLoading,
   searchQuery,
@@ -61,6 +60,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   onUpdateBookmark,
   onRefreshBookmarks
 }) => {
+  const currentLine = useCurrentLine();
   const [showNavigationModal, setShowNavigationModal] = useState(false);
   
   // Use custom hooks for scroll management

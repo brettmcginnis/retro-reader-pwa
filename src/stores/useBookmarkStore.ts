@@ -9,10 +9,6 @@ import { generateId } from '../utils/common';
 interface BookmarkState {
   /** Array of bookmarks for the current guide */
   bookmarks: Bookmark[];
-  /** Loading state for bookmark operations */
-  loading: boolean;
-  /** Error message if bookmark operations fail */
-  error: string | null;
   /** ID of the currently selected guide for filtering bookmarks */
   currentGuideId: string | null;
 }
@@ -21,8 +17,8 @@ interface BookmarkState {
  * Actions for managing bookmarks
  */
 interface BookmarkActions {
-  /** Loads bookmarks for a specific guide or all bookmarks if no guide ID provided */
-  loadBookmarks: (guideId?: string) => Promise<void>;
+  /** Gets bookmarks for a specific guide or all bookmarks if no guide ID provided */
+  getBookmarks: (guideId?: string) => Promise<Bookmark[]>;
   /** Creates a new bookmark and reloads the bookmark list */
   addBookmark: (bookmark: Omit<Bookmark, 'id' | 'dateCreated'>) => Promise<Bookmark>;
   /** Deletes a bookmark by ID */
@@ -35,31 +31,20 @@ interface BookmarkActions {
   saveCurrentPositionBookmark: (guideId: string, line: number) => Promise<void>;
   /** Gets the current position bookmark for a guide */
   getCurrentPositionBookmark: (guideId: string) => Promise<Bookmark | null>;
-  /** Gets the current position line number for the current guide (returns 1 if no bookmark) */
-  currentPosition: number;
 }
 
 type BookmarkStore = BookmarkState & BookmarkActions;
 
 export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   bookmarks: [],
-  loading: true,
-  error: null,
   currentGuideId: null,
 
-  loadBookmarks: async (guideId?: string) => {
-    try {
-      set({ loading: true, error: null });
-      const allBookmarks = guideId 
-        ? await db.getBookmarks(guideId)
-        : await db.getAllBookmarks();
-      set({ bookmarks: allBookmarks, loading: false });
-    } catch (err) {
-      set({ 
-        error: err instanceof Error ? err.message : 'Failed to load bookmarks',
-        loading: false 
-      });
-    }
+  getBookmarks: async (guideId?: string) => {
+    const allBookmarks = guideId 
+      ? await db.getBookmarks(guideId)
+      : await db.getAllBookmarks();
+    set({ bookmarks: allBookmarks });
+    return allBookmarks;
   },
 
   addBookmark: async (bookmark) => {
@@ -70,7 +55,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
         dateCreated: new Date()
       };
       await db.saveBookmark(newBookmark);
-      await get().loadBookmarks(get().currentGuideId || undefined);
+      await get().getBookmarks(get().currentGuideId || undefined);
       return newBookmark;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to add bookmark');
@@ -80,7 +65,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   deleteBookmark: async (id: string) => {
     try {
       await db.deleteBookmark(id);
-      await get().loadBookmarks(get().currentGuideId || undefined);
+      await get().getBookmarks(get().currentGuideId || undefined);
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to delete bookmark');
     }
@@ -94,7 +79,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
       
       const updatedBookmark = { ...bookmark, ...updates };
       await db.saveBookmark(updatedBookmark);
-      await get().loadBookmarks(get().currentGuideId || undefined);
+      await get().getBookmarks(get().currentGuideId || undefined);
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to update bookmark');
     }
@@ -103,7 +88,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   setCurrentGuideId: (guideId: string | null) => {
     set({ currentGuideId: guideId, bookmarks: [] });
     if (guideId) {
-      get().loadBookmarks(guideId);
+      get().getBookmarks(guideId);
     }
   },
 
@@ -111,7 +96,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     try {
       await db.saveCurrentPositionBookmark(guideId, line);
       // Reload bookmarks to reflect the change
-      await get().loadBookmarks(guideId);
+      await get().getBookmarks(guideId);
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to save current position');
     }
@@ -123,12 +108,16 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to get current position');
     }
-  },
-
-  get currentPosition() {
-    const { bookmarks, currentGuideId } = get();
-    if (!currentGuideId) return 1;
-    const bookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === currentGuideId);
-    return bookmark?.line || 1;
   }
 }));
+
+// Selector for currentLine - always returns the current bookmark.line || 1
+export const useCurrentLine = () => {
+  return useBookmarkStore((state) => {
+    if (!state.currentGuideId) return 1;
+    const bookmark = state.bookmarks.find(
+      b => b.isCurrentPosition && b.guideId === state.currentGuideId
+    );
+    return bookmark?.line || 1;
+  });
+};

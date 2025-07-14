@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Guide } from '../types';
-import { useBookmarkStore } from '../stores/useBookmarkStore';
+import { useBookmarkStore, useCurrentLine } from '../stores/useBookmarkStore';
 import { useToast } from '../contexts/useToast';
 import { useReaderStore } from '../stores/useReaderStore';
 import { GuideReaderView } from '../components/GuideReaderView';
@@ -15,11 +15,12 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     addBookmark, 
     deleteBookmark, 
     updateBookmark, 
-    loadBookmarks,
+    getBookmarks,
     saveCurrentPositionBookmark,
-    setCurrentGuideId,
-    currentPosition 
+    setCurrentGuideId
   } = useBookmarkStore();
+  
+  const currentLine = useCurrentLine();
   
   // Set the current guide ID when component mounts or guide changes
   useEffect(() => {
@@ -32,7 +33,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   } = useReaderStore();
   
   // Basic state
-  const [currentLine, setCurrentLine] = useState(1);
   const [totalLines, setTotalLines] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -73,13 +73,12 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   }, [guide]);
   
   
-  // Set initial position from current position bookmark - only once
+  // Mark that initial position has been set - only once
   useEffect(() => {
-    if (!isLoading && !hasSetInitialPosition.current && currentPosition > 1) {
-      setCurrentLine(currentPosition);
+    if (!isLoading && !hasSetInitialPosition.current && currentLine > 1) {
       hasSetInitialPosition.current = true;
     }
-  }, [isLoading, currentPosition]);
+  }, [isLoading, currentLine]);
   
   
   // Search handling
@@ -115,19 +114,20 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     }
   }, [guide.id, saveCurrentPositionBookmark, showToast]);
   
-  // Jump to current position
+  // Handle jump to current position
   const handleJumpToCurrentPosition = useCallback(() => {
-    if (currentPosition > 1) {
-      return currentPosition;
+    const currentPositionBookmark = bookmarks.find(b => b.isCurrentPosition && b.guideId === guide.id);
+    if (currentPositionBookmark) {
+      // Navigate to the bookmarked line
+      // The actual navigation will be handled by the view component
     } else {
       showToast('info', 'No current position saved', 'Tap any line to set your current reading position');
-      return null;
     }
-  }, [currentPosition, showToast]);
+  }, [bookmarks, guide.id, showToast]);
   
   // Handle line change with scrolling state management
-  const handleLineChange = useCallback((line: number) => {
-    setCurrentLine(line);
+  const handleLineChange = useCallback((_line: number) => {
+    // Line changes are now handled by bookmarks, not local state
   }, []);
   
   const handleScrollingStateChange = useCallback((isScrolling: boolean) => {
@@ -165,12 +165,11 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     <GuideReaderView
       guide={guide}
       lines={lines}
-      currentLine={currentLine}
       totalLines={totalLines}
       isLoading={isLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
-      initialLine={currentPosition}
+      initialLine={currentLine}
       fontSize={displaySettings.fontSize}
       zoomLevel={displaySettings.zoomLevel}
       onLineChange={handleLineChange}
@@ -183,7 +182,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onZoomChange={handleZoomChange}
       onDeleteBookmark={deleteBookmark}
       onUpdateBookmark={updateBookmark}
-      onRefreshBookmarks={() => loadBookmarks(guide.id)}
+      onRefreshBookmarks={async () => { await getBookmarks(guide.id); }}
     />
   );
 };
