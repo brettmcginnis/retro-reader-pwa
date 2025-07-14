@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { Guide, Bookmark } from '../types';
-import { useBookmarkStore, useCurrentLine } from '../stores/useBookmarkStore';
+import { useBookmarkStore } from '../stores/useBookmarkStore';
 
 // Mock hooks and services
 const mockAddBookmark = jest.fn();
@@ -14,20 +14,23 @@ const createBookmarkStoreMock = (overrides: Record<string, unknown> = {}) => {
   
   return {
     bookmarks,
+    currentLine: overrides.currentLine || 1,
+    loading: false,
+    error: null,
     addBookmark: mockAddBookmark,
     deleteBookmark: jest.fn(),
     updateBookmark: jest.fn(),
-    getBookmarks: jest.fn().mockResolvedValue(bookmarks),
+    loadBookmarks: jest.fn().mockResolvedValue(undefined),
     setCurrentGuideId: mockSetCurrentGuideId,
     saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark,
+    getCurrentPositionBookmark: jest.fn().mockResolvedValue(null),
     ...overrides
   };
 };
 
 // Mock useBookmarkStore
 jest.mock('../stores/useBookmarkStore', () => ({
-  useBookmarkStore: jest.fn(() => createBookmarkStoreMock()),
-  useCurrentLine: jest.fn(() => 1)
+  useBookmarkStore: jest.fn(() => createBookmarkStoreMock())
 }));
 
 jest.mock('../contexts/useToast', () => ({
@@ -181,18 +184,7 @@ describe('GuideReaderContainer', () => {
     
     
     // Reset useBookmarks mock
-    (useBookmarkStore as jest.Mock).mockReturnValue({
-      bookmarks: [],
-      addBookmark: mockAddBookmark,
-      deleteBookmark: jest.fn(),
-      updateBookmark: jest.fn(),
-      getBookmarks: jest.fn().mockResolvedValue([]),
-      setCurrentGuideId: mockSetCurrentGuideId,
-      saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
-    });
-    
-    // Reset currentLine mock
-    (useCurrentLine as jest.Mock).mockReturnValue(1);
+    (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock());
   });
 
   afterEach(() => {
@@ -221,18 +213,10 @@ describe('GuideReaderContainer', () => {
         isCurrentPosition: true
       }];
       
-      (useBookmarkStore as jest.Mock).mockReturnValue({
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock({
         bookmarks: bookmarksWithPosition,
-        addBookmark: mockAddBookmark,
-        deleteBookmark: jest.fn(),
-        updateBookmark: jest.fn(),
-        getBookmarks: jest.fn().mockResolvedValue(bookmarksWithPosition),
-        setCurrentGuideId: mockSetCurrentGuideId,
-        saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
-      });
-      
-      // Mock currentLine for this test
-      (useCurrentLine as jest.Mock).mockReturnValue(30);
+        currentLine: 30
+      }));
 
       render(<GuideReaderContainer guide={mockGuide} />);
 
@@ -243,15 +227,7 @@ describe('GuideReaderContainer', () => {
 
     it('should default to line 1 when no bookmark or navigation target', async () => {
       // Mock bookmarks with no current position bookmark
-      (useBookmarkStore as jest.Mock).mockReturnValue({
-        bookmarks: [],
-        addBookmark: mockAddBookmark,
-        deleteBookmark: jest.fn(),
-        updateBookmark: jest.fn(),
-        getBookmarks: jest.fn().mockResolvedValue([]),
-        setCurrentGuideId: mockSetCurrentGuideId,
-        saveCurrentPositionBookmark: mockSaveCurrentPositionBookmark
-      });
+      (useBookmarkStore as jest.Mock).mockReturnValue(createBookmarkStoreMock());
 
       render(<GuideReaderContainer guide={mockGuide} />);
 

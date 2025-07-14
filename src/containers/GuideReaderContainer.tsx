@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Guide } from '../types';
-import { useBookmarkStore, useCurrentLine } from '../stores/useBookmarkStore';
+import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useToast } from '../contexts/useToast';
 import { useReaderStore } from '../stores/useReaderStore';
 import { GuideReaderView } from '../components/GuideReaderView';
@@ -12,15 +12,14 @@ interface GuideReaderContainerProps {
 export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guide }) => {
   const { 
     bookmarks, 
+    currentLine,
     addBookmark, 
     deleteBookmark, 
     updateBookmark, 
-    getBookmarks,
+    loadBookmarks,
     saveCurrentPositionBookmark,
     setCurrentGuideId
   } = useBookmarkStore();
-  
-  const currentLine = useCurrentLine();
   
   // Set the current guide ID when component mounts or guide changes
   useEffect(() => {
@@ -182,7 +181,7 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       onZoomChange={handleZoomChange}
       onDeleteBookmark={deleteBookmark}
       onUpdateBookmark={updateBookmark}
-      onRefreshBookmarks={async () => { await getBookmarks(guide.id); }}
+      onRefreshBookmarks={async () => { await loadBookmarks(guide.id); }}
     />
   );
 };

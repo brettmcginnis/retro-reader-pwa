@@ -11,10 +11,13 @@ const mockGetBookmarks = jest.fn();
 
 const mockUseBookmarks = {
   get bookmarks() { return [...mockBookmarksState]; }, // Return a copy to ensure fresh references
+  currentLine: 1,
+  loading: false,
+  error: null,
   addBookmark: mockAddBookmark,
   deleteBookmark: mockDeleteBookmark,
   updateBookmark: mockUpdateBookmark,
-  getBookmarks: mockGetBookmarks.mockResolvedValue(mockBookmarksState)
+  loadBookmarks: mockGetBookmarks.mockResolvedValue(undefined)
 };
 
 
@@ -24,8 +27,7 @@ jest.mock('../stores/useBookmarkStore', () => ({
     setCurrentGuideId: jest.fn(),
     saveCurrentPositionBookmark: jest.fn().mockResolvedValue(undefined),
     getCurrentPositionBookmark: jest.fn().mockResolvedValue(null)
-  }),
-  useCurrentLine: () => 1
+  })
 }));
 
 
