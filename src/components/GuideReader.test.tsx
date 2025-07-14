@@ -51,6 +51,12 @@ const mockUseReaderStore = jest.fn(() => ({
     zoomLevel: 1
   },
   setFontSettings: jest.fn(),
+  load: jest.fn(),
+  isLoading: false,
+  guideContent: [],
+  searchQuery: '',
+  setSearchQuery: jest.fn(),
+  updateScreenSettings: jest.fn()
 }));
 
 jest.mock('../stores/useReaderStore', () => ({

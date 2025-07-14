@@ -44,7 +44,10 @@ const createMockReaderStore = () => {
     fontSettings: {
       fontSize: 14,
       zoomLevel: 1
-    }
+    },
+    isLoading: false,
+    guideContent: [],
+    searchQuery: ''
   };
 
   const setFontSettings = jest.fn((updates) => {
@@ -57,7 +60,21 @@ const createMockReaderStore = () => {
 
   return {
     get fontSettings() { return state.fontSettings; },
-    setFontSettings
+    get isLoading() { return state.isLoading; },
+    get guideContent() { return state.guideContent; },
+    get searchQuery() { return state.searchQuery; },
+    setFontSettings,
+    load: jest.fn((lines) => {
+      state.isLoading = true;
+      state.guideContent = lines;
+      state.isLoading = false;
+    }),
+    setSearchQuery: jest.fn((query) => {
+      state.searchQuery = query;
+    }),
+    updateScreenSettings: jest.fn((settings) => {
+      state.fontSettings = { ...state.fontSettings, ...settings };
+    })
   };
 };
 

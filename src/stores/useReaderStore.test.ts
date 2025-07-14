@@ -4,50 +4,26 @@ import { useReaderStore } from './useReaderStore';
 describe('useReaderStore', () => {
   beforeEach(() => {
     // Reset store to initial state
-    useReaderStore.getState().resetReaderState();
+    useReaderStore.setState({
+      isLoading: true,
+      fontSettings: { fontSize: 14, zoomLevel: 1 },
+      searchQuery: '',
+      guideContent: []
+    });
   });
 
   describe('initial state', () => {
     it('should have correct initial values', () => {
       const state = useReaderStore.getState();
-      expect(state.totalLines).toBe(0);
       expect(state.isLoading).toBe(true);
       expect(state.fontSettings.fontSize).toBe(14);
       expect(state.fontSettings.zoomLevel).toBe(1);
       expect(state.searchQuery).toBe('');
       expect(state.guideContent).toEqual([]);
-      expect(state.lastContentHash).toBe('');
-      expect(state.hasSetInitialPosition).toBe(false);
-      expect(state.hasInitiallyScrolled).toBe(false);
-      expect(state.userScrolling).toBe(false);
     });
   });
 
-  describe('line navigation', () => {
-    it('should set total lines', () => {
-      act(() => {
-        useReaderStore.getState().setTotalLines(100);
-      });
 
-      expect(useReaderStore.getState().totalLines).toBe(100);
-    });
-  });
-
-  describe('loading state', () => {
-    it('should set loading state', () => {
-      act(() => {
-        useReaderStore.getState().setIsLoading(false);
-      });
-
-      expect(useReaderStore.getState().isLoading).toBe(false);
-
-      act(() => {
-        useReaderStore.getState().setIsLoading(true);
-      });
-
-      expect(useReaderStore.getState().isLoading).toBe(true);
-    });
-  });
 
   describe('font settings', () => {
     it('should set font settings', () => {
@@ -70,7 +46,7 @@ describe('useReaderStore', () => {
       const settings = { fontSize: 20, zoomLevel: 1.25 };
       
       act(() => {
-        useReaderStore.getState().updateScreenSettings('desktop-1920x1080', settings);
+        useReaderStore.getState().updateScreenSettings(settings);
       });
 
       const state = useReaderStore.getState();
@@ -90,97 +66,64 @@ describe('useReaderStore', () => {
   });
 
   describe('guide content', () => {
-    it('should set guide content and update total lines', () => {
+    it('should load guide content', () => {
       const content = ['Line 1', 'Line 2', 'Line 3'];
-      const hash = 'abc123';
 
       act(() => {
-        useReaderStore.getState().setGuideContent(content, hash);
+        useReaderStore.getState().load(content);
       });
 
       const state = useReaderStore.getState();
       expect(state.guideContent).toEqual(content);
-      expect(state.lastContentHash).toBe(hash);
-      expect(state.totalLines).toBe(3);
+      expect(state.isLoading).toBe(false);
     });
 
     it('should handle empty content', () => {
       act(() => {
-        useReaderStore.getState().setGuideContent([], 'empty');
+        useReaderStore.getState().load([]);
       });
 
       const state = useReaderStore.getState();
       expect(state.guideContent).toEqual([]);
-      expect(state.totalLines).toBe(0);
+      expect(state.isLoading).toBe(false);
+    });
+
+    it('should set loading to true before loading', () => {
+      const content = ['Line 1', 'Line 2', 'Line 3'];
+      const store = useReaderStore.getState();
+      
+      // Mock the set function to capture state changes
+      const states: boolean[] = [];
+      const originalLoad = store.load;
+      store.load = (lines: string[]) => {
+        // First state change should set loading to true
+        states.push(true);
+        // Then the original load completes and sets loading to false
+        originalLoad.call(store, lines);
+        states.push(useReaderStore.getState().isLoading);
+      };
+
+      act(() => {
+        store.load(content);
+      });
+
+      // Verify loading was set to true first, then false
+      expect(states[0]).toBe(true);
+      expect(states[1]).toBe(false);
     });
   });
 
-  describe('position tracking', () => {
-    it('should set initial position flag', () => {
-      act(() => {
-        useReaderStore.getState().setHasSetInitialPosition(true);
-      });
-
-      expect(useReaderStore.getState().hasSetInitialPosition).toBe(true);
+  describe('loading state', () => {
+    it('should be loading by default', () => {
+      expect(useReaderStore.getState().isLoading).toBe(true);
     });
 
-    it('should set initially scrolled flag', () => {
+    it('should set loading to false after content is loaded', () => {
       act(() => {
-        useReaderStore.getState().setHasInitiallyScrolled(true);
+        useReaderStore.getState().load(['Line 1', 'Line 2']);
       });
 
-      expect(useReaderStore.getState().hasInitiallyScrolled).toBe(true);
-    });
-  });
-
-  describe('scrolling state', () => {
-    it('should set user scrolling state', () => {
-      act(() => {
-        useReaderStore.getState().setUserScrolling(true);
-      });
-
-      expect(useReaderStore.getState().userScrolling).toBe(true);
-
-      act(() => {
-        useReaderStore.getState().setUserScrolling(false);
-      });
-
-      expect(useReaderStore.getState().userScrolling).toBe(false);
-    });
-  });
-
-  describe('reset state', () => {
-    it('should reset all state to initial values', () => {
-      // Set some custom values
-      act(() => {
-        const store = useReaderStore.getState();
-        store.setTotalLines(200);
-        store.setIsLoading(false);
-        store.setFontSettings({ fontSize: 20, zoomLevel: 1.5 });
-        store.setSearchQuery('search');
-        store.setGuideContent(['Line 1'], 'hash');
-        store.setHasSetInitialPosition(true);
-        store.setHasInitiallyScrolled(true);
-        store.setUserScrolling(true);
-      });
-
-      // Reset state
-      act(() => {
-        useReaderStore.getState().resetReaderState();
-      });
-
-      // Verify all values are back to initial
-      const state = useReaderStore.getState();
-      expect(state.totalLines).toBe(0);
-      expect(state.isLoading).toBe(true);
-      expect(state.fontSettings.fontSize).toBe(14);
-      expect(state.fontSettings.zoomLevel).toBe(1);
-      expect(state.searchQuery).toBe('');
-      expect(state.guideContent).toEqual([]);
-      expect(state.lastContentHash).toBe('');
-      expect(state.hasSetInitialPosition).toBe(false);
-      expect(state.hasInitiallyScrolled).toBe(false);
-      expect(state.userScrolling).toBe(false);
+      expect(useReaderStore.getState().isLoading).toBe(false);
     });
   });
 

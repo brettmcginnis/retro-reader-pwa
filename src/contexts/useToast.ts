@@ -1,6 +1,5 @@
 import { useToastStore } from '../stores/useToastStore';
-import { useConfirmationStore } from '../stores/useConfirmationStore';
-import { ConfirmationOptions } from '../types';
+import { useConfirmationStore, ConfirmationOptions } from '../stores/useConfirmationStore';
 
 export const useToast = () => {
   const { showToast } = useToastStore();

@@ -28,18 +28,17 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const { showToast } = useToast();
   const { 
     fontSettings,
-    setFontSettings 
+    setFontSettings,
+    load,
+    isLoading,
+    guideContent
   } = useReaderStore();
   
-  // Basic state
-  const [totalLines, setTotalLines] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   
   // References
-  const guideRef = useRef<string[]>([]);
   const lastContentRef = useRef<string>('');
   const hasSetInitialPosition = useRef(false);
   const userScrollingRef = useRef(false);
@@ -52,24 +51,11 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       return;
     }
     
-    const loadGuide = () => {
-      // Split content into lines
-      const lines = guide.content.split('\n');
-      guideRef.current = lines;
-      setTotalLines(lines.length);
-      lastContentRef.current = guide.content;
-      
-      setIsLoading(false);
-    };
-    
-    setIsLoading(true);
-    loadGuide();
-    
-    // Clean up on unmount
-    return () => {
-      guideRef.current = [];
-    };
-  }, [guide]);
+    // Split content into lines
+    const lines = guide.content.split('\n');
+    load(lines);
+    lastContentRef.current = guide.content;
+  }, [guide, load]);
   
   
   // Mark that initial position has been set - only once
@@ -158,13 +144,13 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     setFontSettings({ zoomLevel: zoom });
   }, [setFontSettings]);
   
-  const lines = guideRef.current;
+  const lines = guideContent;
   
   return (
     <GuideReaderView
       guide={guide}
       lines={lines}
-      totalLines={totalLines}
+      totalLines={lines ? lines.length : 0}
       isLoading={isLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
