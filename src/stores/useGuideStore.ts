@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { GuideService } from '../services/guideService';
 import { ImportExportService } from '../services/importExportService';
-import { db } from '../services/database';
 import { generateId } from '../utils/common';
 
 export interface Guide {
@@ -41,8 +40,6 @@ interface GuideState {
  * Actions for managing guides
  */
 interface GuideActions {
-  /** Initializes the database and loads guides */
-  initDatabase: () => Promise<void>;
   /** Loads all guides from the database */
   loadGuides: () => Promise<void>;
   /** Fetches a guide from a URL and adds it to the collection */
@@ -74,21 +71,6 @@ export const useGuideStore = create<GuideStore>((set, get) => ({
   dbInitialized: false,
   currentGuideContent: null,
   currentGuideLoading: false,
-
-  initDatabase: async () => {
-    try {
-      await db.init();
-      set({ dbInitialized: true });
-      // Load guides after database is initialized
-      await get().loadGuides();
-    } catch (err) {
-      console.error('Failed to initialize database:', err);
-      set({ 
-        error: err instanceof Error ? err.message : 'Failed to initialize database',
-        loading: false 
-      });
-    }
-  },
 
   loadGuides: async () => {
     try {
@@ -186,7 +168,7 @@ export const useGuideStore = create<GuideStore>((set, get) => ({
   },
 }));
 
-// Initialize database on store creation
+// Load guides on store creation
 if (typeof window !== 'undefined') {
-  useGuideStore.getState().initDatabase();
+  useGuideStore.getState().loadGuides();
 }
