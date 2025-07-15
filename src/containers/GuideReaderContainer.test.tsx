@@ -41,22 +41,37 @@ jest.mock('../contexts/useToast', () => ({
 
 const createMockFontScaleStore = () => {
   const state = {
-    fontSettings: {
-      fontSize: 14,
-      zoomLevel: 1
-    }
+    currentGuideId: null as string | null,
+    currentScreenId: null as string | null,
+    fontSize: 14,
+    zoomLevel: 1,
+    isLoading: false
   };
 
-  const setFontSettings = jest.fn((updates) => {
-    if (typeof updates === 'function') {
-      state.fontSettings = { ...state.fontSettings, ...updates(state.fontSettings) };
-    } else {
-      state.fontSettings = { ...state.fontSettings, ...updates };
-    }
+  const setFontSettings = jest.fn(async (updates) => {
+    state.fontSize = updates.fontSize ?? state.fontSize;
+    state.zoomLevel = updates.zoomLevel ?? state.zoomLevel;
   });
 
   return {
-    get fontSettings() { return state.fontSettings; },
+    get currentGuideId() { return state.currentGuideId; },
+    get currentScreenId() { return state.currentScreenId; },
+    get fontSize() { return state.fontSize; },
+    get zoomLevel() { return state.zoomLevel; },
+    get isLoading() { return state.isLoading; },
+    setCurrentContext: jest.fn((guideId: string, screenId?: string) => {
+      state.currentGuideId = guideId;
+      state.currentScreenId = screenId ?? 'default';
+    }),
+    loadFontSettings: jest.fn(async () => {
+      // Mock loading font settings
+    }),
+    setFontSize: jest.fn(async (size: number) => {
+      state.fontSize = size;
+    }),
+    setZoomLevel: jest.fn(async (zoom: number) => {
+      state.zoomLevel = zoom;
+    }),
     setFontSettings
   };
 };
@@ -102,6 +117,10 @@ jest.mock('../stores/useFontScaleStore', () => ({
 jest.mock('../stores/useGuideStore', () => ({
   ...jest.requireActual('../stores/useGuideStore'),
   useGuideStore: mockUseGuideStore
+}));
+
+jest.mock('../utils/screenUtils', () => ({
+  getScreenIdentifier: jest.fn().mockReturnValue('screen_1024')
 }));
 
 
@@ -237,6 +256,18 @@ describe('GuideReaderContainer', () => {
       
       await waitFor(() => {
         expect(mockSetCurrentGuideId).toHaveBeenCalledWith('test-guide-1');
+      });
+    });
+
+    it('should set font context and load settings when component mounts', async () => {
+      const fontStore = createMockFontScaleStore();
+      mockUseFontScaleStore.mockReturnValue(fontStore);
+      
+      render(<GuideReaderContainer guide={mockGuide} />);
+      
+      await waitFor(() => {
+        expect(fontStore.setCurrentContext).toHaveBeenCalledWith('test-guide-1', 'screen_1024');
+        expect(fontStore.loadFontSettings).toHaveBeenCalledWith('test-guide-1', 'screen_1024');
       });
     });
 

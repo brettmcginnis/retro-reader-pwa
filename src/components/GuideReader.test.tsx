@@ -46,15 +46,36 @@ jest.mock('../stores/useAppStore', () => ({
 }));
 
 const mockUseFontScaleStore = jest.fn(() => ({
-  fontSettings: {
-    fontSize: 14,
-    zoomLevel: 1
-  },
-  setFontSettings: jest.fn()
+  currentGuideId: null,
+  currentScreenId: null,
+  fontSize: 14,
+  zoomLevel: 1,
+  isLoading: false,
+  setCurrentContext: jest.fn(),
+  loadFontSettings: jest.fn().mockResolvedValue(undefined),
+  setFontSize: jest.fn().mockResolvedValue(undefined),
+  setZoomLevel: jest.fn().mockResolvedValue(undefined),
+  setFontSettings: jest.fn().mockResolvedValue(undefined)
 }));
 
 jest.mock('../stores/useFontScaleStore', () => ({
   useFontScaleStore: () => mockUseFontScaleStore()
+}));
+
+jest.mock('../utils/screenUtils', () => ({
+  getScreenIdentifier: jest.fn().mockReturnValue('screen_1024')
+}));
+
+jest.mock('../hooks/useGuideScroll', () => ({
+  useGuideScroll: jest.fn((props) => ({
+    containerRef: { current: null },
+    contentRef: { current: null },
+    visibleRange: { start: 0, end: 100 },
+    showFloatingProgress: false,
+    lineHeight: Math.ceil((props.fontSize || 14) * 1.5),
+    scrollToLine: jest.fn(),
+    handleScroll: jest.fn()
+  }))
 }));
 
 const mockGetGuide = jest.fn();

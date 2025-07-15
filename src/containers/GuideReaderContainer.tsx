@@ -4,6 +4,7 @@ import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useToast } from '../contexts/useToast';
 import { useFontScaleStore } from '../stores/useFontScaleStore';
 import { GuideReaderView } from '../components/GuideReaderView';
+import { getScreenIdentifier } from '../utils/screenUtils';
 
 interface GuideReaderContainerProps {
   guide: Guide;
@@ -21,15 +22,26 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     setCurrentGuideId
   } = useBookmarkStore();
   
+  const { showToast } = useToast();
+  const { 
+    fontSize,
+    zoomLevel,
+    setFontSettings,
+    setCurrentContext,
+    loadFontSettings
+  } = useFontScaleStore();
+  
   // Set the current guide ID when component mounts or guide changes
   useEffect(() => {
     setCurrentGuideId(guide.id);
   }, [guide.id, setCurrentGuideId]);
-  const { showToast } = useToast();
-  const { 
-    fontSettings,
-    setFontSettings
-  } = useFontScaleStore();
+  
+  // Set font context and load settings when component mounts or guide changes
+  useEffect(() => {
+    const screenId = getScreenIdentifier();
+    setCurrentContext(guide.id, screenId);
+    loadFontSettings(guide.id, screenId);
+  }, [guide.id, setCurrentContext, loadFontSettings]);
   
   const {
     currentGuideContent,
@@ -158,8 +170,8 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       searchQuery={searchQuery}
       bookmarks={bookmarks}
       initialLine={currentLine}
-      fontSize={fontSettings.fontSize}
-      zoomLevel={fontSettings.zoomLevel}
+      fontSize={fontSize}
+      zoomLevel={zoomLevel}
       onLineChange={handleLineChange}
       onSearch={performSearch}
       onAddBookmark={handleAddBookmark}

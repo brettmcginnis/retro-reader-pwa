@@ -90,7 +90,7 @@ describe('DatabaseService', () => {
     it('should initialize the database', async () => {
       await db.init();
       
-      expect(openDB).toHaveBeenCalledWith('retro-reader', 1, expect.any(Object));
+      expect(openDB).toHaveBeenCalledWith('retro-reader', 2, expect.any(Object));
       expect((db as unknown as { db: IDBPDatabase<RetroReaderDB> | null }).db).toBe(mockDb);
     });
 
@@ -116,7 +116,8 @@ describe('DatabaseService', () => {
       
       expect(mockUpgradeDb.createObjectStore).toHaveBeenCalledWith('guides', { keyPath: 'id' });
       expect(mockUpgradeDb.createObjectStore).toHaveBeenCalledWith('bookmarks', { keyPath: 'id' });
-      expect(mockObjectStore.createIndex).toHaveBeenCalledTimes(4);
+      expect(mockUpgradeDb.createObjectStore).toHaveBeenCalledWith('fontSettings', { keyPath: 'id' });
+      expect(mockObjectStore.createIndex).toHaveBeenCalledTimes(5);
     });
 
     it('should not create stores if they already exist', async () => {

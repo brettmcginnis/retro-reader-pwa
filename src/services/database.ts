@@ -3,6 +3,15 @@ import { Guide } from '../stores/useGuideStore';
 import { Bookmark } from '../stores/useBookmarkStore';
 import { generateId } from '../utils/common';
 
+export interface FontSettings {
+  id: string;
+  guideId: string;
+  screenId: string;
+  fontSize: number;
+  zoomLevel: number;
+  dateModified: Date;
+}
+
 interface RetroReaderDB extends DBSchema {
   guides: {
     key: string;
@@ -13,6 +22,11 @@ interface RetroReaderDB extends DBSchema {
     key: string;
     value: Bookmark;
     indexes: { 'by-guide': string; 'by-date': Date };
+  };
+  fontSettings: {
+    key: string;
+    value: FontSettings;
+    indexes: { 'by-guide': string };
   };
 }
 
@@ -26,8 +40,8 @@ class DatabaseService {
     }
     
     try {
-      this.db = await openDB<RetroReaderDB>('retro-reader', 1, {
-        upgrade(db) {
+      this.db = await openDB<RetroReaderDB>('retro-reader', 2, {
+        upgrade(db, _oldVersion) {
           // Check if stores already exist before creating them
           if (!db.objectStoreNames.contains('guides')) {
             const guidesStore = db.createObjectStore('guides', { keyPath: 'id' });
@@ -39,6 +53,11 @@ class DatabaseService {
             const bookmarksStore = db.createObjectStore('bookmarks', { keyPath: 'id' });
             bookmarksStore.createIndex('by-guide', 'guideId');
             bookmarksStore.createIndex('by-date', 'dateCreated');
+          }
+
+          if (!db.objectStoreNames.contains('fontSettings')) {
+            const fontSettingsStore = db.createObjectStore('fontSettings', { keyPath: 'id' });
+            fontSettingsStore.createIndex('by-guide', 'guideId');
           }
         },
       });
@@ -179,6 +198,30 @@ class DatabaseService {
   }
 
 
+
+  // Font Settings Methods
+  async getFontSettings(guideId: string, screenId: string = 'default'): Promise<FontSettings | undefined> {
+    const db = this.ensureDB();
+    const id = `${guideId}:${screenId}`;
+    return db.get('fontSettings', id);
+  }
+
+  async saveFontSettings(settings: Omit<FontSettings, 'id' | 'dateModified'>): Promise<void> {
+    const db = this.ensureDB();
+    const id = `${settings.guideId}:${settings.screenId}`;
+    const fontSettings: FontSettings = {
+      ...settings,
+      id,
+      dateModified: new Date()
+    };
+    await db.put('fontSettings', fontSettings);
+  }
+
+  async getAllFontSettingsByGuide(guideId: string): Promise<FontSettings[]> {
+    const db = this.ensureDB();
+    const index = db.transaction('fontSettings').store.index('by-guide');
+    return index.getAll(guideId);
+  }
 
   async exportData(): Promise<{ guides: Guide[], bookmarks: Bookmark[] }> {
     const db = this.ensureDB();
