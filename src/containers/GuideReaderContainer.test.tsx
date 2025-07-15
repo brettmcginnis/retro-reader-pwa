@@ -94,7 +94,6 @@ const createMockGuideStore = () => {
     loading: false,
     error: null,
     dbInitialized: true,
-    initDatabase: jest.fn(),
     loadGuides: jest.fn(),
     fetchGuide: jest.fn(),
     createGuide: jest.fn(),
