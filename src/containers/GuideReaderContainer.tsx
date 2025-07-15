@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Guide } from '../stores/useGuideStore';
+import { Guide, useGuideStore } from '../stores/useGuideStore';
 import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useToast } from '../contexts/useToast';
-import { useReaderStore } from '../stores/useReaderStore';
+import { useFontScaleStore } from '../stores/useFontScaleStore';
 import { GuideReaderView } from '../components/GuideReaderView';
 
 interface GuideReaderContainerProps {
@@ -28,11 +28,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   const { showToast } = useToast();
   const { 
     fontSettings,
-    setFontSettings,
-    load,
-    isLoading,
-    guideContent
-  } = useReaderStore();
+    setFontSettings
+  } = useFontScaleStore();
+  
+  const {
+    currentGuideContent,
+    currentGuideLoading,
+    setCurrentGuideContent
+  } = useGuideStore();
   
   
   // Search state
@@ -53,17 +56,17 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     
     // Split content into lines
     const lines = guide.content.split('\n');
-    load(lines);
+    setCurrentGuideContent(lines);
     lastContentRef.current = guide.content;
-  }, [guide, load]);
+  }, [guide, setCurrentGuideContent]);
   
   
   // Mark that initial position has been set - only once
   useEffect(() => {
-    if (!isLoading && !hasSetInitialPosition.current && currentLine > 1) {
+    if (!currentGuideLoading && !hasSetInitialPosition.current && currentLine > 1) {
       hasSetInitialPosition.current = true;
     }
-  }, [isLoading, currentLine]);
+  }, [currentGuideLoading, currentLine]);
   
   
   // Search handling
@@ -144,14 +147,14 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     setFontSettings({ zoomLevel: zoom });
   }, [setFontSettings]);
   
-  const lines = guideContent;
+  const lines = currentGuideContent || [];
   
   return (
     <GuideReaderView
       guide={guide}
       lines={lines}
       totalLines={lines ? lines.length : 0}
-      isLoading={isLoading}
+      isLoading={currentGuideLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
       initialLine={currentLine}

@@ -31,6 +31,10 @@ interface GuideState {
   error: string | null;
   /** Whether the database has been initialized */
   dbInitialized: boolean;
+  /** Current guide content as array of lines */
+  currentGuideContent: string[] | null;
+  /** Loading state for current guide content */
+  currentGuideLoading: boolean;
 }
 
 /**
@@ -57,6 +61,8 @@ interface GuideActions {
   importFromFile: (file: File, onConfirm?: (title: string) => Promise<boolean>) => Promise<{ imported: number; skipped: number; errors: string[] }>;
   /** Refreshes the guide list */
   refresh: () => Promise<void>;
+  /** Sets the current guide content */
+  setCurrentGuideContent: (lines: string[]) => void;
 }
 
 type GuideStore = GuideState & GuideActions;
@@ -66,6 +72,8 @@ export const useGuideStore = create<GuideStore>((set, get) => ({
   loading: true,
   error: null,
   dbInitialized: false,
+  currentGuideContent: null,
+  currentGuideLoading: false,
 
   initDatabase: async () => {
     try {
@@ -167,6 +175,14 @@ export const useGuideStore = create<GuideStore>((set, get) => ({
 
   refresh: async () => {
     await get().loadGuides();
+  },
+
+  setCurrentGuideContent: (lines: string[]) => {
+    set({ currentGuideLoading: true });
+    set({ 
+      currentGuideContent: lines,
+      currentGuideLoading: false 
+    });
   },
 }));
 

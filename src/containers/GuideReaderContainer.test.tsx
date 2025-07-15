@@ -39,15 +39,12 @@ jest.mock('../contexts/useToast', () => ({
   })
 }));
 
-const createMockReaderStore = () => {
+const createMockFontScaleStore = () => {
   const state = {
     fontSettings: {
       fontSize: 14,
       zoomLevel: 1
-    },
-    isLoading: false,
-    guideContent: [],
-    searchQuery: ''
+    }
   };
 
   const setFontSettings = jest.fn((updates) => {
@@ -60,28 +57,51 @@ const createMockReaderStore = () => {
 
   return {
     get fontSettings() { return state.fontSettings; },
-    get isLoading() { return state.isLoading; },
-    get guideContent() { return state.guideContent; },
-    get searchQuery() { return state.searchQuery; },
-    setFontSettings,
-    load: jest.fn((lines) => {
-      state.isLoading = true;
-      state.guideContent = lines;
-      state.isLoading = false;
-    }),
-    setSearchQuery: jest.fn((query) => {
-      state.searchQuery = query;
-    }),
-    updateScreenSettings: jest.fn((settings) => {
-      state.fontSettings = { ...state.fontSettings, ...settings };
-    })
+    setFontSettings
   };
 };
 
-const mockUseReaderStore = jest.fn(createMockReaderStore);
+const createMockGuideStore = () => {
+  const state = {
+    currentGuideContent: [],
+    currentGuideLoading: false
+  };
 
-jest.mock('../stores/useReaderStore', () => ({
-  useReaderStore: mockUseReaderStore
+  return {
+    get currentGuideContent() { return state.currentGuideContent; },
+    get currentGuideLoading() { return state.currentGuideLoading; },
+    setCurrentGuideContent: jest.fn((lines) => {
+      state.currentGuideLoading = true;
+      state.currentGuideContent = lines;
+      state.currentGuideLoading = false;
+    }),
+    guides: [],
+    loading: false,
+    error: null,
+    dbInitialized: true,
+    initDatabase: jest.fn(),
+    loadGuides: jest.fn(),
+    fetchGuide: jest.fn(),
+    createGuide: jest.fn(),
+    deleteGuide: jest.fn(),
+    getGuide: jest.fn(),
+    exportGuide: jest.fn(),
+    exportAll: jest.fn(),
+    importFromFile: jest.fn(),
+    refresh: jest.fn()
+  };
+};
+
+const mockUseFontScaleStore = jest.fn(createMockFontScaleStore);
+const mockUseGuideStore = jest.fn(createMockGuideStore);
+
+jest.mock('../stores/useFontScaleStore', () => ({
+  useFontScaleStore: mockUseFontScaleStore
+}));
+
+jest.mock('../stores/useGuideStore', () => ({
+  ...jest.requireActual('../stores/useGuideStore'),
+  useGuideStore: mockUseGuideStore
 }));
 
 
@@ -186,8 +206,9 @@ describe('GuideReaderContainer', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     
-    // Reset the mock to create new store instance
-    mockUseReaderStore.mockImplementation(createMockReaderStore);
+    // Reset the mocks to create new store instances
+    mockUseFontScaleStore.mockImplementation(createMockFontScaleStore);
+    mockUseGuideStore.mockImplementation(createMockGuideStore);
     
     // Mock console.error to suppress expected errors in tests
     console.error = jest.fn();
@@ -283,13 +304,13 @@ describe('GuideReaderContainer', () => {
 
   describe('Font and Zoom Controls', () => {
     it('should handle font size changes with clamping', async () => {
-      let currentStore: ReturnType<typeof createMockReaderStore>;
+      let currentFontStore: ReturnType<typeof createMockFontScaleStore>;
       
-      mockUseReaderStore.mockImplementation(() => {
-        if (!currentStore) {
-          currentStore = createMockReaderStore();
+      mockUseFontScaleStore.mockImplementation(() => {
+        if (!currentFontStore) {
+          currentFontStore = createMockFontScaleStore();
         }
-        return currentStore;
+        return currentFontStore;
       });
 
       const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);
@@ -329,13 +350,13 @@ describe('GuideReaderContainer', () => {
     });
 
     it('should handle zoom level changes with clamping', async () => {
-      let currentStore: ReturnType<typeof createMockReaderStore>;
+      let currentFontStore: ReturnType<typeof createMockFontScaleStore>;
       
-      mockUseReaderStore.mockImplementation(() => {
-        if (!currentStore) {
-          currentStore = createMockReaderStore();
+      mockUseFontScaleStore.mockImplementation(() => {
+        if (!currentFontStore) {
+          currentFontStore = createMockFontScaleStore();
         }
-        return currentStore;
+        return currentFontStore;
       });
 
       const { rerender } = render(<GuideReaderContainer guide={mockGuide} />);

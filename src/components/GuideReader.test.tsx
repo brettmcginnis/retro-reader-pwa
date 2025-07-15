@@ -45,30 +45,42 @@ jest.mock('../stores/useAppStore', () => ({
   useAppStore: () => mockUseAppStore()
 }));
 
-const mockUseReaderStore = jest.fn(() => ({
+const mockUseFontScaleStore = jest.fn(() => ({
   fontSettings: {
     fontSize: 14,
     zoomLevel: 1
   },
-  setFontSettings: jest.fn(),
-  load: jest.fn(),
-  isLoading: false,
-  guideContent: [],
-  searchQuery: '',
-  setSearchQuery: jest.fn(),
-  updateScreenSettings: jest.fn()
+  setFontSettings: jest.fn()
 }));
 
-jest.mock('../stores/useReaderStore', () => ({
-  useReaderStore: () => mockUseReaderStore()
+jest.mock('../stores/useFontScaleStore', () => ({
+  useFontScaleStore: () => mockUseFontScaleStore()
 }));
 
 const mockGetGuide = jest.fn();
 
+const mockUseGuideStore = jest.fn(() => ({
+  getGuide: mockGetGuide,
+  currentGuideContent: [],
+  currentGuideLoading: false,
+  setCurrentGuideContent: jest.fn(),
+  guides: [],
+  loading: false,
+  error: null,
+  dbInitialized: true,
+  initDatabase: jest.fn(),
+  loadGuides: jest.fn(),
+  fetchGuide: jest.fn(),
+  createGuide: jest.fn(),
+  deleteGuide: jest.fn(),
+  exportGuide: jest.fn(),
+  exportAll: jest.fn(),
+  importFromFile: jest.fn(),
+  refresh: jest.fn()
+}));
+
 jest.mock('../stores/useGuideStore', () => ({
-  useGuideStore: () => ({
-    getGuide: mockGetGuide
-  })
+  useGuideStore: () => mockUseGuideStore()
 }));
 
 jest.mock('./Loading', () => ({
@@ -104,6 +116,27 @@ describe('GuideReader Tests', () => {
     
     // Setup mock for getGuide
     mockGetGuide.mockResolvedValue(mockGuide);
+    
+    // Setup guide store mock with content
+    mockUseGuideStore.mockReturnValue({
+      getGuide: mockGetGuide,
+      currentGuideContent: lines,
+      currentGuideLoading: false,
+      setCurrentGuideContent: jest.fn(),
+      guides: [],
+      loading: false,
+      error: null,
+      dbInitialized: true,
+      initDatabase: jest.fn(),
+      loadGuides: jest.fn(),
+      fetchGuide: jest.fn(),
+      createGuide: jest.fn(),
+      deleteGuide: jest.fn(),
+      exportGuide: jest.fn(),
+      exportAll: jest.fn(),
+      importFromFile: jest.fn(),
+      refresh: jest.fn()
+    });
 
     // Reset mock state
     mockBookmarksState = []; // Reset bookmarks
