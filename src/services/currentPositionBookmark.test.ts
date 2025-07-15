@@ -1,5 +1,5 @@
 import { db } from './database';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { generateId } from '../utils/common';
 
 // Mock the database module

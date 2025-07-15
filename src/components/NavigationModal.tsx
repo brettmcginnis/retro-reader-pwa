@@ -4,13 +4,22 @@ import { OverlayBackdrop } from './OverlayBackdrop';
 import { ModalHeader } from './ModalHeader';
 import { Navigation } from 'lucide-react';
 
+/**
+ * Props for the NavigationModal component that provides line navigation functionality
+ */
 interface NavigationModalProps {
+  /** Controls whether the modal is visible */
   isOpen: boolean;
+  /** The current line number being viewed in the guide */
   currentLine: number;
+  /** Total number of lines in the guide */
   totalLines: number;
+  /** Callback fired when user navigates to a specific line */
   onNavigate: (line: number) => void;
+  /** Callback fired when the modal should be closed */
   onClose: () => void;
-  onJumpToCurrentPosition: () => Promise<number | null>;
+  /** Callback fired when user clicks the Current Position button */
+  onJumpToCurrentPosition?: () => void;
 }
 
 export const NavigationModal: React.FC<NavigationModalProps> = ({
@@ -45,11 +54,9 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
     setError('');
   };
 
-  const handleJumpToSaved = async () => {
-    const position = await onJumpToCurrentPosition();
-    if (position) {
-      onNavigate(position);
-      onClose();
+  const handleJumpToSaved = () => {
+    if (onJumpToCurrentPosition) {
+      onJumpToCurrentPosition();
     }
   };
 
@@ -119,6 +126,7 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
                 variant="secondary"
                 onClick={handleJumpToSaved}
                 title="Jump to current position"
+                disabled={!onJumpToCurrentPosition}
               >
                 Current Position
               </Button>

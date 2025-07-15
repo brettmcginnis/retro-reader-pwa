@@ -1,6 +1,13 @@
-import { Guide, GuideMetadata } from '../types';
+import { Guide } from '../stores/useGuideStore';
 import { db } from './database';
 import { generateId, wrapError } from '../utils/common';
+
+export interface GuideMetadata {
+  title: string;
+  author?: string;
+  gameTitle?: string;
+  contentPreview: string;
+}
 
 /**
  * Service for managing game guides - fetching, storing, and searching guide content.

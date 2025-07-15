@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 import { UrlImport } from './UrlImport';
 import { GuideCard } from './GuideCard';
 import { PasteModal } from './PasteModal';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-import { Guide, Bookmark } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { useGuideScroll } from '../hooks/useGuideScroll';
 import { useBookmarkUI } from '../hooks/useBookmarkUI';
 import { useGuideSearch } from '../hooks/useGuideSearch';
@@ -17,7 +18,6 @@ import { GuideSearchBar } from './GuideSearchBar';
 interface GuideReaderViewProps {
   guide: Guide;
   lines: string[];
-  currentLine: number;
   totalLines: number;
   isLoading: boolean;
   searchQuery: string;
@@ -25,18 +25,14 @@ interface GuideReaderViewProps {
   initialLine: number;
   fontSize: number;
   zoomLevel: number;
-  currentView?: 'library' | 'reader';
   onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
-  onJumpToCurrentPosition: () => Promise<number | null>;
+  onJumpToCurrentPosition: () => void;
   onScrollingStateChange: (isScrolling: boolean) => void;
-  onInitialScroll: () => void;
   onFontSizeChange: (size: number) => void;
   onZoomChange: (zoom: number) => void;
-  onBackToLibrary: () => void;
-  onViewChange?: (view: 'library' | 'reader') => void;
   onDeleteBookmark: (id: string) => Promise<void>;
   onUpdateBookmark: (id: string, updates: Partial<Bookmark>) => Promise<void>;
   onRefreshBookmarks: () => Promise<void>;
@@ -45,7 +41,6 @@ interface GuideReaderViewProps {
 const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   guide,
   lines,
-  currentLine,
   totalLines,
   isLoading,
   searchQuery,
@@ -53,22 +48,19 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   initialLine,
   fontSize,
   zoomLevel,
-  currentView: _currentView,
   onLineChange,
   onSearch,
   onAddBookmark,
   onSetAsCurrentPosition,
   onJumpToCurrentPosition,
   onScrollingStateChange,
-  onInitialScroll,
   onFontSizeChange,
   onZoomChange,
-  onBackToLibrary,
-  onViewChange: _onViewChange,
   onDeleteBookmark,
   onUpdateBookmark,
   onRefreshBookmarks
 }) => {
+  const currentLine = initialLine; // currentLine is now passed as initialLine
   const [showNavigationModal, setShowNavigationModal] = useState(false);
   
   // Use custom hooks for scroll management
@@ -87,8 +79,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     zoomLevel,
     isLoading,
     onLineChange,
-    onScrollingStateChange,
-    onInitialScroll
+    onScrollingStateChange
   });
 
   // Use custom hook for bookmark UI
@@ -150,7 +141,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         zoomLevel={zoomLevel}
         searchQuery={searchQuery}
         isSearching={showSearch}
-        onBack={onBackToLibrary}
         onSearch={onSearch}
         onSearchToggle={toggleSearch}
         onFontSizeChange={onFontSizeChange}

@@ -61,32 +61,6 @@ describe('Helper Functions', () => {
     });
   });
 
-  describe('Progress utilities', () => {
-    it('should calculate progress percentage', () => {
-      const calculatePercentage = (current: number, total: number): number => {
-        if (total === 0) return 0;
-        return Math.min(100, Math.max(0, (current / total) * 100));
-      };
-
-      expect(calculatePercentage(1, 10)).toBe(10);
-      expect(calculatePercentage(5, 10)).toBe(50);
-      expect(calculatePercentage(10, 10)).toBe(100);
-      expect(calculatePercentage(0, 10)).toBe(0);
-      expect(calculatePercentage(15, 10)).toBe(100); // Clamped to 100
-      expect(calculatePercentage(5, 0)).toBe(0); // Handle division by zero
-    });
-
-    it('should validate line numbers', () => {
-      const validateLineNumber = (line: number, totalLines: number): number => {
-        return Math.max(1, Math.min(line, totalLines));
-      };
-
-      expect(validateLineNumber(5, 10)).toBe(5);
-      expect(validateLineNumber(0, 10)).toBe(1); // Minimum is 1
-      expect(validateLineNumber(-1, 10)).toBe(1); // Minimum is 1
-      expect(validateLineNumber(15, 10)).toBe(10); // Maximum is totalLines
-    });
-  });
 
   describe('Storage utilities', () => {
     it('should handle localStorage safely', () => {

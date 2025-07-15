@@ -1,6 +1,16 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { Guide, Bookmark, ReadingProgress } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { generateId } from '../utils/common';
+
+export interface FontSettings {
+  id: string;
+  guideId: string;
+  screenId: string;
+  fontSize: number;
+  zoomLevel: number;
+  dateModified: Date;
+}
 
 interface RetroReaderDB extends DBSchema {
   guides: {
@@ -13,10 +23,10 @@ interface RetroReaderDB extends DBSchema {
     value: Bookmark;
     indexes: { 'by-guide': string; 'by-date': Date };
   };
-  progress: {
+  fontSettings: {
     key: string;
-    value: ReadingProgress;
-    indexes: { 'by-last-read': Date };
+    value: FontSettings;
+    indexes: { 'by-guide': string };
   };
 }
 
@@ -30,8 +40,8 @@ class DatabaseService {
     }
     
     try {
-      this.db = await openDB<RetroReaderDB>('retro-reader', 1, {
-        upgrade(db) {
+      this.db = await openDB<RetroReaderDB>('retro-reader', 2, {
+        upgrade(db, _oldVersion) {
           // Check if stores already exist before creating them
           if (!db.objectStoreNames.contains('guides')) {
             const guidesStore = db.createObjectStore('guides', { keyPath: 'id' });
@@ -44,10 +54,10 @@ class DatabaseService {
             bookmarksStore.createIndex('by-guide', 'guideId');
             bookmarksStore.createIndex('by-date', 'dateCreated');
           }
-  
-          if (!db.objectStoreNames.contains('progress')) {
-            const progressStore = db.createObjectStore('progress', { keyPath: 'guideId' });
-            progressStore.createIndex('by-last-read', 'lastRead');
+
+          if (!db.objectStoreNames.contains('fontSettings')) {
+            const fontSettingsStore = db.createObjectStore('fontSettings', { keyPath: 'id' });
+            fontSettingsStore.createIndex('by-guide', 'guideId');
           }
         },
       });
@@ -102,7 +112,7 @@ class DatabaseService {
 
   async deleteGuide(id: string): Promise<void> {
     const db = this.ensureDB();
-    const tx = db.transaction(['guides', 'bookmarks', 'progress'], 'readwrite');
+    const tx = db.transaction(['guides', 'bookmarks'], 'readwrite');
     
     await tx.objectStore('guides').delete(id);
     
@@ -111,7 +121,6 @@ class DatabaseService {
       await tx.objectStore('bookmarks').delete(bookmarkId);
     }
     
-    await tx.objectStore('progress').delete(id);
     await tx.done;
   }
 
@@ -188,31 +197,37 @@ class DatabaseService {
     return bookmarks.find(b => b.isCurrentPosition) || null;
   }
 
-  async saveProgress(progress: ReadingProgress): Promise<void> {
+
+
+  // Font Settings Methods
+  async getFontSettings(guideId: string, screenId: string = 'default'): Promise<FontSettings | undefined> {
     const db = this.ensureDB();
-    await db.put('progress', progress);
+    const id = `${guideId}:${screenId}`;
+    return db.get('fontSettings', id);
   }
 
-  async getProgress(guideId: string): Promise<ReadingProgress | undefined> {
+  async saveFontSettings(settings: Omit<FontSettings, 'id' | 'dateModified'>): Promise<void> {
     const db = this.ensureDB();
-    const progress = await db.get('progress', guideId);
-    if (!progress) return undefined;
-    // Ensure lastRead is a Date object
-    return {
-      ...progress,
-      lastRead: progress.lastRead instanceof Date 
-        ? progress.lastRead 
-        : new Date(progress.lastRead)
+    const id = `${settings.guideId}:${settings.screenId}`;
+    const fontSettings: FontSettings = {
+      ...settings,
+      id,
+      dateModified: new Date()
     };
+    await db.put('fontSettings', fontSettings);
   }
 
-
-  async exportData(): Promise<{ guides: Guide[], bookmarks: Bookmark[], progress: ReadingProgress[] }> {
+  async getAllFontSettingsByGuide(guideId: string): Promise<FontSettings[]> {
     const db = this.ensureDB();
-    const [guidesRaw, bookmarksRaw, progressRaw] = await Promise.all([
+    const index = db.transaction('fontSettings').store.index('by-guide');
+    return index.getAll(guideId);
+  }
+
+  async exportData(): Promise<{ guides: Guide[], bookmarks: Bookmark[] }> {
+    const db = this.ensureDB();
+    const [guidesRaw, bookmarksRaw] = await Promise.all([
       db.getAll('guides'),
-      db.getAll('bookmarks'),
-      db.getAll('progress')
+      db.getAll('bookmarks')
     ]);
     
     // Ensure all date fields are Date objects
@@ -233,19 +248,12 @@ class DatabaseService {
         : new Date(bookmark.dateCreated)
     }));
     
-    const progress = progressRaw.map(prog => ({
-      ...prog,
-      lastRead: prog.lastRead instanceof Date 
-        ? prog.lastRead 
-        : new Date(prog.lastRead)
-    }));
-    
-    return { guides, bookmarks, progress };
+    return { guides, bookmarks };
   }
 
-  async importData(data: { guides: Guide[], bookmarks: Bookmark[], progress: ReadingProgress[] }): Promise<void> {
+  async importData(data: { guides: Guide[], bookmarks: Bookmark[] }): Promise<void> {
     const db = this.ensureDB();
-    const tx = db.transaction(['guides', 'bookmarks', 'progress'], 'readwrite');
+    const tx = db.transaction(['guides', 'bookmarks'], 'readwrite');
     
     for (const guide of data.guides) {
       // Ensure date fields are Date objects before storing
@@ -270,17 +278,6 @@ class DatabaseService {
           : new Date(bookmark.dateCreated)
       };
       await tx.objectStore('bookmarks').put(bookmarkWithDate);
-    }
-    
-    for (const progress of data.progress) {
-      // Ensure lastRead is a Date object before storing
-      const progressWithDate = {
-        ...progress,
-        lastRead: progress.lastRead instanceof Date 
-          ? progress.lastRead 
-          : new Date(progress.lastRead)
-      };
-      await tx.objectStore('progress').put(progressWithDate);
     }
     
     await tx.done;

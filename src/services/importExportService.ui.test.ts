@@ -5,14 +5,12 @@ jest.mock('./database', () => ({
     getGuide: jest.fn(),
     saveGuide: jest.fn(),
     getBookmarks: jest.fn(),
-    getProgress: jest.fn(),
-    saveBookmark: jest.fn(),
-    saveProgress: jest.fn()
+    saveBookmark: jest.fn()
   }
 }));
 
 import { ImportExportService } from './importExportService';
-import { GuideCollection } from '../types';
+import { GuideCollection } from './importExportService';
 import { db } from './database';
 
 const mockDb = db as jest.Mocked<typeof db>;
@@ -112,14 +110,6 @@ describe('ImportExportService UI Integration Tests', () => {
             note: 'This is important',
             dateCreated: new Date('2023-01-05')
           }
-        ],
-        progress: [
-          {
-            guideId: '1',
-            line: 50,
-            percentage: 25,
-            lastRead: new Date('2023-01-06')
-          }
         ]
       };
 
@@ -147,12 +137,10 @@ describe('ImportExportService UI Integration Tests', () => {
       
       expect(exportedData).toHaveProperty('guides');
       expect(exportedData).toHaveProperty('bookmarks');
-      expect(exportedData).toHaveProperty('progress');
       expect(exportedData).toHaveProperty('exportDate');
       expect(exportedData).toHaveProperty('version', '1.0.0');
       expect(exportedData.guides).toHaveLength(2);
       expect(exportedData.bookmarks).toHaveLength(1);
-      expect(exportedData.progress).toHaveLength(1);
     });
   });
 
@@ -179,14 +167,6 @@ describe('ImportExportService UI Integration Tests', () => {
             dateCreated: new Date('2023-01-03')
           }
         ],
-        progress: [
-          {
-            guideId: 'imported-1',
-            line: 30,
-            percentage: 40,
-            lastRead: new Date('2023-01-04')
-          }
-        ],
         exportDate: new Date('2023-01-05'),
         version: '1.0.0'
       };
@@ -200,7 +180,6 @@ describe('ImportExportService UI Integration Tests', () => {
       mockDb.getGuide.mockResolvedValue(null);
       mockDb.saveGuide.mockResolvedValue(undefined);
       mockDb.saveBookmark.mockResolvedValue(undefined);
-      mockDb.saveProgress.mockResolvedValue(undefined);
 
       const result = await service.importFromFile(file);
 
@@ -218,10 +197,6 @@ describe('ImportExportService UI Integration Tests', () => {
         ...validCollection.bookmarks[0],
         dateCreated: expect.any(Date)
       });
-      expect(mockDb.saveProgress).toHaveBeenCalledWith({
-        ...validCollection.progress[0],
-        lastRead: expect.any(Date)
-      });
     });
 
     it('should handle guide replacement confirmation', async () => {
@@ -238,7 +213,6 @@ describe('ImportExportService UI Integration Tests', () => {
           }
         ],
         bookmarks: [],
-        progress: [],
         exportDate: new Date('2023-01-05'),
         version: '1.0.0'
       };
@@ -278,7 +252,6 @@ describe('ImportExportService UI Integration Tests', () => {
           }
         ],
         bookmarks: [],
-        progress: [],
         exportDate: new Date('2023-01-05'),
         version: '1.0.0'
       };
@@ -349,7 +322,6 @@ describe('ImportExportService UI Integration Tests', () => {
       const collectionWithStringDate = {
         guides: [],
         bookmarks: [],
-        progress: [],
         exportDate: '2023-01-01T00:00:00.000Z', // String date
         version: '1.0.0'
       };

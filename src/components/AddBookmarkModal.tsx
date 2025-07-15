@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { AlertCircle } from 'lucide-react';

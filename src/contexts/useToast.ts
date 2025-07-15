@@ -1,10 +1,16 @@
-import { useContext } from 'react';
-import { ToastContext } from './ToastContextInstance';
+import { useToastStore } from '../stores/useToastStore';
+import { useConfirmationStore, ConfirmationOptions } from '../stores/useConfirmationStore';
 
 export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
-  }
-  return context;
+  const { showToast } = useToastStore();
+  const { showConfirmation } = useConfirmationStore();
+
+  const confirm = async (options: ConfirmationOptions): Promise<boolean> => {
+    return showConfirmation(options);
+  };
+
+  return {
+    showToast,
+    confirm,
+  };
 }; 

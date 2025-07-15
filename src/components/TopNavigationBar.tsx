@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { SettingsPanel } from './SettingsPanel';
 import { SearchBar } from './SearchBar';
 import { ChevronLeft, Settings, Search } from 'lucide-react';
+import { useAppStore } from '../stores/useAppStore';
 
 interface TopNavigationBarProps {
   guideTitle: string;
@@ -13,7 +14,6 @@ interface TopNavigationBarProps {
   zoomLevel: number;
   searchQuery: string;
   isSearching: boolean;
-  onBack: () => void;
   onSearch: (query: string) => void;
   onSearchToggle: () => void;
   onFontSizeChange: (size: number) => void;
@@ -28,13 +28,18 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
   zoomLevel,
   searchQuery,
   isSearching,
-  onBack,
   onSearch,
   onSearchToggle,
   onFontSizeChange,
   onZoomChange
 }) => {
   const [showSettings, setShowSettings] = useState(false);
+  const { setCurrentGuideId } = useAppStore();
+  
+  const handleBack = () => {
+    setCurrentGuideId(null);
+    window.history.pushState({}, '', '/retro-reader-pwa/');
+  };
 
 
   return (
@@ -57,7 +62,7 @@ export const TopNavigationBar: React.FC<TopNavigationBarProps> = ({
       <header className="fixed top-0 left-0 right-0 bg-white dark:bg-retro-900 border-b border-retro-200 dark:border-retro-700 z-50">
         <div className="flex items-center h-14 px-2 sm:px-4 gap-2">
           <Button
-            onClick={onBack}
+            onClick={handleBack}
             variant="ghost"
             size="sm"
             className="p-2"

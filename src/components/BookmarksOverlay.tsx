@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { Bookmark, Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
+import { Bookmark } from '../stores/useBookmarkStore';
 import { AddBookmarkModal } from './AddBookmarkModal';
 import { EditBookmarkModal } from './EditBookmarkModal';
 import { OverlayBackdrop } from './OverlayBackdrop';

@@ -1,6 +1,6 @@
 import { GuideService } from './guideService';
 import { db } from './database';
-import { Guide } from '../types';
+import { Guide } from '../stores/useGuideStore';
 
 // Type helper for accessing private methods in tests
 type GuideServiceWithPrivates = GuideService & {

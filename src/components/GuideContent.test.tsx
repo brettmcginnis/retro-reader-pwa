@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GuideContent } from './GuideContent';
-import { Bookmark } from '../types';
+import { Bookmark } from '../stores/useBookmarkStore';
 
 // Mock GuideLineRenderer to avoid dependencies
 jest.mock('./GuideLineRenderer', () => ({
