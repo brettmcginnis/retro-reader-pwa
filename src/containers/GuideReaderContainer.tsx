@@ -55,7 +55,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
   
   // References
   const lastContentRef = useRef<string>('');
-  const hasSetInitialPosition = useRef(false);
   const userScrollingRef = useRef(false);
   const userScrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -71,14 +70,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     setCurrentGuideContent(lines);
     lastContentRef.current = guide.content;
   }, [guide, setCurrentGuideContent]);
-  
-  
-  // Mark that initial position has been set - only once
-  useEffect(() => {
-    if (!currentGuideLoading && !hasSetInitialPosition.current && currentLine > 1) {
-      hasSetInitialPosition.current = true;
-    }
-  }, [currentGuideLoading, currentLine]);
   
   
   // Search handling
@@ -125,10 +116,6 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
     }
   }, [bookmarks, guide.id, showToast]);
   
-  // Handle line change with scrolling state management
-  const handleLineChange = useCallback((_line: number) => {
-    // Line changes are now handled by bookmarks, not local state
-  }, []);
   
   const handleScrollingStateChange = useCallback((isScrolling: boolean) => {
     userScrollingRef.current = isScrolling;
@@ -169,10 +156,9 @@ export const GuideReaderContainer: React.FC<GuideReaderContainerProps> = ({ guid
       isLoading={currentGuideLoading}
       searchQuery={searchQuery}
       bookmarks={bookmarks}
-      initialLine={currentLine}
+      currentLine={currentLine}
       fontSize={fontSize}
       zoomLevel={zoomLevel}
-      onLineChange={handleLineChange}
       onSearch={performSearch}
       onAddBookmark={handleAddBookmark}
       onSetAsCurrentPosition={handleSetAsCurrentPosition}

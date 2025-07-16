@@ -133,10 +133,9 @@ interface MockGuideReaderViewProps {
   searchQuery: string;
   searchResults: { line: number; content: string }[];
   bookmarks: Bookmark[];
-  initialLine: number;
+  currentLine: number;
   fontSize: number;
   zoomLevel: number;
-  onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
@@ -148,8 +147,7 @@ interface MockGuideReaderViewProps {
 // Mock GuideReaderView component
 jest.mock('../components/GuideReaderView', () => ({
   GuideReaderView: ({ 
-    initialLine,
-    onLineChange, 
+    currentLine,
     fontSize,
     zoomLevel,
     onFontSizeChange,
@@ -157,19 +155,16 @@ jest.mock('../components/GuideReaderView', () => ({
     onAddBookmark,
     onSetAsCurrentPosition,
   }: MockGuideReaderViewProps) => {
-    // Use a static value for currentLine in tests
-    const currentLine = 1;
+    // Use a static value for local current line in tests
+    const localCurrentLine = 1;
     return (
       <div data-testid="guide-reader-view">
-        <div data-testid="initial-line">{initialLine}</div>
+        <div data-testid="current-line-prop">{currentLine}</div>
         <div data-testid="font-size">{fontSize}</div>
         <div data-testid="zoom-level">{zoomLevel}</div>
-        <div data-testid="current-line">{currentLine}</div>
+        <div data-testid="current-line">{localCurrentLine}</div>
         <div data-testid="jumped-to-line"></div>
-        <button onClick={() => {
-          // Simulate line change
-          onLineChange(50);
-        }}>Scroll to Line 50</button>
+        <button>Scroll to Line 50</button>
         <button onClick={() => {
           onFontSizeChange(16);
         }}>Change Font Size</button>
@@ -289,7 +284,7 @@ describe('GuideReaderContainer', () => {
       render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('30');
+        expect(screen.getByTestId('current-line-prop')).toHaveTextContent('30');
       });
     });
 
@@ -300,7 +295,7 @@ describe('GuideReaderContainer', () => {
       render(<GuideReaderContainer guide={mockGuide} />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('initial-line')).toHaveTextContent('1');
+        expect(screen.getByTestId('current-line-prop')).toHaveTextContent('1');
       });
     });
   });
