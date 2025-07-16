@@ -5,11 +5,10 @@ const OVERSCAN_COUNT = 10;
 
 interface UseGuideScrollProps {
   totalLines: number;
-  initialLine: number;
+  currentLine: number;
   fontSize: number;
   zoomLevel: number;
   isLoading: boolean;
-  onLineChange: (line: number) => void;
   onScrollingStateChange: (isScrolling: boolean) => void;
 }
 
@@ -25,11 +24,10 @@ interface UseGuideScrollReturn {
 
 export const useGuideScroll = ({
   totalLines,
-  initialLine,
+  currentLine,
   fontSize,
   zoomLevel,
   isLoading,
-  onLineChange,
   onScrollingStateChange
 }: UseGuideScrollProps): UseGuideScrollReturn => {
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 100 });
@@ -57,8 +55,7 @@ export const useGuideScroll = ({
     
     // Update current line immediately when programmatically scrolling
     currentLineRef.current = line;
-    onLineChange(line);
-  }, [scaledLineHeight, onLineChange]);
+  }, [scaledLineHeight]);
 
   // Calculate visible range for virtual scrolling
   const updateVisibleRange = useCallback(() => {
@@ -84,7 +81,6 @@ export const useGuideScroll = ({
     // Update current line if it has changed
     if (newCurrentLine !== currentLineRef.current) {
       currentLineRef.current = newCurrentLine;
-      onLineChange(newCurrentLine);
       onScrollingStateChange(true);
     }
 
@@ -103,7 +99,7 @@ export const useGuideScroll = ({
       setShowFloatingProgress(false);
       onScrollingStateChange(false);
     }, 1500);
-  }, [isLoading, totalLines, scaledLineHeight, onLineChange, onScrollingStateChange]);
+  }, [isLoading, totalLines, scaledLineHeight, onScrollingStateChange]);
 
   // Prevent browser scroll restoration
   useEffect(() => {
@@ -122,12 +118,12 @@ export const useGuideScroll = ({
 
   // Initial scroll to saved position
   useEffect(() => {
-    if (!hasInitiallyScrolled.current && initialLine > 1 && totalLines > 0 && containerRef.current) {
+    if (!hasInitiallyScrolled.current && currentLine > 1 && totalLines > 0 && containerRef.current) {
       hasInitiallyScrolled.current = true;
       // Use immediate scroll for initial position
-      scrollToLine(initialLine, 'auto');
+      scrollToLine(currentLine, 'auto');
     }
-  }, [initialLine, totalLines, scrollToLine]);
+  }, [currentLine, totalLines, scrollToLine]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

@@ -22,10 +22,9 @@ interface GuideReaderViewProps {
   isLoading: boolean;
   searchQuery: string;
   bookmarks: Bookmark[];
-  initialLine: number;
+  currentLine: number;
   fontSize: number;
   zoomLevel: number;
-  onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
@@ -45,10 +44,9 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   isLoading,
   searchQuery,
   bookmarks,
-  initialLine,
+  currentLine,
   fontSize,
   zoomLevel,
-  onLineChange,
   onSearch,
   onAddBookmark,
   onSetAsCurrentPosition,
@@ -60,7 +58,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   onUpdateBookmark,
   onRefreshBookmarks
 }) => {
-  const currentLine = initialLine; // currentLine is now passed as initialLine
   const [showNavigationModal, setShowNavigationModal] = useState(false);
   
   // Use custom hooks for scroll management
@@ -74,11 +71,10 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     handleScroll
   } = useGuideScroll({
     totalLines,
-    initialLine,
+    currentLine,
     fontSize,
     zoomLevel,
     isLoading,
-    onLineChange,
     onScrollingStateChange
   });
 
