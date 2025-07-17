@@ -6,6 +6,7 @@ import { Guide } from '../stores/useGuideStore';
 
 const mockUseGuides = {
   guides: [],
+  loadGuides: jest.fn(),
   fetchGuide: jest.fn(),
   createGuide: jest.fn(),
   deleteGuide: jest.fn(),
@@ -66,6 +67,7 @@ describe('GuideLibraryContainer Import/Export Tests', () => {
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
     
     // Reset all mocks
+    mockUseGuides.loadGuides.mockReset();
     mockUseGuides.fetchGuide.mockReset();
     mockUseGuides.createGuide.mockReset();
     mockUseGuides.deleteGuide.mockReset();
@@ -74,6 +76,7 @@ describe('GuideLibraryContainer Import/Export Tests', () => {
     mockUseGuides.importFromFile.mockReset();
     
     // Set default resolved values
+    mockUseGuides.loadGuides.mockResolvedValue(undefined);
     mockUseGuides.fetchGuide.mockResolvedValue(undefined);
     mockUseGuides.createGuide.mockResolvedValue({ id: 'test-id' } as Guide);
     mockUseGuides.deleteGuide.mockResolvedValue(undefined);
