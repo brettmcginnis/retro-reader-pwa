@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Guide } from '../stores/useGuideStore';
 import { useGuideStore } from '../stores/useGuideStore';
 import { useAppStore } from '../stores/useAppStore';
@@ -6,11 +6,16 @@ import { useToast } from '../contexts/useToast';
 import { GuideLibraryView } from '../components/GuideLibraryView';
 
 export const GuideLibraryContainer: React.FC = () => {
-  const { guides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuideStore();
+  const { guides, loadGuides, fetchGuide, createGuide, deleteGuide, exportGuide, exportAll, importFromFile } = useGuideStore();
   const { theme, toggleTheme, setCurrentGuideId } = useAppStore();
   const { showToast, confirm } = useToast();
   const [fetchLoading, setFetchLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load guides on mount
+  useEffect(() => {
+    loadGuides();
+  }, [loadGuides]);
 
   const handleFetchGuide = async (url: string) => {
     if (!url.trim()) {
