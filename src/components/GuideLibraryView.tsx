@@ -168,28 +168,30 @@ export const GuideLibraryView: React.FC<GuideLibraryViewProps> = ({
           </div>
         </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-retro-900 dark:text-retro-100 mb-4">Your Guide Library</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {guides.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-retro-600 dark:text-retro-400">
-                  No guides yet. Add your first guide by entering a URL above!
-                </p>
-              </div>
-            ) : (
-              guides.map(guide => (
-                <GuideCard 
-                  key={guide.id}
-                  guide={guide}
-                  onRead={() => onOpenGuide(guide)}
-                  onExport={() => onExportGuide(guide.id)}
-                  onDelete={() => onDeleteGuide(guide)}
-                  formatFileSize={formatFileSize}
-                  formatDate={formatDate}
-                />
-              ))
-            )}
+        <div className="flex flex-col h-[calc(100vh-32rem)]">
+          <h2 className="text-lg font-semibold text-retro-900 dark:text-retro-100 mb-4 flex-shrink-0">Your Guide Library</h2>
+          <div className="overflow-y-auto flex-1 pr-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {guides.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-retro-600 dark:text-retro-400">
+                    No guides yet. Add your first guide by entering a URL above!
+                  </p>
+                </div>
+              ) : (
+                guides.map(guide => (
+                  <GuideCard 
+                    key={guide.id}
+                    guide={guide}
+                    onRead={() => onOpenGuide(guide)}
+                    onExport={() => onExportGuide(guide.id)}
+                    onDelete={() => onDeleteGuide(guide)}
+                    formatFileSize={formatFileSize}
+                    formatDate={formatDate}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </div>
       </main>
