@@ -10,10 +10,9 @@ import { GuideContent } from './GuideContent';
 import { TopNavigationBar } from './TopNavigationBar';
 import { SimpleBottomNavigation } from './SimpleBottomNavigation';
 import { NavigationModal } from './NavigationModal';
-import { BookmarksOverlay } from './BookmarksOverlay';
-import { BookmarkModal } from './BookmarkModal';
 import { FloatingProgressIndicator } from './FloatingProgressIndicator';
-import { GuideSearchBar } from './GuideSearchBar';
+import { GuideSearchView } from './GuideSearchView';
+import { GuideBookmarksView } from './GuideBookmarksView';
 
 interface GuideReaderViewProps {
   guide: Guide;
@@ -22,10 +21,9 @@ interface GuideReaderViewProps {
   isLoading: boolean;
   searchQuery: string;
   bookmarks: Bookmark[];
-  initialLine: number;
+  currentLine: number;
   fontSize: number;
   zoomLevel: number;
-  onLineChange: (line: number) => void;
   onSearch: (query: string) => void;
   onAddBookmark: (line: number, title: string, note?: string) => Promise<boolean>;
   onSetAsCurrentPosition: (line: number) => Promise<boolean>;
@@ -45,10 +43,9 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   isLoading,
   searchQuery,
   bookmarks,
-  initialLine,
+  currentLine,
   fontSize,
   zoomLevel,
-  onLineChange,
   onSearch,
   onAddBookmark,
   onSetAsCurrentPosition,
@@ -60,7 +57,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   onUpdateBookmark,
   onRefreshBookmarks
 }) => {
-  const currentLine = initialLine; // currentLine is now passed as initialLine
   const [showNavigationModal, setShowNavigationModal] = useState(false);
   
   // Use custom hooks for scroll management
@@ -74,11 +70,10 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
     handleScroll
   } = useGuideScroll({
     totalLines,
-    initialLine,
+    currentLine,
     fontSize,
     zoomLevel,
     isLoading,
-    onLineChange,
     onScrollingStateChange
   });
 
@@ -114,9 +109,7 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
   // Use custom hook for search
   const {
     showSearch,
-    searchResults,
-    toggleSearch,
-    handleJumpToResult
+    toggleSearch
   } = useGuideSearch({
     lines,
     searchQuery
@@ -147,17 +140,13 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onZoomChange={onZoomChange}
       />
 
-      {/* Search Bar */}
-      {showSearch && (
-        <div className="px-4 py-2 bg-retro-50 dark:bg-retro-900 border-b border-retro-200 dark:border-retro-700">
-          <GuideSearchBar
-            searchQuery={searchQuery}
-            searchResults={searchResults}
-            onSearch={onSearch}
-            onJumpToResult={(line) => handleJumpToResult(line, scrollToLine)}
-          />
-        </div>
-      )}
+      <GuideSearchView
+        lines={lines}
+        searchQuery={searchQuery}
+        showSearch={showSearch}
+        onSearch={onSearch}
+        scrollToLine={scrollToLine}
+      />
 
       <GuideContent
         containerRef={containerRef}
@@ -177,16 +166,25 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         scrollToLine={scrollToLine}
       />
 
-      <BookmarkModal
-        isOpen={showBookmarkModal}
-        line={bookmarkLine}
-        title={bookmarkTitle}
-        note={bookmarkNote}
-        onTitleChange={setBookmarkTitle}
-        onNoteChange={setBookmarkNote}
-        onSave={handleSaveBookmark}
-        onSetAsCurrentPosition={handleSetBookmarkLineAsCurrentPosition}
-        onClose={closeBookmarkModal}
+      <GuideBookmarksView
+        guide={guide}
+        bookmarks={bookmarks}
+        totalLines={totalLines}
+        scrollToLine={scrollToLine}
+        showBookmarkModal={showBookmarkModal}
+        bookmarkLine={bookmarkLine}
+        bookmarkTitle={bookmarkTitle}
+        bookmarkNote={bookmarkNote}
+        setBookmarkTitle={setBookmarkTitle}
+        setBookmarkNote={setBookmarkNote}
+        handleSaveBookmark={handleSaveBookmark}
+        handleSetBookmarkLineAsCurrentPosition={handleSetBookmarkLineAsCurrentPosition}
+        closeBookmarkModal={closeBookmarkModal}
+        showBookmarksOverlay={showBookmarksOverlay}
+        setShowBookmarksOverlay={setShowBookmarksOverlay}
+        handleAddBookmarkFromOverlay={handleAddBookmarkFromOverlay}
+        handleUpdateBookmark={handleUpdateBookmark}
+        handleDeleteBookmark={handleDeleteBookmark}
       />
 
       <NavigationModal
@@ -196,19 +194,6 @@ const GuideReaderViewComponent: React.FC<GuideReaderViewProps> = ({
         onNavigate={scrollToLine}
         onClose={() => setShowNavigationModal(false)}
         onJumpToCurrentPosition={onJumpToCurrentPosition}
-      />
-
-      <BookmarksOverlay
-        isOpen={showBookmarksOverlay}
-        guide={guide}
-        currentPositionBookmark={bookmarks.find(b => b.isCurrentPosition)}
-        sortedBookmarks={bookmarks.filter(b => !b.isCurrentPosition).sort((a, b) => a.line - b.line)}
-        lineCount={totalLines}
-        onClose={() => setShowBookmarksOverlay(false)}
-        onGotoLine={scrollToLine}
-        onAddBookmark={handleAddBookmarkFromOverlay}
-        onUpdateBookmark={handleUpdateBookmark}
-        onDeleteBookmark={handleDeleteBookmark}
       />
 
       <SimpleBottomNavigation
